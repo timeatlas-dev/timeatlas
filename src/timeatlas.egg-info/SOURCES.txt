@@ -1,0 +1,17 @@
+README.md
+setup.py
+src/timeatlas/__init__.py
+src/timeatlas/explore.py
+src/timeatlas/handle.py
+src/timeatlas/process.py
+src/timeatlas.egg-info/PKG-INFO
+src/timeatlas.egg-info/SOURCES.txt
+src/timeatlas.egg-info/dependency_links.txt
+src/timeatlas.egg-info/requires.txt
+src/timeatlas.egg-info/top_level.txt
+src/timeatlas/data/__init__.py
+src/timeatlas/data/dataset.py
+src/timeatlas/data/object.py
+src/timeatlas/data/unit.py
+src/timeatlas/utils/__init__.py
+src/timeatlas/utils/smn_helper.py

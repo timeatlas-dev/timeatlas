@@ -1,0 +1,4 @@
+bbdata-python@ git+https://gitlab.forge.hefr.ch/fredmontet/bbdata-python.git#egg=bbdata_python_0.3
+matplotlib
+pandas
+tqdm
