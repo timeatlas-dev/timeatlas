@@ -6,5 +6,3 @@ import pandas as pd
 class Dataset:
     objects: pd.DataFrame
     values: Dict[int, pd.Series]
-
-    def add(self):

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0da0effb-2bf3-4baa-bd4d-012c9c7b89a4" name="Default Changelist" comment="" />
+    <list default="true" id="0da0effb-2bf3-4baa-bd4d-012c9c7b89a4" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/timeatlas/data/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/timeatlas/data/dataset.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,8 +17,12 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="JupyterTrust" id="06e78d94-15c6-484e-98f3-e3eaaff7f58a" />
   <component name="ProjectId" id="1W4DBmuMbeqj1AA8EgJeheNedHH" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -23,6 +30,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -64,7 +72,7 @@
       <updated>1578399840033</updated>
       <workItem from="1578399843348" duration="1532000" />
       <workItem from="1578401747309" duration="135000" />
-      <workItem from="1578403104313" duration="8014000" />
+      <workItem from="1578403104313" duration="8403000" />
     </task>
     <servers />
   </component>
