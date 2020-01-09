@@ -1,0 +1,20 @@
+publish:
+  stage: deploy
+  image: python:3.7
+  when: manual
+  only:
+    - master
+  script:
+    - echo "Environment preparation"
+    - rm -rf dist
+    - pip install twine
+    - pip install wheel
+    - echo "Creation of .pypirc"
+    - echo "[pypi]" >> ~/.pypirc
+    - echo "username = ${PYPI_USER}" >> ~/.pypirc
+    - echo "password = ${PYPI_PASSWORD}" >> ~/.pypirc
+    - cat ~/.pypirc
+    - echo "Upload on PyPI"
+    - python setup.py sdist bdist_wheel --universal
+    - twine upload dist/*
+    - echo "TimeAtlas is published"
