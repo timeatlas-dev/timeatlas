@@ -8,8 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Frédéric Montet",
     author_email="frederic.montet@hefr.ch",
-    description="A toolbox to handle, analyze and make predictions with time "
-                "series data.",
+    description="A toolbox to handle, analyze and predict time series data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True,
