@@ -12,3 +12,4 @@ timeatlas = {editable = true,path = "."}
 [dev-packages]
 pytest = "*"
 jupyter = "*"
+pylint = "*"

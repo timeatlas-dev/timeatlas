@@ -5,7 +5,7 @@ from bbdata.endpoint import output
 import pandas as pd
 from tqdm.notebook import tqdm
 
-from src.timeatlas.data import Dataset
+from src.timeatlas.data_structures import Dataset
 
 
 class Handle:
