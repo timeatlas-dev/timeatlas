@@ -1,17 +1,11 @@
-from timeatlas.abstract.abstract_io import AbstractIO
 import pickle
 from typing import Any, NoReturn
 
 
-class IO(AbstractIO):
+class IO:
 
-    def import_csv(self, path: str) -> Any:
-        pass
-
-    def export_csv(self, path: str) -> NoReturn:
-        pass
-
-    def import_pickle(self, path: str) -> Any:
+    @staticmethod
+    def import_pickle(path: str) -> Any:
         """
         Load an object from a pickle file
 
@@ -24,7 +18,8 @@ class IO(AbstractIO):
         with open(path, 'rb') as f:
             return pickle.load(f)
 
-    def export_pickle(self, data: Any, path: str) -> NoReturn:
+    @staticmethod
+    def export_pickle(data: Any, path: str) -> NoReturn:
         """
         Export a object in Pickle on your file system
 

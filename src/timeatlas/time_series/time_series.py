@@ -10,13 +10,11 @@ from ._utils import Utils
 class TimeSeries(IO, Analysis, Processing):
     """ Defines a time series
 
-    A TimeSeries object is an immutable series of time indexed values. It has
-    two optional parameters, unit and time_series_metadata.
+    A TimeSeries object is a series of time indexed values.
 
-    As its name suggest, Unit represents the unit of the values from the time
-    series.
-
-    Meta represents the physical or virtual data source of the time series.
+    Attributes:
+        series: An optional Pandas Series
+        metadata: An optional Dict storing metadata about this TimeSeries
     """
 
     def __init__(self, series: Series = None, metadata: Dict = None):

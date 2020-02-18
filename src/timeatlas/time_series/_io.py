@@ -8,6 +8,9 @@ from timeatlas.utils import ensure_dir
 class IO(AbstractIO):
 
     def read(self, path: str) -> Any:
+        """
+        - create a timeseries object, with or without metadata
+        """
         pass
 
     def write(self, path: str, name: str) -> NoReturn:
