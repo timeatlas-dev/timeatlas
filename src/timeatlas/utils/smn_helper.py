@@ -13,7 +13,7 @@ class SmnHelper:
 
     def __init__(self):
         self.data_dir = "data/"
-        self.meta_dir = "meta/"
+        self.meta_dir = "time_series_metadata/"
         self.parameters_filename = "parameters_list.json"
         self.stations_filename = "stations_list.json"
 

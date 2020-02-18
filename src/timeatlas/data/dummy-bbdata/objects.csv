@@ -1,0 +1,4 @@
+id,name,unit_symbol,unit_name,unit_type
+2902,HB/floor2/22-23C/Prises_Power_Tot,W,power,float
+2920,HB/floor2/22-23C/Lumières_Power_Tot,W,power,float
+3064,HB/floor1/19-20-21B/Energie_active,Wh,energy,float

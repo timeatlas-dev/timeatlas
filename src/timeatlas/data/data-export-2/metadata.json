@@ -1,0 +1,36 @@
+{
+  "name": "my_export_name",
+  "data": {
+    "1": {
+      "path": "./data/01.csv",
+      "sensor": {
+        "id": "2902",
+        "name": "HB/floor2/22-23C/Prises_Power_Tot"
+      },
+    },
+    "2": {
+      "path": "./data/02.csv",
+      "sensor": {
+        "id": "2903",
+        "name": "HB/floor2/22-23C/Lumières_Power_Tot"
+      },
+      "unit": {
+        "symbol": "W",
+        "name": "power",
+        "type": "float"
+      }
+    },
+    "3": {
+      "path": "./data/03.csv",
+      "sensor": {
+        "id": "2904",
+        "name": "HB/floor1/19-20-21B/Energie_active"
+      },
+      "unit": {
+        "symbol": "Wh",
+        "name": "energy",
+        "type": "float"
+      }
+    }
+  }
+}
