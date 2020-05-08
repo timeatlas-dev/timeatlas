@@ -11,13 +11,13 @@ class IO(AbstractIO):
         """
         - create a timeseries object, with or without metadata
         """
+
+
         pass
 
-    def write(self, path: str, name: str = None) -> NoReturn:
+    def write(self, path: str, name: str) -> NoReturn:
         data_dir_name = "data"
         index = str(0) #noqa
-
-
 
         # Create output directory
         output_dir = "{}/{}/".format(path, name)
