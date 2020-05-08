@@ -13,9 +13,11 @@ class IO(AbstractIO):
         """
         pass
 
-    def write(self, path: str, name: str) -> NoReturn:
+    def write(self, path: str, name: str = None) -> NoReturn:
         data_dir_name = "data"
-        index = str(0)
+        index = str(0) #noqa
+
+
 
         # Create output directory
         output_dir = "{}/{}/".format(path, name)
@@ -25,18 +27,19 @@ class IO(AbstractIO):
         data_dir = "{}/{}/".format(output_dir, data_dir_name)
         ensure_dir(data_dir)
 
-        # Add path to the TimeSeries metadata
-        ts_path = "./{}/{}.csv".format(data_dir_name, index)
-        self.metadata["path"] = ts_path
-
-        # Create the metadata file
-        metadata = Metadata(name)
-        metadata.data.append(self.metadata)
-
-        self.__metadata_to_json_file(metadata, output_dir)
-
         # Create the time series file
         self.__series_to_csv_file(self.series, data_dir, index)
+
+        if self.metadata is not None:
+            # Add path to the TimeSeries metadata
+            ts_path = "./{}/{}.csv".format(data_dir_name, index)
+            self.metadata["path"] = ts_path
+
+            # Create the metadata file
+            metadata = Metadata(name)
+            metadata.data.append(self.metadata)
+            self.__metadata_to_json_file(metadata, output_dir)
+
 
     @staticmethod
     def __series_to_csv_file(series: Series, path: str, file_name: str):

@@ -35,4 +35,7 @@ class TimeSeries(IO, Analysis, Processing):
 
         if metadata is not None:
             self.metadata = metadata
+        else:
+            self.metadata = None
+
 

@@ -8,7 +8,6 @@ python_version = "3.7"
 
 [packages]
 timeatlas = {editable = true,path = "."}
-jsonpickle = "*"
 
 [dev-packages]
 pytest = "*"
