@@ -1,1 +1,1 @@
-from .metadata import Metadata
+from .metadata import Metadata, MetadataItems

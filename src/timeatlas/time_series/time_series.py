@@ -1,5 +1,6 @@
 from typing import Dict
 from pandas import Series, DatetimeIndex
+from ..metadata import MetadataItems
 
 from ._analysis import Analysis
 from ._io import IO
@@ -17,7 +18,7 @@ class TimeSeries(IO, Analysis, Processing):
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, series: Series = None, metadata: Dict = None):
+    def __init__(self, series: Series = None, metadata: MetadataItems = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex
