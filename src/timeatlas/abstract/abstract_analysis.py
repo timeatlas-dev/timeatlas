@@ -4,6 +4,9 @@ from pandas import DataFrame
 
 
 class AbstractAnalysis(ABC):
+    """ Definition of the methods signatures
+    usable for analysis
+    """
 
     @abstractmethod
     def describe(self) -> DataFrame:

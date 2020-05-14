@@ -3,6 +3,9 @@ from typing import Any
 
 
 class AbstractProcessing(ABC):
+    """ Definition of method signatures for
+    processing on time atlas objects
+    """
 
     @abstractmethod
     def resample(self, by: str) -> Any:

@@ -1,6 +1,6 @@
 from typing import List
 
-from timeatlas.time_series.time_series import TimeSeries
+from timeatlas import TimeSeries
 
 from ._analysis import Analysis
 from ._io import IO

@@ -1,43 +1,16 @@
-from typing import NoReturn, Any
-from pandas import Series
-import pandas as pd
-from timeatlas.metadata.metadata import Metadata
-from timeatlas.abstract.abstract_io import AbstractIO
+import pickle
+from typing import NoReturn
+
+from pandas import DataFrame, Series, to_datetime, to_numeric, read_csv
+
+from timeatlas.metadata import Metadata
 from timeatlas.utils import ensure_dir
+from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
 
 
-class IO(AbstractIO):
+class IO(AbstractOutputText, AbstractOutputPickle):
 
-    def read(self, path: str) -> Any:
-        """
-        - create a time series object, with or without metadata
-        """
-        # Check struct
-        self.__check_directory_structure(path)
-
-        # Define dirs
-        metadata_file = '{}/metadata.json'.format(path)
-        data_dir = '{}/data'.format(path)
-
-        # Create the Metadata object if existing
-        my_metadata = Metadata()
-        my_metadata.from_json(metadata_file)
-
-        # As this method is related to one single TimeSeries, the metadata should only be related to one as well.
-        assert len(my_metadata.data) == 1, "The quantity of time series in the dataset isn't equal to one."
-
-        # Create the TimeSeries object with metadata
-        ts_meta = my_metadata.data[0]
-        ts_path = my_metadata.path.joinpath(ts_meta["path"])
-        df = pd.read_csv(ts_path)
-        df = df.set_index(pd.to_datetime(df["timestamp"]))
-        df = df.drop(columns=["timestamp"])
-        del ts_meta["path"]
-
-        # TODO find a way to return a TimeSeries
-        return df["values"], ts_meta
-
-    def write(self, path: str, name: str) -> NoReturn:
+    def to_text(self, path: str, name: str) -> NoReturn:
         data_dir_name = "data"
         index = str(0) #noqa
 
@@ -61,6 +34,18 @@ class IO(AbstractIO):
             metadata = Metadata(name)
             metadata.data.append(self.metadata)
             self.__metadata_to_json_file(metadata, output_dir)
+
+    def to_pickle(self, path: str, name: str) -> NoReturn:
+        """
+        Export a object in Pickle on your file system
+
+        Args:
+            data: The object to serialize
+            path: str of the path to the target directory
+            name: str of the name of the file
+        """
+        with open("{}/{}.pickle".format(path,name), 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
 
     @staticmethod
@@ -103,15 +88,48 @@ class IO(AbstractIO):
         """
 
     @staticmethod
-    def __check_directory_structure(path: str):
+    def __values_to_dataframe(values):
         """
-        Check if a directory given as dataset path has a structure corresponding
-        to the timeatlas standard
+        Get the raw values output from BBData (JSON) into a dataframe for a given
+        object and a time frame.
 
-        Args:
-            path: path encoded in a string
-
-        Returns:
-            A Boolean representing the validity of the structure
+        :param object_id: Integer defining the BBData object
+        :param from_timestamp: String defining a timestamp as "2018-01-01T00:00"
+        :param to_timestamp: String defining a timestamp as "2018-02-01T00:00"
+        :return: Pandas DataFrame containing the values
         """
-        pass
+
+        df = DataFrame(values)
+
+        # Transform the timestamp column into datetime format
+        try:
+            df['timestamp'] = to_datetime(df['timestamp'])
+            df = df.set_index('timestamp')
+        except KeyError:
+            print("Index conversion error")
+
+        # Transform the values from object to a numerical value
+        try:
+            df = to_numeric(df.value)
+        except ValueError:
+            print("Value conversion error")
+
+        return df
+
+    @staticmethod
+    def __load_object(object_id: int, dataset_path: str):
+        """
+        Private method to read a single object from a CSV file
+
+        :param object_id: Integer defining the ID of the object
+        :param dataset_path: String of the path to the dataset
+        :return: Pandas DataFrame containing the values
+        """
+        file_path = "{}/{}.csv".format(dataset_path, object_id)
+        df = read_csv(file_path, index_col="timestamp")
+        if df.empty:
+            raise Exception("The DataFrame is empty")
+        else:
+            # Converting the index as date
+            df.index = to_datetime(df.index)
+            return df

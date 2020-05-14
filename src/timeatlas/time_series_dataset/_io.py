@@ -1,6 +1,6 @@
 from typing import NoReturn, Any
 
-from timeatlas.abstract.abstract_io import AbstractIO
+from timeatlas.abstract.abstract_output import AbstractIO
 
 
 class IO(AbstractIO):
