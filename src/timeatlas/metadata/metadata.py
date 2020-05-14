@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 from .metadata_items import MetadataItems
 from .metadata_encoder import MetadataEncoder
-from timeatlas.abstract.abstract_input import AbstractInput
-from timeatlas.abstract.abstract_output import AbstractOutputJson
+from timeatlas.abstract.abstract_io import AbstractInput, AbstractOutputJson
 
 
 class Metadata(AbstractInput, AbstractOutputJson):

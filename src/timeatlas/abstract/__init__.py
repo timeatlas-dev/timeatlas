@@ -1,6 +1,6 @@
 from .abstract_analysis import AbstractAnalysis
-from .abstract_input import AbstractInput
-from .abstract_output import (
+from .abstract_io import (
+    AbstractInput,
     AbstractOutputJson,
     AbstractOutputPickle,
     AbstractOutputText,
