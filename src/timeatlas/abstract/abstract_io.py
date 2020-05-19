@@ -18,7 +18,7 @@ class AbstractOutputText(ABC):
     """
 
     @abstractmethod
-    def to_text(self, path: str, name: str) -> NoReturn:
+    def to_text(self, path: str) -> NoReturn:
         raise NotImplementedError
 
 

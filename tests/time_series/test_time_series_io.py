@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pandas import DatetimeIndex, Series
 
-from timeatlas import TimeSeries, Metadata
+from timeatlas import TimeSeries, MetadataIO
 
 
 class TestTimeSeriesIO(TestCase):
@@ -12,7 +12,7 @@ class TestTimeSeriesIO(TestCase):
         index = DatetimeIndex(['2019-01-01', '2019-01-02',
                                '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
-        my_metadata = Metadata()
+        my_metadata = MetadataIO()
         self.my_time_series = TimeSeries(my_series, my_metadata)
 
         # Define a target directory

@@ -1,7 +1,8 @@
 """ TimeAtlas API Definition """
 
 from timeatlas.time_series import TimeSeries
-from timeatlas.metadata import Metadata, MetadataItems
+from timeatlas.metadata import Metadata
+from timeatlas.archive import Archive
 from timeatlas.types import *
 from timeatlas.io import (
     read_pickle,

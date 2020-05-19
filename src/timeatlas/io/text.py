@@ -1,7 +1,7 @@
 from typing import Any
 import pandas as pd
 
-from timeatlas.metadata import Metadata
+from timeatlas.archive import Archive
 from timeatlas.time_series import TimeSeries
 from ._utils import check_directory_structure
 
@@ -18,15 +18,15 @@ def read_text(path: str) -> Any:
     # Check struct
     check_directory_structure(path)
     # Define dirs
-    metadata_file = '{}/metadata.json'.format(path)
+    archive_file = '{}/metadata.json'.format(path)
     # Create the Metadata object if existing
-    my_metadata = Metadata()
-    my_metadata.read(metadata_file)
+    my_archive = Archive()
+    my_archive.read(archive_file)
     # As this method is related to one single TimeSeries, the metadata should only be related to one as well.
-    assert len(my_metadata.data) == 1, "The quantity of time series in the dataset isn't equal to one."
+    assert len(my_archive.data) == 1, "The quantity of time series in the dataset isn't equal to one."
     # Create the TimeSeries object with metadata
-    ts_meta = my_metadata.data[0]
-    ts_path = my_metadata.path.joinpath(ts_meta["path"])
+    ts_meta = my_archive.data[0]
+    ts_path = my_archive.path.joinpath(ts_meta["path"])
     df = pd.read_csv(ts_path)
     df = df.set_index(pd.to_datetime(df["timestamp"]))
     df = df.drop(columns=["timestamp"])

@@ -4,18 +4,20 @@ from typing import NoReturn
 from pandas import DataFrame, Series, to_datetime, to_numeric, read_csv
 
 from timeatlas.metadata import Metadata
+from timeatlas.archive import Archive
 from timeatlas.utils import ensure_dir
 from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
 
 
 class IO(AbstractOutputText, AbstractOutputPickle):
 
-    def to_text(self, path: str, name: str) -> NoReturn:
+    def to_text(self, path: str) -> NoReturn:
+
         data_dir_name = "data"
         index = str(0) #noqa
 
         # Create output directory
-        output_dir = "{}/{}/".format(path, name)
+        output_dir = "{}".format(path)
         ensure_dir(output_dir)
 
         # Create data directory
@@ -30,9 +32,9 @@ class IO(AbstractOutputText, AbstractOutputPickle):
             ts_path = "./{}/{}.csv".format(data_dir_name, index)
             self.metadata["path"] = ts_path
 
-            # Create the metadata file
-            metadata = Metadata(name)
-            metadata.data.append(self.metadata)
+            # Create the Package file
+            package = Archive(name)
+            package.data.append(self.metadata)
             self.__metadata_to_json_file(metadata, output_dir)
 
     def to_pickle(self, path: str, name: str) -> NoReturn:
@@ -62,19 +64,19 @@ class IO(AbstractOutputText, AbstractOutputPickle):
         series.to_csv(full_path, header=True, index_label="timestamp")
 
     @staticmethod
-    def __metadata_to_json_file(metadata: Metadata, path: str,
+    def __metadata_to_json_file(archive: Archive, path: str,
                                 file_name: str = "metadata"):
         """
         Write a Metadata object into a JSON file
 
         Args:
-            metadata: the Metadata object
+            archive: the Metadata object
             path: the path where the Metadata will be saved
             file_name: the name given to the JSON file
         """
         full_path = path + file_name + ".json"
         with open(full_path, "w") as file:
-            file.write(metadata.to_json(pretty_print=True))
+            file.write(archive.to_json(pretty_print=True))
 
     @staticmethod
     def __csv_file_to_series(path: str):

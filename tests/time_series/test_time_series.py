@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pandas import DatetimeIndex, Series
 
-from timeatlas import TimeSeries, Metadata
+from timeatlas import TimeSeries, MetadataIO
 
 
 class TestTimeSeries(TestCase):
@@ -18,12 +18,12 @@ class TestTimeSeries(TestCase):
         index = DatetimeIndex(['2019-01-01', '2019-01-02',
                                '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
-        my_metadata = Metadata()
+        my_metadata = MetadataIO()
         my_ts = TimeSeries(my_series, my_metadata)
         # Check types
         self.assertIsInstance(my_ts.series, Series,
                               "The TimeSeries Series is not a Pandas Series")
-        self.assertIsInstance(my_ts.metadata, Metadata,
+        self.assertIsInstance(my_ts.metadata, MetadataIO,
                               "The TimeSeries Metadata hasn't the right type")
 
     def test__TimeSeries__wrong_index_type(self):

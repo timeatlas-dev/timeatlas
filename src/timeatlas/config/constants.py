@@ -1,0 +1,4 @@
+ARCHIVE_FILENAME = "archive"
+ARCHIVE_FORMAT = "json"
+ARCHIVE_DATA_DIR = "data"
+TIME_SERIES_FORMAT = "csv"
