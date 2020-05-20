@@ -1,3 +1,9 @@
+import json
+from os import path as os_path
+import pandas as pd
+from pandas import Series
+from timeatlas.config.constants import *
+from timeatlas import Metadata
 
 
 def check_directory_structure(path: str):
@@ -11,5 +17,27 @@ def check_directory_structure(path: str):
     Returns:
         A Boolean representing the validity of the structure
     """
-    # TODO Implement
-    pass
+
+    is_data = os_path.exists("{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_FORMAT))
+    is_meta = os_path.exists("{}/{}.{}".format(path, METADATA_FILENAME, METADATA_FORMAT))
+
+    if is_data is True and is_meta is False:
+        return "timeseries"
+    elif is_data is True and is_meta is True:
+        return "timeseries with metadata"
+    else:
+        return None
+
+
+def csv_to_series(path: str) -> Series:
+    df = pd.read_csv(path)
+    df = df.set_index(pd.to_datetime(df["index"]))
+    df = df.drop(columns=["index"])
+    return df["values"]
+
+
+def json_to_metadata(path: str) -> Metadata:
+    with open(path) as json_file:
+        meta = json.load(json_file)
+    return Metadata(meta)
+
