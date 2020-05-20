@@ -1,38 +1,103 @@
+import os
+import shutil
 from typing import List
 from unittest import TestCase
-from timeatlas.time_series_metadata import TimeSeriesMetadata
+from timeatlas.metadata import Metadata
+from timeatlas.types import *
 
 
 class TestMetadata(TestCase):
 
     def setUp(self) -> None:
-        self.my_metadata = TimeSeriesMetadata()
 
-    def test_add(self):
-        self.my_metadata.add("name", "Room 1 / Temperature sensor")
-        self.assertTrue("name" in list(self.my_metadata.list()),
-                        "'name' has not been added to the time_series_metadata")
+        # Define a target directory
+        self.target_dir = "../data/test-export"
 
-    def test_remove(self):
-        self.my_metadata.add("name", "Room 1 / Temperatur sensor")
-        self.my_metadata.remove("name")
-        self.assertTrue("name" not in list(self.my_metadata.list()),
-                        "'name' is still present in the time_series_metadata")
+        # known type in dict
+        self.my_unit = {
+            "name": "power",
+            "symbol": "W",
+            "data_type": "float"
+        }
 
-    def test_get(self):
-        self.my_metadata.add("name", "Room 1 / Temperature sensor")
-        value = self.my_metadata.get("name")
-        expected_value = "Room 1 / Temperature sensor"
-        self.assertTrue(value == expected_value,
-                        "The stored value is not the same as the expected "
-                        "value")
+        # known type in dedicated object
+        self.my_sensor = Sensor(2902, "HB/floor2/22-23C/Prises_Power_Tot")
 
-    def test_list(self):
-        self.my_metadata.add("name", "Temperature sensor")
-        self.my_metadata.add("location", "Room 1")
-        keys = self.my_metadata.list()
-        self.assertIsInstance(keys, List,
-                              "The returned type isn't the expected one")
+        # random dicts
+        self.my_location = {
+            "building": "Blue Factory",
+            "floor": "12",
+            "room": "22C"
+        }
+
+        self.my_coordinates = {
+            "lat": 46.796611,
+            "lon": 7.147563
+        }
+
+        self.my_dict = {
+            "unit": self.my_unit,
+            "sensor": self.my_sensor,
+            "location": self.my_location,
+            "coordinates": self.my_coordinates
+        }
+
+    def test__Metadata__construct(self):
+        my_metadata = Metadata()
+        self.assertIsInstance(my_metadata, Metadata)
+
+    def test__Metadata__construct_with_dict(self):
+        my_metadata = Metadata(self.my_dict)
+        self.assertIsInstance(my_metadata, Metadata)
+
+    def test__Metadata__add__known_type_dict(self):
+        my_metadata = Metadata()
+        my_known_dict = {
+            "unit": self.my_unit
+        }
+        my_metadata.add(my_known_dict)
+        self.assertTrue("unit" in list(my_metadata.keys()),
+                        "'unit' has not been added to the metadata")
+        self.assertIsInstance(my_metadata["unit"], Unit)
+
+    def test__Metadata__add__known_type_object(self):
+        my_metadata = Metadata()
+        my_known_obj = {
+            "sensor": self.my_sensor
+        }
+        my_metadata.add(my_known_obj)
+        self.assertTrue("sensor" in list(my_metadata.keys()),
+                        "'sensor' has not been added to the metadata")
+        self.assertIsInstance(my_metadata["sensor"], Sensor)
+
+    def test__Metadata__add__dict(self):
+        my_metadata = Metadata()
+        my_dict = {
+            "coordinates": self.my_coordinates
+        }
+        my_metadata.add(my_dict)
+        self.assertTrue("coordinates" in list(my_metadata.keys()),
+                        "'coordinates' has not been added to the metadata")
+
+    def test__Metadata__to_json__str_output(self):
+        my_metadata = Metadata()
+        my_dict = {
+            "coordinates": self.my_coordinates
+        }
+        my_metadata.add(my_dict)
+        print(my_metadata.to_json(pretty_print=True))
+
+    def test__Metadata__to_json__with_file_path(self):
+        my_metadata = Metadata()
+        my_dict = {
+            "coordinates": self.my_coordinates
+        }
+        my_metadata.add(my_dict)
+        file_path = self.target_dir + "/metadata.json"
+        before = os.path.exists(file_path)
+        my_metadata.to_json(pretty_print=True, path=file_path)
+        after = os.path.exists(file_path)
+        self.assertTrue(before is not after)
 
     def tearDown(self) -> None:
-        del self.my_metadata
+        shutil.rmtree(self.target_dir, ignore_errors=True)

@@ -10,21 +10,26 @@ from ._processing import Processing
 class TimeSeriesDataset(Analysis, IO, Processing):
     """ Defines a set of time series
 
-    A TimeSeriesDataset represent an unordered, immutable set of TimeSeries
+    A TimeSeriesDataset represent a set of TimeSeries
     objects.
 
     """
 
-    def __init__(self, data: List[TimeSeries]):
-        self._data = data
-        # TODO Should it make a sanity check?
+    def __init__(self, data: List[TimeSeries] = None):
+        if data is None:
+            self.data = []
+        else:
+            self.data = data
 
     # Methods
     # =======
 
-    def add(self, time_series: TimeSeries) -> 'TimeSeriesDataset':
-        raise NotImplementedError
+    def add(self, time_series: TimeSeries):
+        self.data.append(time_series)
 
-    def remove(self, position) -> 'TimeSeriesDataset':
-        raise NotImplementedError
+    def remove(self, index):
+        del self.data[index]
+
+    def len(self):
+        return len(self.data)
 

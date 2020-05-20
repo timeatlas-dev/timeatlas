@@ -18,7 +18,7 @@ class AbstractOutputText(ABC):
     """
 
     @abstractmethod
-    def to_text(self, path: str, name: str) -> NoReturn:
+    def to_text(self, path: str) -> NoReturn:
         raise NotImplementedError
 
 
@@ -28,7 +28,7 @@ class AbstractOutputPickle(ABC):
     """
 
     @abstractmethod
-    def to_pickle(self, path: str, name: str) -> NoReturn:
+    def to_pickle(self, path: str) -> NoReturn:
         raise NotImplementedError
 
 
@@ -38,5 +38,5 @@ class AbstractOutputJson(ABC):
     """
 
     @abstractmethod
-    def to_json(self) -> NoReturn:
+    def to_json(self, path: str) -> NoReturn:
         raise NotImplementedError

@@ -1,5 +1,5 @@
 from pandas import Series, DatetimeIndex
-from timeatlas.metadata import MetadataItems
+from timeatlas.metadata import Metadata
 
 from ._analysis import Analysis
 from ._io import IO
@@ -15,7 +15,7 @@ class TimeSeries(IO, Analysis, Processing):
         series: An optional Pandas Series
         metadata: An optional Dict storing metadata about this TimeSeries
     """
-    def __init__(self, series: Series = None, metadata: MetadataItems = None):
+    def __init__(self, series: Series = None, metadata: Metadata = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex

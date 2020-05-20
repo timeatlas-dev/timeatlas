@@ -1,71 +1,49 @@
 import json
-from pathlib import Path
-from .metadata_items import MetadataItems
-from .metadata_encoder import MetadataEncoder
-from timeatlas.abstract.abstract_io import AbstractInput, AbstractOutputJson
+from typing import Dict, Any
+from timeatlas.types import *
+from timeatlas.utils import ensure_dir
 
 
-class Metadata(AbstractInput, AbstractOutputJson):
-    """ Metadata associated to one or many TimeSeries
+class Metadata(dict):
 
-    This object is mainly used for the creation of a clean metadata file when
-    exporting a TimeSeries or TimeSeriesDataset object
+    def __init__(self, items: Dict[str, Any] = None):
+        super().__init__()
+        # If the object is known, transform them!
+        if items is not None:
+            self.add(items)
 
-    Attributes:
-        data: A List of object, usually TimeSeries or TimeSeriesDataset
-        name: An optional name for the data represented by the Metadata
-        path: An optional path where the data represented by the Metadata is stored.
-    """
+    def add(self, items: Dict[str, Any]):
+        for k, v in items.items():
+            if k == 'sensor':
+                self[k] = v if isinstance(v, Sensor) else Sensor(v['sensor_id'], v['name'])
+            elif k == 'unit':
+                self[k] = v if isinstance(v, Unit) else Unit(v['name'], v['symbol'], v['data_type'])
+            else:
+                self[k] = v
 
-    def __init__(self, name=None, path=None):
-        self.data = []
-        if name:
-            self.name = name
-        if path:
-            self.path = path
-
-    def read(self, path):
-        """ Converts a JSON file into a Metadata object
-
-        The known types in timeatlas.types will be serialized
-
-        Args:
-            path: String containing the path to the JSON file (./my-dir/metadata.json)
-
-        Returns:
-            A Metadata object
-        """
-        # Read JSON
-        with open(path) as json_file:
-            raw_json = json.load(json_file)
-        # Set instance variables
-        if 'data' in raw_json:
-            for i in raw_json['data']:
-                self.data.append(MetadataItems(i))
-        if 'name' in raw_json:
-            self.name = raw_json['name']
-        if 'path' in raw_json:
-            self.path = Path(raw_json['path'])
-        else:
-            self.path = Path(path).parent
-
-    def to_json(self, pretty_print=False):
+    def to_json(self, pretty_print=False, path: str = None):
         """ Convert the current Metadata object into a JSON string
 
         Args:
             pretty_print: Boolean allowing for pretty printing
+            path: String of the JSON file to write
 
         Returns:
             A String containing the JSON
 
         """
-        return json.dumps(self,
-                          default=lambda x: x.__dict__,
-                          cls=MetadataEncoder,
-                          sort_keys=True,
-                          indent=2) \
+        my_json = json.dumps(self,
+                             default=lambda x: x.__dict__,
+                             sort_keys=True,
+                             indent=2) \
             if pretty_print \
             else json.dumps(self,
                             default=lambda x: x.__dict__,
-                            cls=MetadataEncoder,
                             sort_keys=True)
+
+        if path is not None:
+            ensure_dir(path)
+            with open(path, 'w', encoding='utf-8') as file:
+                file.write(my_json)
+
+        return my_json
