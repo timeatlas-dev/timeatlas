@@ -34,4 +34,3 @@ class TestTimeSeriesDatasetIO(TestCase):
     def tearDown(self) -> None:
         del self.tsd
         shutil.rmtree(self.target_dir, ignore_errors=True)
-

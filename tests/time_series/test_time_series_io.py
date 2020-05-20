@@ -71,4 +71,3 @@ class TestTimeSeriesIO(TestCase):
     def tearDown(self) -> None:
         del self.my_time_series
         shutil.rmtree(self.target_dir, ignore_errors=True)
-
