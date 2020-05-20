@@ -1,8 +1,10 @@
 import shutil
+from os import path as os_path
 from unittest import TestCase
 from pandas import DatetimeIndex, Series
 
 from timeatlas import TimeSeries, Metadata
+from timeatlas.config.constants import *
 
 
 class TestTimeSeriesIO(TestCase):
@@ -40,13 +42,31 @@ class TestTimeSeriesIO(TestCase):
         my_time_series = TimeSeries(self.my_series)
         my_time_series.to_text(path)
 
+        data_csv_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        does_data_csv_exist = os_path.exists(data_csv_path)
+        self.assertTrue(does_data_csv_exist)
+
+        meta_json_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
+        does_meta_json_exist = os_path.exists(meta_json_path)
+        self.assertFalse(does_meta_json_exist)
+
     def test__TimeSeries_IO__to_text_with_metadata(self):
         path = self.target_dir + "/to_text_with_metadata"
         self.my_time_series.to_text(path)
 
+        data_csv_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        does_data_csv_exist = os_path.exists(data_csv_path)
+        self.assertTrue(does_data_csv_exist)
+
+        meta_json_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
+        does_meta_json_exist = os_path.exists(meta_json_path)
+        self.assertTrue(does_meta_json_exist)
+
     def test__TimeSeries_IO__to_pickle(self):
-        path = self.target_dir + "/to_pickle.pickle"
-        self.my_time_series.to_pickle(path)
+        pickle_path = "{}/{}.{}".format(self.target_dir, DEFAULT_EXPORT_FILENAME, PICKLE_EXT)
+        self.my_time_series.to_pickle(pickle_path)
+        does_pickle_exist = os_path.exists(pickle_path)
+        self.assertTrue(does_pickle_exist)
 
     def tearDown(self) -> None:
         del self.my_time_series

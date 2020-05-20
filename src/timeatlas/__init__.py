@@ -4,7 +4,6 @@ from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
 
 from timeatlas.metadata import Metadata
-from timeatlas.archive import Archive
 from timeatlas.types import *
 from timeatlas.io import (
     read_pickle,

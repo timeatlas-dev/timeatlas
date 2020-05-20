@@ -17,13 +17,13 @@ def read_text(path: str) -> Any:
     dir_type = check_directory_structure(path)
 
     if dir_type == "timeseries":
-        data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_FORMAT)
+        data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
         series = csv_to_series(data)
         return TimeSeries(series)
 
     elif dir_type == "timeseries with metadata":
-        data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_FORMAT)
-        meta = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_FORMAT)
+        data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        meta = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
         series = csv_to_series(data)
         metadata = json_to_metadata(meta)
         return TimeSeries(series, metadata)

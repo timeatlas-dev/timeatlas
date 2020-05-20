@@ -1,7 +1,13 @@
-ARCHIVE_FILENAME = "archive"
+# Generic
+DEFAULT_EXPORT_FILENAME = "export"
 
+# Metadata
 METADATA_FILENAME = "meta"
-METADATA_FORMAT = "json"
+METADATA_EXT = "json"
 
+# TimeSeries
 TIME_SERIES_FILENAME = "data"
-TIME_SERIES_FORMAT = "csv"
+TIME_SERIES_EXT = "csv"
+
+# Misc. IO
+PICKLE_EXT = "pkl"

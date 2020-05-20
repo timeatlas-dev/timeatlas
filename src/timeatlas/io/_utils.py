@@ -18,8 +18,8 @@ def check_directory_structure(path: str):
         A Boolean representing the validity of the structure
     """
 
-    is_data = os_path.exists("{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_FORMAT))
-    is_meta = os_path.exists("{}/{}.{}".format(path, METADATA_FILENAME, METADATA_FORMAT))
+    is_data = os_path.exists("{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT))
+    is_meta = os_path.exists("{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT))
 
     if is_data is True and is_meta is False:
         return "timeseries"
