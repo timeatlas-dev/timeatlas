@@ -21,8 +21,7 @@ class Analysis(AbstractAnalysis):
         """
         pass
 
-    def compute_resolution(self) \
-            -> TimeSeriesDataset:
+    def compute_resolution(self):
         """
         Create the series of delta T between each timestamp of a TimeSeries
 
