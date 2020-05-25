@@ -4,9 +4,10 @@ from timeatlas.metadata import Metadata
 from ._analysis import Analysis
 from ._io import IO
 from ._processing import Processing
+from ._utils import Utils
 
 
-class TimeSeries(IO, Analysis, Processing):
+class TimeSeries(IO, Analysis, Processing, Utils):
     """ Defines a time series
 
     A TimeSeries object is a series of time indexed values.

@@ -24,6 +24,7 @@ setuptools.setup(
         'bbdata>=0.4.3',
         'matplotlib',
         'pandas',
-        'tqdm'
+        'tqdm',
+        'u8timeseries'
     ]
 )
