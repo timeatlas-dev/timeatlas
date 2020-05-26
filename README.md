@@ -1,8 +1,19 @@
 TimeAtlas
 =========
 
-A toolbox to handle, analyze and make predictions with time series data. 
-
+A toolbox to handle, analyze and make predictions with time series data.
+    
+                                 horizon    
+    |-------------------------|- - - - - -|
+            time series         | | | | |
+    
+                              |- - - - - -|
+                               |||||||||||
+    
+                                frequency
+    
+    m.predict('2 hours') 
+    
 Develop
 -------
 
