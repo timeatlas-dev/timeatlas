@@ -53,6 +53,8 @@ class ConfigWriter(ConfigObj):
         self[self.header_name]['seed'] = '' if self.seed is None else self.seed
         self[self.header_name]['percent'] = ''
         self[self.header_name]['selection'] = ''
+        self[self.header_name]['amount'] = ''
+        self[self.header_name]['outfile'] = ''
         self[self.header_name]['save'] = True
 
         self['ANOMALIES'] = {}
