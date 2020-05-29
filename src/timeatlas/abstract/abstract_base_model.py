@@ -18,7 +18,7 @@ class AbstractBaseModel(ABC):
         self.X_train = series
 
     @abstractmethod
-    def predict(self) -> Any:
+    def predict(self, horizon) -> Any:
         """ Usage of the model to predict values """
         if self._is_fitted is False:
             raise Exception('fit() must be called before predict()')

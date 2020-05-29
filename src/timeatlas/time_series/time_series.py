@@ -1,4 +1,4 @@
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, date_range, infer_freq
 from pandas.api.types import infer_dtype
 from typing import NoReturn, Tuple, Any
 from datetime import datetime
@@ -50,6 +50,54 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             self.metadata = metadata
         else:
             self.metadata = None
+
+    # Methods
+    # =======
+
+    @staticmethod
+    def create(start: str, end: str, freq=None, metadata: Metadata = None):
+        """
+        Creates an empty TimeSeries object with the period as index
+
+        Args:
+            start: str of the start of the DatetimeIndex (as in Pandas.date_range())
+            end: the end of the DatetimeIndex (as in Pandas.date_range())
+            freq: the optional frequency it can be a str or a TimeSeries (to copy its frequency)
+            metadata: the optional Metadata object
+
+        Returns:
+            TimeSeries
+        """
+        if freq is not None:
+            if isinstance(freq, TimeSeries):
+                freq = infer_freq(freq.series.index)
+            elif isinstance(freq, str):
+                freq = freq
+        series = Series(index=date_range(start, end, freq=freq))
+        return TimeSeries(series, metadata)
+
+    def split(self, splitting_point: str) -> Tuple['TimeSeries', 'TimeSeries']:
+        """
+        Split a TimeSeries at a defined point and include the splitting point
+        in both as in [start,...,at] and [at,...,end].
+
+        Args:
+            splitting_point: str where to the TimeSeries will be split (e.g. "2019-12-31 00:00:00")
+
+        Returns:
+            a Tuple of TimeSeries ([start,...,at] and [at,...,end])
+
+        """
+        start = self.series.index[0]
+        end = self.series.index[-1]
+        before = TimeSeries(self.series[start:splitting_point], self.metadata)
+        after = TimeSeries(self.series[splitting_point:end], self.metadata)
+        return before, after
+
+
+    def erase(self):
+        pass
+
 
     # =============================================
     # Analysis
