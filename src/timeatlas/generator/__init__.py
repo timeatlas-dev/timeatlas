@@ -1,1 +1,2 @@
 from .anomaly_generator import AnomalyGenerator
+from .anomaly_generator import AnomalyGeneratorTemplate
