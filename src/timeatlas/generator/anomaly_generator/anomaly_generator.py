@@ -1,3 +1,5 @@
+from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
+
 from .anomalies import AnomalyABC
 from .utils import get_operator
 from .labeler import AnomalySetLabeler
@@ -11,7 +13,7 @@ from copy import copy
 import math
 
 
-class AnomalyGenerator():
+class AnomalyGenerator(AbstractBaseGenerator):
     def __init__(self, data, conf_file, axis=0):
 
         # TODO: Write translation tool between this and Hindis tool

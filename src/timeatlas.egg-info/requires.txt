@@ -1,5 +1,5 @@
 bbdata>=0.4.3
 matplotlib
 pandas
-tqdm
+fbprophettqdm
 u8timeseries
