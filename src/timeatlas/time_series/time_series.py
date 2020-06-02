@@ -163,13 +163,6 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # IO
     # =============================================
 
-    @staticmethod
-    def from_df(df: DataFrame, values_column: str, index_column: str = None) -> 'TimeSeries':
-        series = Series(data=df[values_column]) \
-            if index_column is None \
-            else Series(data=df[values_column], index=df[index_column])
-        return TimeSeries(series)
-
     def to_text(self, path: str) -> NoReturn:
         # Create the time series file
         file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
@@ -191,6 +184,18 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Returns: Unit 8 TimeSeries object
         """
         return U8TimeSeries.from_times_and_values(self.series.index, self.series.values)
+
+    @staticmethod
+    def from_df(df: DataFrame, values_column: str, index_column: str = None) -> 'TimeSeries':
+        """Pandas DataFrame to TimeAtlas TimeSeries
+        conversion method
+
+        Returns: TimeAtlas TimeSeries
+        """
+        series = Series(data=df[values_column]) \
+            if index_column is None \
+            else Series(data=df[values_column], index=df[index_column])
+        return TimeSeries(series)
 
     def to_df(self) -> DataFrame:
         """ TimeAtlas TimeSeries to Pandas DataFrame
