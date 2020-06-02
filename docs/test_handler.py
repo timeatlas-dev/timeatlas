@@ -1,6 +1,6 @@
 import unittest
 from src.timeatlas.core import handle
-from src.timeatlas.model import *
+from src.timeatlas.models import *
 import pandas as pd
 from typing import Dict
 
