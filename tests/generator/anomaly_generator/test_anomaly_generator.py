@@ -3,6 +3,7 @@ import pandas as pd
 
 from timeatlas import AnomalyGenerator
 
+
 # TODO: This test is pretty bad...I need to rework it (Lorenz)
 
 def test_anomaly_generator():
@@ -14,7 +15,6 @@ def test_anomaly_generator():
     anomaly_set.generate()
     end_time = time.time()
     print("Creation time of the dataset: {0:.3f} seconds.".format(end_time - start_time))
-
 
 if __name__ == '__main__':
     test_anomaly_generator()

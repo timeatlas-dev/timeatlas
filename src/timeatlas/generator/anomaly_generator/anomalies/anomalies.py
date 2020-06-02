@@ -39,7 +39,7 @@ class AnomalyABC():
             coordinates.append([e, e_end])
             values.append(np.full((e_length), last_values[i])[:e_max_length])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def zeroing(self, data: pd.Series, n: int = 1, value: int = None, minimum: int = 1, maximum: int or None = None):
         '''
@@ -71,7 +71,7 @@ class AnomalyABC():
             coordinates.append([e, e_end])
             values.append(np.full((e_length), value)[:e_max_length])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def outlier(self, data: pd.Series, n: int = 1, sigma: float = 0.1):
         '''
@@ -95,7 +95,7 @@ class AnomalyABC():
             values.append(data[e] + (np.random.normal(data[e], sigma, 1) * offset))
             coordinates.append([e, e])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1,
                        change_point_factor: float = 3.0, minimum: int = 1, maximum: int or None = None):
@@ -133,7 +133,7 @@ class AnomalyABC():
             coordinates.append([e, e_end])
             values.append(np.full((e_length), np.random.normal(start_value, sigma, e_length))[:e_max_length])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def change_point(self, data: pd.Series, n: int = 1, ending: bool = True,
                      change_point_factor: int = 3, minimum: int = 1, maximum: int or None = None):
@@ -172,7 +172,7 @@ class AnomalyABC():
             change = np.full((len(data[e:end])), offset)
             values.append(change)
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def clipping(self, data: pd.Series, clip_value: float, mode: str = 'top'):
         """
@@ -205,7 +205,7 @@ class AnomalyABC():
             coordinates.append([c, c])
             values.append([clip_value])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def trend(self, data: pd.Series, slope: float, n: int = 1):
         '''
@@ -229,7 +229,7 @@ class AnomalyABC():
             values.append(slope * np.arange(0, len(data[start:None]), 1))
             coordinates.append([start, len(data) - 1])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def electric_feedback(self, data: pd.Series, sampling_speed: int = 1, amp: float = 10, hrz: float = 50):
 
@@ -253,7 +253,7 @@ class AnomalyABC():
         values = [added_feedback_data[event_start[0]:]]
         coordinates = [[event_start[0], len(data) - 1]]
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def hard_knee(self, data: pd.Series, threshold: float, factor: float = 0.5, n: int = 1):
         '''
@@ -280,7 +280,7 @@ class AnomalyABC():
                     values.append([data[i] * factor])
                     coordinates.append([i, i])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def max_smoothing(self, data: pd.Series, window_size: int, threshold: float, n: int = 1):
         '''
@@ -311,7 +311,7 @@ class AnomalyABC():
                     values.append([avg])
                     coordinates.append([i, i])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def ratio_compression(self, data: pd.Series, threshold: float, ratio: int = 4, n: int = 1):
         '''
@@ -338,7 +338,7 @@ class AnomalyABC():
                     values.append([data[i] - (data[i] / ratio)])
                     coordinates.append([i, i])
 
-        return values, coordinates
+        return np.array(values), coordinates
 
     def ripple(self):
         '''

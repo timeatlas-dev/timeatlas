@@ -1,8 +1,6 @@
 from .anomalies import AnomalyABC
 from .utils import get_operator
-
 from .labeler import AnomalySetLabeler
-
 from .config import AnomalyConfigParser
 
 import pandas as pd
@@ -10,6 +8,7 @@ import numpy as np
 from itertools import cycle
 import warnings
 from copy import copy
+import math
 
 
 class AnomalyGenerator():
@@ -44,18 +43,51 @@ class AnomalyGenerator():
         self.selection = self.GLOBAL['selection']
         self.percent = self.GLOBAL['percent']
         self.amount = self.GLOBAL['amount']
+        self.outfile = self.GLOBAL['outfile']
 
         # create numpy-random.RandomState object
         self.seed = np.random.seed(self.GLOBAL['seed'])
 
         # adding a label column to the dataframe and creating the results anomaly labels
-        # TODO: Problem with data and self.data -> for later creating the label section
         self.labels = AnomalySetLabeler(data, self.axis)
         # we need to remove the label column/row to not interfere with the anomaly introduction
         # load data
         self.data = data.drop(labels=self.labels.label_columns, axis=np.abs(self.axis - 1))
-        # from this point on it is unwise to use data instead of self.data -> removed labels
-        # self.labels.add_binary_label_column(self.data)
+        # from this point on it is unwise to use "data" instead of self.data -> removed labels
+
+        # figure out the precision of the data
+        self.precision = self.generation_precision(self.data)
+
+    @staticmethod
+    def precision_and_scale(x):
+        '''
+
+        Get the precision of a value
+
+        Args:
+            x: a (float) number
+
+        Returns: the number of positions after the comma
+
+        '''
+        # 14 is the maximal number of digits python can handle (more is also unrealistic)
+        max_digits = 14
+        # if the number is NaN return nothing
+        if math.isnan(x):
+            return
+        # figure out the magniture -> the numbers before the comma
+        int_part = int(abs(x))
+        magnitude = 1 if int_part == 0 else int(math.log10(int_part)) + 1
+        if magnitude >= max_digits:
+            return (magnitude, 0)
+        # shift the number after the comma in front of the comma and figure out the amount
+        frac_part = abs(x) - int_part
+        multiplier = 10 ** (max_digits - magnitude)
+        frac_digits = multiplier + int(multiplier * frac_part + 0.5)
+        while frac_digits % 10 == 0:
+            frac_digits /= 10
+        scale = int(math.log10(frac_digits))
+        return scale
 
     @staticmethod
     def clean_parameters(values):
@@ -84,8 +116,24 @@ class AnomalyGenerator():
         zip_list = zip(data, cycle(anomaly_f))
         return zip_list
 
+    def generation_precision(self, df):
+        '''
+
+        Set the rounded average precision of the values inside a dataframe
+
+        Args:
+            df: dataframe
+
+        Returns: integer of the precision
+
+        '''
+        precision_df = df.applymap(self.precision_and_scale)
+        return int(round(precision_df.mean().mean()))
+
     def save(self):
-        pass
+        self.labels.finalize()
+        self.data.to_csv(f'{self.outfile}_data.csv')
+        self.labels.annotation.to_csv(f'{self.outfile}_labels.csv')
 
     def get_anomaly_function(self):
         '''s
@@ -183,12 +231,11 @@ class AnomalyGenerator():
             self.add_data(new_data, name)
             self.labels.create_operation_dict(coordinates, operation_param, name, function.__name__)
 
+        # round all values to the same precision
+        self.data = self.data.round(decimals=self.precision)
+
         if self.labels.original_labels is not None:
             self.data['original_labels'] = self.labels.original_labels
 
         if self.GLOBAL['save']:
-            self.labels.finalize()
-            self.data.to_csv('anomaly_data.csv', index=False)
-            self.labels.annotation.to_csv('anomaly_labels.csv', index=False)
-
-
+            self.save()
