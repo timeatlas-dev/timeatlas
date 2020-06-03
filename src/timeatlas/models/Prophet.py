@@ -10,26 +10,18 @@ class Prophet(AbstractBaseModel):
 
     def __init__(self):
         super().__init__()
-        self.m = None
+        self.m = fbp.Prophet()
 
     def fit(self, series) -> NoReturn:
         super().fit(series)
-        df = self.__prepare_series_for_prophet(self)
-        self.m = fbp.Prophet()
+        df = self.__prepare_series_for_prophet(self.X_train)
         self.m.fit(df)
 
-    def predict(self, horizon: str) -> NoReturn:
-        # TODO Continue here with future dataframe creation with Prophet make_future_dataframe method
-        #   based on a duration taken from a timedelta object
-        #   (https://docs.python.org/3/library/datetime.html#datetime.timedelta)
+    def predict(self, horizon: str, freq: str = None) -> NoReturn:
         super().predict(horizon)
-
-        # Create DataFrame for the specified horizon
-        self.m.make_future_dataframe()
-        Timedelta(horizon)
-
-        # Predict values
-
+        future = self.make_future_dataframe(horizon, freq)
+        forecast = self.m.predict(future)
+        return forecast
 
     @staticmethod
     def __prepare_series_for_prophet(series: TimeSeries):
@@ -37,4 +29,10 @@ class Prophet(AbstractBaseModel):
         df["ds"] = df.index
         df = df.reset_index(drop=True)
         df = df.rename(columns={"values": "y"})
+        return df
+
+    def make_future_dataframe(self, horizon, freq: str = None):
+        index = self.make_future_index(horizon, freq)
+        df = DataFrame(data=index.to_series(), columns=["ds"])
+        df = df.reset_index(drop=True)
         return df

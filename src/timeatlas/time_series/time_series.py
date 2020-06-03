@@ -94,10 +94,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         after = TimeSeries(self.series[splitting_point:end], self.metadata)
         return before, after
 
-
     def erase(self):
         pass
-
 
     # =============================================
     # Analysis
@@ -203,14 +201,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: Pandas DataFrame
         """
-        data_type = self.metadata["unit"].data_type \
-            if self.metadata["unit"] is not None \
-            else infer_dtype(self.series.values)
-
         return DataFrame(self.series.values,
                          index=self.series.index,
-                         columns=["values"],
-                         dtype=data_type)
+                         columns=["values"])
 
     @staticmethod
     def __series_to_csv(series: Series, path: str):

@@ -1,1 +1,1 @@
-from . import Prophet
+from .Prophet import Prophet
