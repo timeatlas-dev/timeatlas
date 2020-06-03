@@ -101,7 +101,7 @@ class AnomalyABC():
                        change_point_factor: float = 3.0, minimum: int = 1, maximum: int or None = None):
         '''
 
-        # TODO: Make it possible so the noise can be decreased. (can we extract noise levels from input data)
+        # TODO: Make it possible so the noise can be decreased. (can we extract noise levels from input data)?
 
         A series of normal distributed values that are offset by a factor from the normal
 
@@ -182,6 +182,7 @@ class AnomalyABC():
         Args:
             data: pandas time-series
             clip_value: value at which to cutoff.
+            mode: 'top': only clip in positive, 'bottom' only in negative, 'both' do both
 
         Returns: events with coordinates where to integrate them
 
@@ -232,11 +233,25 @@ class AnomalyABC():
         return np.array(values), coordinates
 
     def electric_feedback(self, data: pd.Series, sampling_speed: int = 1, amp: float = 10, hrz: float = 50):
+        '''
+
+        Introducing an electric feedback into the TimeSeries using a Fast Fourier Transform.
+
+        Args:
+            data: TimeSeries object
+            sampling_speed: frequency of the sampling (number of seconds between two indices)
+            amp: amplitude of the feedback
+            hrz: hertz of the frequency introduced
+
+        Returns: TimeSeries object with the added frequency
+
+        '''
 
         assert sampling_speed > 0
 
         # fft of the complete series
         N = len(data)
+        #
         T = 1 / sampling_speed
         # we need to drop NaN so we can create the FFT
         yf = fft(data.dropna().to_numpy())

@@ -16,11 +16,6 @@ import math
 class AnomalyGenerator(AbstractBaseGenerator):
     def __init__(self, data, conf_file, axis=0):
 
-        # TODO: Write translation tool between this and Hindis tool
-        # TODO: Maybe add the ABC to the tool of Hindi
-
-        # TODO: Instead of "save" we return a TimeSeriesDataset-object according to TimeAtlas
-
         # assertions
         assert axis == 0 or axis == 1
         assert isinstance(data, pd.DataFrame)

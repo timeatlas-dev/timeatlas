@@ -6,8 +6,7 @@ from ..anomalies import AnomalyABC
 
 class AnomalyGeneratorTemplate(ConfigObj):
     def __init__(self, filename, seed: int = None, functions: list = None, threshold: float = None,
-                 num_anomalies: int = None,
-                 write: bool = True, anomaly_name: str = "ANOMALY"):
+                 num_anomalies: int = None, anomaly_name: str = "ANOMALY"):
         super().__init__()
 
         if functions and num_anomalies:
@@ -44,13 +43,10 @@ class AnomalyGeneratorTemplate(ConfigObj):
 
         self.create_config()
 
-        if write:
-            self.write()
-
     def create_config(self):
         self[self.header_name] = {}
         self.inline_comments[
-            self.header_name] = "!!One of the settings 'percent', 'selection' or 'amount' has to be set.!!"
+            self.header_name] = "!!One of the settings 'percent', 'selection' or 'amount' has to be set!!"
         self[self.header_name]['on_threshold'] = ''
         self[self.header_name]['seed'] = '' if self.seed is None else self.seed
         self[self.header_name]['percent'] = ''
@@ -60,12 +56,12 @@ class AnomalyGeneratorTemplate(ConfigObj):
         self[self.header_name]['save'] = True
 
         self['ANOMALIES'] = {}
+        self.inline_comments['ANOMALIES'] = "'operation' is either 'add', 'replace' or 'insert'"
 
         for i in range(0, self.num_anomalies, 1):
             n = i + 1
             self['ANOMALIES'][self.anomaly_name + str(n)] = {}
             self['ANOMALIES'][self.anomaly_name + str(n)]['PARAMETERS'] = {}
-
             if self.functions is not None:
                 self['ANOMALIES'][self.anomaly_name + str(n)]['function'] = self.functions[i]
                 params = self.anomaly_function_parameters(i)

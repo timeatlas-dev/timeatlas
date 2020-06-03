@@ -1,14 +1,15 @@
 from timeatlas import AnomalyGeneratorTemplate
 
 
-def create_template(filename, seed, functions, threshold, num_animalies, write, anomaly_name):
-    template = AnomalyGeneratorTemplate(filename="test",
-                                        seed=1234,
+def create_template(filename, seed, functions, threshold, num_animalies, anomaly_name):
+    template = AnomalyGeneratorTemplate(filename=filename,
+                                        seed=seed,
                                         functions=functions,
                                         threshold=threshold,
                                         num_anomalies=num_animalies,
-                                        write=True,
-                                        anomaly_name="ANOMALY")
+                                        anomaly_name=anomaly_name)
+
+    template.write()
 
 
 if __name__ == '__main__':
@@ -20,4 +21,4 @@ if __name__ == '__main__':
     write = True
     anomaly_name = "ANOMALY"
 
-    create_template(filename, seed, functions, threshold, num_animalies, write, anomaly_name)
+    create_template(filename, seed, functions, threshold, num_animalies, anomaly_name)
