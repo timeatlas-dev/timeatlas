@@ -11,6 +11,7 @@ timeatlas = {editable = true,path = "."}
 
 
 [dev-packages]
+sphinx = "*"
 pytest = "*"
 jupyter = "*"
 pylint = "*"

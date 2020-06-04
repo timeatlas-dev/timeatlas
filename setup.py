@@ -24,7 +24,7 @@ setuptools.setup(
         'bbdata>=0.4.3',
         'matplotlib',
         'pandas',
-        'fbprophet'
+        'fbprophet',
         'tqdm',
         'u8timeseries'
     ]
