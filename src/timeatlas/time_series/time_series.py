@@ -1,4 +1,5 @@
 from pandas import Series, DataFrame, date_range, infer_freq
+from pandas.plotting import register_matplotlib_converters
 from pandas.api.types import infer_dtype
 from typing import NoReturn, Tuple, Any
 from datetime import datetime
@@ -100,6 +101,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # =============================================
     # Analysis
     # =============================================
+    def plot(self):
+        """
+        Plot a TimeSeries
+
+        Returns:
+        """
+        register_matplotlib_converters()
+        self.series.plot()
 
     def describe(self):
         """
@@ -190,9 +199,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: TimeAtlas TimeSeries
         """
-        series = Series(data=df[values_column]) \
+        series = Series(data=df[values_column].values) \
             if index_column is None \
-            else Series(data=df[values_column], index=df[index_column])
+            else Series(data=df[values_column].values, index=df[index_column])
         return TimeSeries(series)
 
     def to_df(self) -> DataFrame:

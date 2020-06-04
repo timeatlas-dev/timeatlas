@@ -43,4 +43,4 @@ class AbstractBaseModel(ABC):
             freq = freq
         else:
             freq = infer_freq(self.X_train.series.index)
-        return date_range(start=start, end=end, freq=freq)
+        return date_range(start=start, end=end, freq=freq)[1:]

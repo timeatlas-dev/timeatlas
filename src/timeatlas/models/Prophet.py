@@ -1,6 +1,6 @@
 from typing import NoReturn
 from timeatlas import TimeSeries
-from pandas import DataFrame, Timedelta
+from pandas import DataFrame
 import fbprophet as fbp
 
 from timeatlas.abstract import AbstractBaseModel
@@ -10,18 +10,18 @@ class Prophet(AbstractBaseModel):
 
     def __init__(self):
         super().__init__()
-        self.m = fbp.Prophet()
+        self.model = fbp.Prophet()
 
     def fit(self, series) -> NoReturn:
         super().fit(series)
         df = self.__prepare_series_for_prophet(self.X_train)
-        self.m.fit(df)
+        self.model.fit(df)
 
     def predict(self, horizon: str, freq: str = None) -> NoReturn:
         super().predict(horizon)
         future = self.make_future_dataframe(horizon, freq)
-        forecast = self.m.predict(future)
-        return forecast
+        forecast = self.model.predict(future)
+        return TimeSeries.from_df(forecast, 'yhat', 'ds')
 
     @staticmethod
     def __prepare_series_for_prophet(series: TimeSeries):
