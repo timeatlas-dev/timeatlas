@@ -231,6 +231,7 @@ src/timeatlas/data/test-export/ts_w_meta/data.csv
 src/timeatlas/data/test-export/ts_w_meta/meta.json
 src/timeatlas/data/test-export/ts_wo_meta/data.csv
 src/timeatlas/generator/__init__.py
+src/timeatlas/generator/anomaly_generator/README.md
 src/timeatlas/generator/anomaly_generator/__init__.py
 src/timeatlas/generator/anomaly_generator/anomaly_generator.py
 src/timeatlas/generator/anomaly_generator/utils.py
@@ -271,7 +272,6 @@ tests/generator/__init__.py
 tests/generator/anomaly_generator/__init__.py
 tests/generator/anomaly_generator/generator/__init__.py
 tests/generator/anomaly_generator/generator/anomaly_generator_test_data.csv
-tests/generator/anomaly_generator/generator/config.ini
 tests/generator/anomaly_generator/generator/test_anomaly_generator.py
 tests/generator/anomaly_generator/templater/__init__.py
 tests/generator/anomaly_generator/templater/create_template.py

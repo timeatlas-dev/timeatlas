@@ -5,22 +5,14 @@ import pandas as pd
 
 
 class AnomalySetLabeler:
-    def __init__(self, data: pd.DataFrame, axis: int, ):
-        self.axis = axis
-
-        # check for existing labels
-        self.label_columns = None
-        self.original_labels = None
-        self.infer_labels(data)
-
+    def __init__(self):
         # anomaly labels
-
         self.annotation = {}
 
-    def create_operation_dict(self, coordinates, param, name, function_name):
+    def create_operation_dict(self, coordinates, param,function_name, name, outfile):
 
         coordinates = sorted(coordinates, key=lambda x: x[0])
-        # TODO: THis offset style is not good since it is reduncant witht he code in utils.insert
+        # TODO: This offset style is not good since it is redundant with he code in utils.insert
         offset = 0
         for coords in coordinates:
             try:
@@ -31,7 +23,7 @@ class AnomalySetLabeler:
                                          'end': coords[1] + offset,
                                          'function_name': function_name,
                                          'parameters': param,
-                                         'dataframe_name': name
+                                         'dataframe_name': f'{outfile}_data/{name}/data.csv'
                                          }
 
             if param == 'insert':
@@ -40,37 +32,3 @@ class AnomalySetLabeler:
     def finalize(self):
         self.annotation = pd.DataFrame.from_dict({i: self.annotation[i] for i in self.annotation.keys()},
                                                  orient='index')
-
-    def infer_labels(self, data):
-        '''
-
-        Args:
-            data:
-
-        Returns:
-
-        '''
-        if self.axis == 0:
-            rows = data.columns
-            self.label_columns = [row for row in rows if 'label' in str(row).lower()]
-        elif self.axis == 1:
-            raise NotImplementedError
-            columns = data.iterrows()
-            self.label_columns = [col for col in columns if 'label' in str(col).lower()]
-
-        if not self.label_columns:
-            warnings.warn("No labels detected.")
-
-        # TODO: Removed the adding of the labeling
-        # self.labels[self.label_columns] = data[self.label_columns]
-        self.original_labels = data[self.label_columns]
-
-    def add_binary_label_column(self, data):
-        if self.axis == 0:
-            labels = np.zeros(data.shape[1])
-            self.labels.loc['labels_binary'] = labels
-        elif self.axis == 1:
-            labels = np.zeros(data.shape[0])
-            self.labels['label_binary'] = labels
-        else:
-            raise ValueError("The Parameter 'axis' as to be 1 or 0.")

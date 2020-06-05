@@ -2,6 +2,7 @@ from configobj import ConfigObj
 from validate import Validator
 from os import path
 
+
 class AnomalyConfigParser(ConfigObj):
     def __init__(self, config_file):
 

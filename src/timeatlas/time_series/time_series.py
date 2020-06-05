@@ -1,11 +1,10 @@
-from pandas import Series, DataFrame, date_range, infer_freq
+from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex
 from pandas.api.types import infer_dtype
 from typing import NoReturn, Tuple, Any
 from datetime import datetime
 
 from u8timeseries import TimeSeries as U8TimeSeries
 
-from pandas import Series, DatetimeIndex
 from timeatlas.abstract.abstract_analysis import AbstractAnalysis
 from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
 from timeatlas.abstract.abstract_processing import AbstractProcessing
@@ -30,6 +29,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         series: An optional Pandas Series
         metadata: An optional Dict storing metadata about this TimeSeries
     """
+
     def __init__(self, series: Series = None, metadata: Metadata = None):
 
         if series is not None:
@@ -94,10 +94,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         after = TimeSeries(self.series[splitting_point:end], self.metadata)
         return before, after
 
-
     def erase(self):
         pass
-
 
     # =============================================
     # Analysis
@@ -158,6 +156,18 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Normalize a dataset
         """
         pass
+
+    def round(self, decimals: int) -> 'TimeSeries':
+        """
+
+        Round the values in the series.values
+
+        Args:
+            decimals: number of digits after the comma
+
+
+        """
+        return TimeSeries(self.series.astype(float).round(decimals=decimals), metadata=self.metadata)
 
     # =============================================
     # IO

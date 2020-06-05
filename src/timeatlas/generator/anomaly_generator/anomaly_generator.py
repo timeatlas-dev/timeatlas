@@ -1,4 +1,5 @@
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
+from timeatlas import TimeSeries, TimeSeriesDataset
 
 from .anomalies import AnomalyABC
 from .utils import get_operator
@@ -11,22 +12,20 @@ from itertools import cycle
 import warnings
 from copy import copy
 import math
+from os import path
 
 
 class AnomalyGenerator(AbstractBaseGenerator):
-    def __init__(self, data, conf_file, axis=0):
+    def __init__(self, data: TimeSeriesDataset, conf_file):
 
         # assertions
-        assert axis == 0 or axis == 1
-        assert isinstance(data, pd.DataFrame)
+        assert isinstance(data, TimeSeriesDataset)
+        assert all(isinstance(x, TimeSeries) for x in
+                   data), "One or more elements are not a TimeSeries-object"
+        assert path.isfile(
+            conf_file), f"No config file found under given path '{conf_file}'"
 
-        # setting the iterator for the dataframe -> 0 = rows; 1 = columns
-        self.axis = axis
-        if self.axis == 0:
-            self.iterator = pd.DataFrame.iterrows
-        elif self.axis == 1:
-            raise NotImplementedError
-            self.iterator = pd.DataFrame.iteritems
+        self.data = data
 
         # functions for anomaly
         self.ABC = AnomalyABC()
@@ -43,17 +42,13 @@ class AnomalyGenerator(AbstractBaseGenerator):
         self.outfile = self.GLOBAL['outfile']
 
         # create numpy-random.RandomState object
-        self.seed = np.random.seed(self.GLOBAL['seed'])
+        self.seed = self.GLOBAL['seed']
 
         # adding a label column to the dataframe and creating the results anomaly labels
-        self.labels = AnomalySetLabeler(data, self.axis)
-        # we need to remove the label column/row to not interfere with the anomaly introduction
-        # load data
-        self.data = data.drop(labels=self.labels.label_columns, axis=np.abs(self.axis - 1))
-        # from this point on it is unwise to use "data" instead of self.data -> removed labels
+        self.labels = AnomalySetLabeler()
 
         # figure out the precision of the data
-        self.precision = self.generation_precision(self.data)
+        self.precision = self.generation_precision()
 
     @staticmethod
     def precision_and_scale(x):
@@ -113,27 +108,29 @@ class AnomalyGenerator(AbstractBaseGenerator):
         zip_list = zip(data, cycle(anomaly_f))
         return zip_list
 
-    def generation_precision(self, df):
+    def generation_precision(self):
         '''
 
         Set the rounded average precision of the values inside a dataframe
 
-        Args:
-            df: dataframe
-
-        Returns: integer of the precision
+        Returns: rounded average number of digits after the comma
 
         '''
-        precision_df = df.applymap(self.precision_and_scale)
-        return int(round(precision_df.mean().mean()))
+
+        precision_df = np.array(
+            [self.precision_and_scale(x) for ts in self.data for x in
+             ts.series.values])
+        # This is more of a security. A correctly formated TimeSeries-object has no None elements
+        precision_df = precision_df[precision_df != None]
+        return round(precision_df.mean())
 
     def save(self):
         self.labels.finalize()
-        self.data.to_csv(f'{self.outfile}_data.csv')
-        self.labels.annotation.to_csv(f'{self.outfile}_labels.csv')
+        self.data.to_text(f'./{self.outfile}_data')
+        self.labels.annotation.to_csv(f'./{self.outfile}_labels.csv')
 
     def get_anomaly_function(self):
-        '''s
+        '''
 
         Get all functions in the config file
 
@@ -148,45 +145,21 @@ class AnomalyGenerator(AbstractBaseGenerator):
             functions.append((function, parameters))
         return functions
 
-    def chose_series_by_amount(self):
+    def chose_amount(self):
 
-        if self.selection and self.percent and self.amount:
-            warnings.warn(
-                "'amount', 'selection' and 'percent' are all given a value. The priorities of them are: 1. amount \n, 2.selection\n 3.percent \n")
+        ind, data = self.data.random(n=self.amount, seed=self.seed, indices=True)
+        return list(zip(ind, data))
 
-        return self.data.sample(n=self.amount, random_state=self.seed)
+    def chose_selection(self):
+        ind, data = self.data.select(selection=self.selection, indices=True)
+        return list(zip(ind, data))
 
-    def chose_series_by_selection(self):
-        '''
-
-        getting the given rows in the dataframe self.data as the anomaly_series
-
-        Returns: anomaly series chosen by the user
-
-        '''
-
-        if self.selection and self.percent:
-            warnings.warn("Both random and selection were set -> user selection supersedes random choice.")
-        return self.data.iloc[self.selection]
-
-    def chose_series_at_random(self):
-        '''
-
-        selects at random the given portion of the dataframe
-
-        e.g. if self.percent = 0.01 it will select 1% of the dataframe as candidates for the anomalies.
-        This 1% will then further be distributed to the given anomalies -> if num_anomalies = 2 -> 0.05% each
-
-        Returns: rows selected for the introduction of anomalies
-
-        '''
-
-        return self.data.sample(frac=self.percent, replace=False, random_state=self.seed, axis=self.axis)
+    def chose_percentage(self):
+        ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
+        return list(zip(ind, data))
 
     def plot_anomaly_series(self):
         '''
-
-        #TODO
 
         Plotting all series with inserted anomalies -> maybe with the original in the same plot
 
@@ -195,28 +168,25 @@ class AnomalyGenerator(AbstractBaseGenerator):
         '''
         raise NotImplementedError
 
-    def add_data(self, new_data, name):
+    def add_data(self, new_data, ind):
 
-        if self.axis == 0:
-            top, bottom = self.data.loc[:name].drop(labels=name, axis=self.axis), self.data.loc[name:].drop(labels=name,
-                                                                                                            axis=self.axis)
-            row_df = pd.DataFrame([new_data], index=[name])
-            self.data = pd.concat([top, row_df, bottom], axis=self.axis, sort=False)
-        elif self.axis == 1:
-            raise NotImplementedError
+        self.data[ind].series = pd.Series(new_data)
 
     def generate(self):
 
         if self.amount:
-            anomaly_series = self.chose_series_by_amount()
+            anomaly_series = self.chose_amount()
         elif self.selection:
-            anomaly_series = self.chose_series_by_selection()
+            anomaly_series = self.chose_selection()
         else:
-            anomaly_series = self.chose_series_at_random()
+            anomaly_series = self.chose_percentage()
 
-        zip_list_functions = self.create_zip_object(self.iterator(anomaly_series), self.anomaly_functions)
+        zip_list_functions = self.create_zip_object(anomaly_series,
+                                                    self.anomaly_functions)
 
-        for (name, data), (function, params) in zip_list_functions:
+        # TODO: This adds the anomalies at the start and not where they belong
+        for (ind, ts), (function, params) in zip_list_functions:
+            data = ts.series
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')
@@ -225,14 +195,15 @@ class AnomalyGenerator(AbstractBaseGenerator):
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)
-            self.add_data(new_data, name)
-            self.labels.create_operation_dict(coordinates, operation_param, name, function.__name__)
+            self.add_data(new_data, ind)
+            self.labels.create_operation_dict(coordinates=coordinates,
+                                              param=operation_param,
+                                              function_name=function.__name__,
+                                              name=ind,
+                                              outfile=self.outfile)
 
-        # round all values to the same precision
-        self.data = self.data.round(decimals=self.precision)
-
-        if self.labels.original_labels is not None:
-            self.data['original_labels'] = self.labels.original_labels
+            # round all values to the same precision
+            ts.round(decimals=self.precision)
 
         if self.GLOBAL['save']:
             self.save()
