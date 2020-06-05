@@ -1,6 +1,6 @@
 from typing import NoReturn
 from timeatlas import TimeSeries
-from pandas import DataFrame, Timedelta
+from pandas import DataFrame
 import fbprophet as fbp
 
 from timeatlas.abstract import AbstractBaseModel
@@ -10,26 +10,18 @@ class Prophet(AbstractBaseModel):
 
     def __init__(self):
         super().__init__()
-        self.m = None
+        self.model = fbp.Prophet()
 
     def fit(self, series) -> NoReturn:
         super().fit(series)
-        df = self.__prepare_series_for_prophet(self)
-        self.m = fbp.Prophet()
-        self.m.fit(df)
+        df = self.__prepare_series_for_prophet(self.X_train)
+        self.model.fit(df)
 
-    def predict(self, horizon: str) -> NoReturn:
-        # TODO Continue here with future dataframe creation with Prophet make_future_dataframe method
-        #   based on a duration taken from a timedelta object
-        #   (https://docs.python.org/3/library/datetime.html#datetime.timedelta)
+    def predict(self, horizon: str, freq: str = None) -> NoReturn:
         super().predict(horizon)
-
-        # Create DataFrame for the specified horizon
-        self.m.make_future_dataframe()
-        Timedelta(horizon)
-
-        # Predict values
-
+        future = self.make_future_dataframe(horizon, freq)
+        forecast = self.model.predict(future)
+        return TimeSeries.from_df(forecast, 'yhat', 'ds')
 
     @staticmethod
     def __prepare_series_for_prophet(series: TimeSeries):
@@ -37,4 +29,10 @@ class Prophet(AbstractBaseModel):
         df["ds"] = df.index
         df = df.reset_index(drop=True)
         df = df.rename(columns={"values": "y"})
+        return df
+
+    def make_future_dataframe(self, horizon, freq: str = None):
+        index = self.make_future_index(horizon, freq)
+        df = DataFrame(data=index.to_series(), columns=["ds"])
+        df = df.reset_index(drop=True)
         return df

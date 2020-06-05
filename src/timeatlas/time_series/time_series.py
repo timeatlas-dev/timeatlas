@@ -100,6 +100,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # =============================================
     # Analysis
     # =============================================
+    def plot(self):
+        """
+        Plot a TimeSeries
+
+        Returns:
+        """
+        register_matplotlib_converters()
+        self.series.plot()
 
     def describe(self):
         """
@@ -202,9 +210,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: TimeAtlas TimeSeries
         """
-        series = Series(data=df[values_column]) \
+        series = Series(data=df[values_column].values) \
             if index_column is None \
-            else Series(data=df[values_column], index=df[index_column])
+            else Series(data=df[values_column].values, index=df[index_column])
         return TimeSeries(series)
 
     def to_df(self) -> DataFrame:
@@ -213,14 +221,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: Pandas DataFrame
         """
-        data_type = self.metadata["unit"].data_type \
-            if self.metadata["unit"] is not None \
-            else infer_dtype(self.series.values)
-
         return DataFrame(self.series.values,
                          index=self.series.index,
-                         columns=["values"],
-                         dtype=data_type)
+                         columns=["values"])
 
     @staticmethod
     def __series_to_csv(series: Series, path: str):
