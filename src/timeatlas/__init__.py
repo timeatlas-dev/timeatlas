@@ -10,3 +10,4 @@ from timeatlas.io import (
     read_text
 )
 
+from timeatlas.generator import AnomalyGenerator, AnomalyGeneratorTemplate
