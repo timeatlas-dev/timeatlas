@@ -18,7 +18,7 @@ class AnomalyConfigParser(ConfigObj):
 
     def _validate(self):
 
-        assert 'prob' in self['GLOBAL'] or 'selection' in self['GLOBAL'] or 'amount' in self['GLOBAL'], \
+        assert 'percent' in self['GLOBAL'] or 'selection' in self['GLOBAL'] or 'amount' in self['GLOBAL'], \
             "Either a percentage (percent), a row selection (selection) or a number of rows (amount) as to be set."
 
         _validator_output = self.validate(self.val)

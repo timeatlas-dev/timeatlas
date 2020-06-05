@@ -63,6 +63,9 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         random.seed(seed)
         n = round(len(self.data) * percent)
 
+        if n <= 0:
+            raise ValueError(f'set percentage to small resulting selection is <= 0')
+
         if indices:
             return self.random(n=n, indices=indices)
         else:
