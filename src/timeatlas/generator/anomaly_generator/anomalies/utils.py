@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def start_indides(maximum, n):
+def start_indices(maximum, n):
     '''
 
     e[0] is the starting coordinate

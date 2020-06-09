@@ -3,13 +3,18 @@ import numpy as np
 
 from scipy.fft import fft, ifft
 
-from .utils import start_indides
+from .utils import start_indices
 
 
 class AnomalyABC():
     """
         Basically just a collection of functions that can introduce anomalies into a data-series.
     """
+
+    def __init__(self, seed: int or None = None):
+
+        self.seed = seed
+        np.random.seed(self.seed)
 
     def flatline(self, data: pd.Series, n: int = 1, minimum: int = 1, maximum: int or None = None):
         '''
@@ -27,7 +32,7 @@ class AnomalyABC():
         if maximum is None:
             maximum = len(data)
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         last_values = [data[e - 1] for e in event_starts]
         coordinates = []
         values = []
@@ -60,7 +65,7 @@ class AnomalyABC():
         if maximum is None:
             maximum = len(data)
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         coordinates = []
         values = []
         for i, e in enumerate(event_starts):
@@ -87,7 +92,7 @@ class AnomalyABC():
 
         '''
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         coordinates = []
         values = []
         for e in event_starts:
@@ -98,7 +103,7 @@ class AnomalyABC():
         return np.array(values), coordinates
 
     def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1,
-                       change_point_factor: float = 3.0, minimum: int = 1, maximum: int or None = None):
+            change_point_factor: float = 3.0, minimum: int = 1, maximum: int or None = None):
         '''
 
         # TODO: Make it possible so the noise can be decreased. (can we extract noise levels from input data)?
@@ -118,7 +123,7 @@ class AnomalyABC():
         if maximum is None:
             maximum = len(data)
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         coordinates = []
         values = []
 
@@ -136,7 +141,7 @@ class AnomalyABC():
         return np.array(values), coordinates
 
     def change_point(self, data: pd.Series, n: int = 1, ending: bool = True,
-                     change_point_factor: int = 3, minimum: int = 1, maximum: int or None = None):
+            change_point_factor: int = 3, minimum: int = 1, maximum: int or None = None):
         '''
 
         A clear point t at which the data get offset to a different level
@@ -154,7 +159,7 @@ class AnomalyABC():
         if maximum is None:
             maximum = len(data)
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         coordinates = []
         values = []
         end = len(data) - 1
@@ -222,7 +227,7 @@ class AnomalyABC():
 
         '''
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         values = []
         coordinates = []
 
@@ -260,9 +265,9 @@ class AnomalyABC():
         # adding feedback at the given frequency (hrz)
         idx = (np.abs(xf - hrz)).argmin()
         yf[idx] += amp
-        added_feedback_data = pd.Series(ifft(yf).real)
+        added_feedback_data = ifft(yf).real
         # extract a part of the new data and return it
-        event_start = start_indides(len(data), 1)
+        event_start = start_indices(len(yf), 1)
 
         # needs to return a list
         values = [added_feedback_data[event_start[0]:]]
@@ -285,7 +290,7 @@ class AnomalyABC():
 
         '''
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         values = []
         coordinates = []
 
@@ -312,7 +317,7 @@ class AnomalyABC():
 
         '''
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         values = []
         coordinates = []
 
@@ -343,7 +348,7 @@ class AnomalyABC():
 
         '''
 
-        event_starts = start_indides(len(data), n)
+        event_starts = start_indices(len(data), n)
         values = []
         coordinates = []
 

@@ -9,7 +9,6 @@ from .config import AnomalyConfigParser
 import pandas as pd
 import numpy as np
 from itertools import cycle
-import warnings
 from copy import copy
 import math
 from os import path
@@ -25,16 +24,13 @@ class AnomalyGenerator(AbstractBaseGenerator):
         assert path.isfile(
             conf_file), f"No config file found under given path '{conf_file}'"
 
+        # set data
         self.data = data
-
-        # functions for anomaly
-        self.ABC = AnomalyABC()
 
         # read the config file
         self.config = AnomalyConfigParser(config_file=conf_file)
         self.GLOBAL = self.config['GLOBAL']
         self.ANOMALIES = self.config['ANOMALIES']
-        self.anomaly_functions = self.get_anomaly_function()
         self.percent = self.GLOBAL['percent']
         self.selection = self.GLOBAL['selection']
         self.percent = self.GLOBAL['percent']
@@ -43,6 +39,10 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         # create numpy-random.RandomState object
         self.seed = self.GLOBAL['seed']
+
+        # functions for anomaly
+        self.ABC = AnomalyABC(self.seed)
+        self.anomaly_functions = self.get_anomaly_function()
 
         # adding a label column to the dataframe and creating the results anomaly labels
         self.labels = AnomalySetLabeler()
@@ -185,13 +185,13 @@ class AnomalyGenerator(AbstractBaseGenerator):
                                                     self.anomaly_functions)
 
         # TODO: This adds the anomalies at the start and not where they belong
+        counter = 0
         for (ind, ts), (function, params) in zip_list_functions:
             data = ts.series
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')
             anomaly, coordinates = function(data, **function_params)
-
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)
