@@ -1,5 +1,5 @@
 Time Series
 ===========
 
-.. automodule:: timeatlas.time_series
+.. automodule:: timeatlas.time_series.time_series
     :members:

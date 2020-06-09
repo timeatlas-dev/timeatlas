@@ -12,7 +12,9 @@ def read_text(path: str) -> Any:
     Args:
         path: a String representing the path to the file to read
 
-    Returns: TimeSeries
+    Returns:
+       TimeSeries
+
     """
     dir_type = check_directory_structure(path)
 

@@ -2,4 +2,5 @@ Getting Started
 ===============
 
 .. toctree::
-    getting-started
+    0_installation
+    1_introduction

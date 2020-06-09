@@ -1,5 +1,8 @@
 Types
 =====
 
-.. automodule:: timeatlas.types
+.. autoclass:: timeatlas.Sensor
+    :members:
+
+.. autoclass:: timeatlas.Unit
     :members:

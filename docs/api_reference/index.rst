@@ -3,7 +3,6 @@ API Reference
 
 .. toctree::
     abstract
-    config
     io
     metadata
     models
