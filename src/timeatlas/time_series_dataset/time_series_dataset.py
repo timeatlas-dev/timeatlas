@@ -60,6 +60,7 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
         """
 
+        # setting the seed if None no seed will be set automatically
         random.seed(seed)
         n = round(len(self.data) * percent)
 
@@ -102,6 +103,7 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
         """
 
+        # setting the seed if None no seed will be set automatically
         random.seed(seed)
 
         if indices:

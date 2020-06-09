@@ -11,7 +11,7 @@ def get_operator(mode):
 
     '''
 
-    # TODO: THis could be solved more elegant with the inspect-library. For now this is good enough
+    # TODO: This could be solved more elegant with the inspect-library. For now this is good enough
     operations = {'insert': insert,
                   'replace': replace,
                   'add': add}
