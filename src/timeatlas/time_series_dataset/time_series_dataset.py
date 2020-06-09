@@ -1,6 +1,7 @@
-from typing import List, Any, NoReturn
+from typing import List, Any, NoReturn, Tuple
 
 from pandas import DataFrame
+import random
 
 from timeatlas import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
@@ -27,6 +28,12 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         else:
             self.data = data
 
+    def __iter__(self):
+        return (ts for ts in self.data)
+
+    def __getitem__(self, item: int) -> 'TimeSeries':
+        return self.data[item]
+
     # Methods
     # =======
 
@@ -38,6 +45,70 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
     def len(self):
         return len(self.data)
+
+    def percent(self, percent: float, seed: int = None, indices: bool = False) -> Any:
+        """
+
+        returns a subset of the TimeSeriesDataset with randomly chosen percentage elements without replacement.
+
+        Args:
+            percent: percentage of elements returned
+            seed: seed for random generator
+            indices: if True returns the indices of the selection
+
+        Returns: TimeSeriesDataset (optional: indices of selection)
+
+        """
+
+        random.seed(seed)
+        n = round(len(self.data) * percent)
+
+        if n <= 0:
+            raise ValueError(f'set percentage to small resulting selection is <= 0')
+
+        if indices:
+            return self.random(n=n, indices=indices)
+        else:
+            return self.random(n=n)
+
+    def select(self, selection: List[int], indices: bool = False) -> Any:
+        """
+
+        select elements from the TimeSeriesDataset with a list of indices.
+
+        Args:
+            selection: list of indices
+            indices: if True the selection is returned
+
+        Returns: TimeSeriesDataset (optional: indices of selection)
+
+        """
+        if indices:
+            return selection, TimeSeriesDataset([self.data[i] for i in selection])
+        else:
+            return TimeSeriesDataset([self.data[i] for i in selection])
+
+    def random(self, n: int, seed: int = None, indices: bool = False) -> Any:
+        """
+
+        returns a subset of the TimeSeriesDataset with randomly chosen n elements without replacement.
+
+        Args:
+            n: number of elements returned
+            seed: seed for random generator
+            indices: if True returns the indices of the selection
+
+        Returns: TimeSeriesDataset (optional: indices of selection)
+
+        """
+
+        random.seed(seed)
+
+        if indices:
+            inds, data = zip(*random.sample(population=list(enumerate(self.data)), k=n))
+            return list(inds), TimeSeriesDataset(data)
+        else:
+            TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     # =============================================
     # Analysis
