@@ -185,7 +185,6 @@ class AnomalyGenerator(AbstractBaseGenerator):
                                                     self.anomaly_functions)
 
         # TODO: This adds the anomalies at the start and not where they belong
-        counter = 0
         for (ind, ts), (function, params) in zip_list_functions:
             data = ts.series
             operation_param = params['operation']
