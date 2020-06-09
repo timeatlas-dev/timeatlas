@@ -3,6 +3,7 @@ API Reference
 
 .. toctree::
     abstract
+    generators
     io
     metadata
     models
