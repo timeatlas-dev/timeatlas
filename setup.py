@@ -26,6 +26,7 @@ setuptools.setup(
         'pandas',
         'fbprophet',
         'tqdm',
-        'u8timeseries'
+        'u8timeseries',
+        'configobj'
     ]
 )

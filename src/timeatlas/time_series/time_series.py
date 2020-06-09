@@ -1,5 +1,6 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex
 from pandas.api.types import infer_dtype
+from pandas.plotting import register_matplotlib_converters
 from typing import NoReturn, Tuple, Any
 from datetime import datetime
 
