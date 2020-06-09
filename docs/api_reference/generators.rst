@@ -1,5 +1,5 @@
-Abstract
-========
+Generators
+==========
 
 .. automodule:: timeatlas.generators
     :members:
