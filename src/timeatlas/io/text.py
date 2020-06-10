@@ -1,7 +1,9 @@
 from typing import Any
 from timeatlas.config.constants import *
-from timeatlas.time_series import TimeSeries
+from timeatlas import TimeSeries, TimeSeriesDataset
 from ._utils import check_directory_structure, csv_to_series, json_to_metadata
+
+import pandas as pd
 
 
 def read_text(path: str) -> Any:
@@ -32,3 +34,23 @@ def read_text(path: str) -> Any:
 
     elif dir_type is None:
         raise IOError("The path doesn't' include any recognizable files")
+
+
+def csv_to_tsd(path: str) -> 'TimeSeriesDataset':
+    """
+
+    Create a TimeSeriesDataset from a csv
+
+    Args:
+        path: the path to the csv file
+
+    Returns: TimeSeriesDataset
+
+    """
+    tsd = []
+    df = pd.read_csv(path, index_col=0)
+    df.index = pd.to_datetime(df.index)
+    for i, d in df.iteritems():
+        tsd.append(TimeSeries(d))
+
+    return TimeSeriesDataset(data=tsd)
