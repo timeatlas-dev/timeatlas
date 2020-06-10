@@ -5,3 +5,4 @@ fbprophet
 tqdm
 u8timeseries
 configobj
+torch

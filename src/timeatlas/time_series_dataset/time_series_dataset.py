@@ -195,6 +195,8 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     # IO
     # =============================================
 
+    # Outputs
+
     def to_text(self, path: str) -> NoReturn:
         ensure_dir(path)
         for i, ts in enumerate(self.data):
@@ -204,3 +206,10 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)
+
+    # Inputs
+
+    def from_text(self, root: str) -> 'TimeSeriesDataset':
+
+        pass
+
