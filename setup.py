@@ -27,6 +27,7 @@ setuptools.setup(
         'fbprophet',
         'tqdm',
         'u8timeseries',
+        'scikit-learn',
         'configobj'
     ]
 )
