@@ -34,6 +34,9 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     def __getitem__(self, item: int) -> 'TimeSeries':
         return self.data[item]
 
+    def __len__(self):
+        return sum([len(x) for x in self.data])
+
     # Methods
     # =======
 
@@ -206,10 +209,3 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)
-
-    # Inputs
-
-    def from_text(self, root: str) -> 'TimeSeriesDataset':
-
-        pass
-
