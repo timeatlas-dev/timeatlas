@@ -1,16 +1,17 @@
-from torch.utils.data import Dataset
+from .base_loader import BaseDataset
 import torch
 from timeatlas import TimeSeriesDataset
+import numpy as np
 
 
-class TimeSeriesClassificationDataset(Dataset):
+class TimeSeriesClassificationDataset(BaseDataset):
     """
     A DataLoader for the classification of complete TimeSeries, where X: TimeSeries and y: label of the TimeSeries
     """
 
     def __init__(self, data: TimeSeriesDataset):
-        self.data = [torch.tensor(d.series) for d in data]
-        self.labels = torch.tensor([ts.label for ts in data])
+        self.data = np.array([d.series for d in data])
+        self.labels = [ts.label for ts in data]
 
     def __len__(self):
         return len(self.data)

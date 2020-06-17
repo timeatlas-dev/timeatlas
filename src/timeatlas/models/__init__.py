@@ -1,7 +1,7 @@
 from .Prophet import Prophet
-from .NN import LSTMPrediction
+from .NeuralNetwork import NeuralNetwork
 
 __all__ = [
     "Prophet",
-    "NN",
+    "NeuralNetwork",
 ]

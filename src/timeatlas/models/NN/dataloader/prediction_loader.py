@@ -1,12 +1,12 @@
-from torch.utils.data import Dataset, DataLoader
+from .base_loader import BaseDataset
 
 from timeatlas import TimeSeriesDataset
 from timeatlas.models.NN.util import chunkify
 
 
-class TimeSeriesPredictionDataset(Dataset):
+class TimeSeriesPredictionDataset(BaseDataset):
     """
-    A dataloader for the classification of complete Timeseries, where X: TimeSeries and y: label of the TimeSeries
+    A DataLoader for the classification of complete TimeSeries, where X: TimeSeries and y: label of the TimeSeries
     """
 
     def __init__(self, data: TimeSeriesDataset, n: int or None):
