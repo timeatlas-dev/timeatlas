@@ -1,7 +1,7 @@
 from .Prophet import Prophet
-from .NeuralNetwork import NeuralNetwork
+from .LSTMModel import LSTMModel
 
 __all__ = [
     "Prophet",
-    "NeuralNetwork",
+    "LSTMModel",
 ]

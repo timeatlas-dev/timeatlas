@@ -1,1 +1,1 @@
-from .LSTM import LSTMPrediction
+from .LSTM import LSTM

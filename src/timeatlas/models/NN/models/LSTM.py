@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class LSTMPrediction(nn.Module):
+class LSTM(nn.Module):
     """
     A Long-Short Term Memory model for the prediction of the next n step in the TimeSeries
     """

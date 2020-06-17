@@ -1,2 +1,2 @@
-from .models import LSTMPrediction
+from .models import LSTM
 from .dataloader import TimeSeriesClassificationDataset, TimeSeriesPredictionDataset
