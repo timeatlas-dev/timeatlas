@@ -10,6 +10,7 @@ class TimeSeriesPredictionDataset(BaseDataset):
     """
 
     def __init__(self, data: TimeSeriesDataset, n: int or None):
+        super(TimeSeriesPredictionDataset, self).__init__()
         self.data, self.labels = chunkify(arr=data.data, seq_len=n)
 
     def __len__(self):

@@ -1,11 +1,16 @@
 from torch.utils.data import Dataset
-import torch
-from timeatlas import TimeSeriesDataset
+
+from sklearn.preprocessing import MinMaxScaler
+
 
 class BaseDataset(Dataset):
 
+    def __init__(self, data=None):
+        self.data = data
+
     def min_max_norm(self):
-        raise NotImplementedError
+        scaler = MinMaxScaler()
+        return scaler.fit_transform(self.data.T).T
 
     def z_score_norm(self):
         raise NotImplementedError
