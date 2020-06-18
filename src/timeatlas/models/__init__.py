@@ -1,7 +1,8 @@
 from .Prophet import Prophet
-from .LSTMModel import LSTMModel
+from .LSTM import LSTM as LSTMExe
+from .NN import Prediction as LSTMPredict
 
 __all__ = [
     "Prophet",
-    "LSTMModel",
+    "LSTMExe",
 ]

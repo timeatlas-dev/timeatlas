@@ -28,14 +28,14 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         else:
             self.data = data
 
-    def __iter__(self):
-        return (ts for ts in self.data)
-
     def __getitem__(self, item: int) -> 'TimeSeries':
         return self.data[item]
 
     def __len__(self):
-        return sum([len(x) for x in self.data])
+        return [len(x) for x in self.data]
+
+    def __iter__(self):
+        return (ts for ts in self.data)
 
     # Methods
     # =======

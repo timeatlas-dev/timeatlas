@@ -1,5 +1,4 @@
 from .base_loader import BaseDataset
-import torch
 from timeatlas import TimeSeriesDataset
 import numpy as np
 

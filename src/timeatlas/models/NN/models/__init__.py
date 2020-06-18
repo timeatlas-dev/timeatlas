@@ -1,1 +1,1 @@
-from .LSTM import LSTM
+from .lstm_models import Prediction
