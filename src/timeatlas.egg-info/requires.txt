@@ -4,5 +4,6 @@ pandas
 fbprophet
 tqdm
 u8timeseries
+scikit-learn
 configobj
 torch
