@@ -1,6 +1,6 @@
-from typing import NoReturn
+from typing import NoReturn, Union
 from timeatlas import TimeSeries
-from pandas import DataFrame, Series, concat
+from pandas import Series
 from sklearn import linear_model
 
 from timeatlas.abstract import AbstractBaseModel
@@ -17,9 +17,13 @@ class LinearRegression(AbstractBaseModel):
         X_train, y_train = self.__prepare_series_for_sklearn(self.X_train)
         self.model.fit(X_train, y_train)
 
-    def predict(self, horizon: str) -> NoReturn:
+    def predict(self, horizon: Union[str, TimeSeries], freq: str = None) -> NoReturn:
         super().predict(horizon)
-        future, index = self.make_future_array(horizon)
+        if isinstance(horizon, str):
+            future, index = self.make_future_array(horizon)
+        elif isinstance(horizon, TimeSeries):
+            future, y_train = self.__prepare_series_for_sklearn(horizon)
+            index = horizon.series.index
         forecast = self.model.predict(future)
         return TimeSeries(Series(data=forecast, index=index))
 

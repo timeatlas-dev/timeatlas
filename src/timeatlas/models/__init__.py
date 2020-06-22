@@ -1,5 +1,5 @@
-from .LinearRegression import LinearRegression
-from .Prophet import Prophet
+from .linear_regression import LinearRegression
+from .prophet import Prophet
 
 __all__ = [
     "LinearRegression",

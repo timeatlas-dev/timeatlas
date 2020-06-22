@@ -1,5 +1,5 @@
-from . import AnomalyGenerator
+from .surprise import Surprise
+
 __all__ = [
-    "AnomalyGenerator",
-    "AnomalyGeneratorTemplate"
+    "Surprise",
 ]

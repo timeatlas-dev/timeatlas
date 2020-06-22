@@ -1,8 +1,6 @@
-from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex
-from pandas.api.types import infer_dtype
+from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, Timestamp, Timedelta
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any
-from datetime import datetime
+from typing import NoReturn, Tuple, Any, Union, Optional
 
 from u8timeseries import TimeSeries as U8TimeSeries
 
@@ -31,7 +29,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, series: Series = None, metadata: Metadata = None):
+    def __init__(self, series: Union[Series, DataFrame] = None,
+                 metadata: Metadata = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -95,8 +94,16 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         after = TimeSeries(self.series[splitting_point:end], self.metadata)
         return before, after
 
-    def erase(self):
-        pass
+    def erase(self) -> 'TimeSeries':
+        """
+        Empty the TimeSeries (fill all values with NaNs)
+
+        Returns:
+            TimeSeries
+        """
+        s = self.series.copy()
+        s.values[:] = None
+        return TimeSeries(s, self.metadata)
 
     # =============================================
     # Analysis
@@ -110,41 +117,116 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         register_matplotlib_converters()
         self.series.plot()
 
-    def describe(self):
+    def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """
         Describe a TimeSeries with the describe function from Pandas
 
         Returns:
-            TODO
+            Series
         """
-        raise NotImplementedError
-        pass
+        return self.series.describe()
 
-    def compute_resolution(self) -> 'TimeSeries':
+    def min(self) -> float:
         """
-        Create the series of delta T between each timestamp of a TimeSeries
-        TODO Should it returns a Series of TimeDelta?
+        Get the minimum value of a TimeSeries
 
         Returns:
-            TODO
+            float
         """
-        raise NotImplementedError
-        pass
+        return self.series.min()
 
-    def compute_duration(self) -> Tuple[datetime, datetime]:
+    def max(self) -> float:
         """
-        Compute the duration of a TimeSeries by giving you its start and ending
-        timestamps in a Tuple
+        Get the maximum value of a TimeSeries
 
         Returns:
-            TODO
+            float
         """
-        raise NotImplementedError
-        pass
+        return self.series.max()
+
+    def boundaries(self) -> Tuple[Timestamp, Timestamp]:
+        """
+        Get a tuple with the TimeSeries first and last index
+
+        Returns:
+            a Tuple of Pandas Timestamps
+        """
+        start = self.series.index[0]
+        end = self.series.index[-1]
+        return start, end
+
+    def duration(self) -> Timedelta:
+        """
+        Get the duration of the TimeSeries
+
+        Returns:
+            a Pandas Timedelta
+        """
+        start, end = self.boundaries()
+        return end - start
+
+    def frequency(self) -> Optional[str]:
+        """
+        Get the frequency of a TimeSeries
+
+        Returns:
+            str or None
+            str of the frequency according to the Pandas Offset Aliases
+            (https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+            None if no discernible frequency
+        """
+        return self.series.index.inferred_freq
+
+    def resolution(self) -> 'TimeSeries':
+        """
+        Compute the time difference between each timestamp of a TimeSeries
+
+        Returns:
+            TimeSeries
+        """
+        return TimeSeries(self.series.index.to_series().diff(), self.metadata)
 
     # =============================================
     # Processing
     # =============================================
+
+    def apply(self, func, ts: 'TimeSeries' = None):
+        """
+        Wrapper around the Pandas apply function
+
+        Args:
+            func : function
+                Python function or NumPy ufunc to apply. If ts is given as
+                param, func must have two params in the form of f(x,y)
+
+            ts : TimeSeries
+                The second TimeSeries if you want to make an operation on two
+                time series
+
+            convert_dtype : bool, default True
+                Try to find better dtype for elementwise function results. If
+                False, leave as dtype=object.
+
+            args : tuple
+                Positional arguments passed to func after the series value.
+
+            **kwds
+                Additional keyword arguments passed to func.
+
+        Returns:
+            TimeSeries
+
+        """
+        if ts is not None:
+            s1 = self.series
+            s2 = ts.series
+            df = DataFrame(data={"s1": s1, "s2": s2})
+            res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
+                             self.metadata)
+        else:
+            res = TimeSeries(self.series.apply(func),
+                             self.metadata)
+        return res
 
     def resample(self, by: str) -> Any:
         """
@@ -168,13 +250,10 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
     def round(self, decimals: int) -> 'TimeSeries':
         """
-
         Round the values in the series.values
 
         Args:
             decimals: number of digits after the comma
-
-
         """
         return TimeSeries(self.series.astype(float).round(decimals=decimals), metadata=self.metadata)
 

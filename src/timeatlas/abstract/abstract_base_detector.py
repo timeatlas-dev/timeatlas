@@ -8,6 +8,6 @@ class AbstractBaseDetector(ABC):
     """
 
     @abstractmethod
-    def detect(self) -> NoReturn:
+    def detect(self, ts) -> NoReturn:
         """ Detect features """
         raise NotImplementedError

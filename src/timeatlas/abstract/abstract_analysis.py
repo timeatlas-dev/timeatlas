@@ -13,9 +13,13 @@ class AbstractAnalysis(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def compute_resolution(self) -> Any:
+    def frequency(self) -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def compute_duration(self) -> Any:
+    def resolution(self) -> Any:
+        raise NotImplementedError
+
+    @abstractmethod
+    def duration(self) -> Any:
         raise NotImplementedError
