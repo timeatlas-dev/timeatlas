@@ -26,13 +26,18 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         if data is None:
             self.data = []
         else:
-            self.data = data
+            if isinstance(data, list):
+                self.data = data
+            elif isinstance(data, TimeSeries):
+                self.data = [data]
+            else:
+                raise ValueError(f'data has to be TimeSeries or List[TimeSeries], got {type(data)}')
 
     def __getitem__(self, item: int) -> 'TimeSeries':
         return self.data[item]
 
     def __len__(self):
-        return [len(x) for x in self.data]
+        return len(self.data)
 
     def __iter__(self):
         return (ts for ts in self.data)

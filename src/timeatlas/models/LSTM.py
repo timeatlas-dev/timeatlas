@@ -48,7 +48,7 @@ class LSTM(AbstractBaseModel):
                 self.loss.append(single_loss.item())
 
             if verbose:
-                if i % 25 == 1:
+                if i in range(0, self.epochs + round(self.epochs / 10), round(self.epochs / 10)):
                     print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
         if verbose:
             print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
