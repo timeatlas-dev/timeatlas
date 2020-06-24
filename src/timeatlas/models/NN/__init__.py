@@ -1,2 +1,3 @@
 from .models import Prediction
-from .dataloader import TimeSeriesClassificationDataset, TimeSeriesPredictionDataset
+from .dataset import TimeSeriesClassificationDataset, TimeSeriesPredictionDataset
+from .dataloader import BaseDataLoader, PredictionDataLoader

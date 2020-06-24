@@ -1,4 +1,4 @@
-from .base_loader import BaseDataset
+from .base_dataset import BaseDataset
 from timeatlas import TimeSeriesDataset
 import numpy as np
 
