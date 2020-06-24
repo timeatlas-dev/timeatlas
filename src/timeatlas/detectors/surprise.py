@@ -1,4 +1,4 @@
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Union
 
 from timeatlas import TimeSeries
 from timeatlas.abstract import AbstractBaseDetector, AbstractBaseModel
@@ -32,7 +32,7 @@ class Surprise(AbstractBaseDetector):
             self.normalizer = scalers.zscore
         return self
 
-    def alerts(self, method: str = "quantile", thresholds: List = [0.85, 0.95]):
+    def alerts(self, method: str = "quantile", thresholds: Union[float, List] = [0.85, 0.95]):
         self._compute_thresholds_params = (method, thresholds)
         return self
 
