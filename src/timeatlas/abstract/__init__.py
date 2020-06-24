@@ -8,6 +8,7 @@ from .abstract_io import (
     AbstractOutputText,
 )
 from .abstract_processing import AbstractProcessing
+from .abstract_base_generator import AbstractBaseGenerator
 
 __all__ = [
     "AbstractAnalysis",
@@ -17,5 +18,7 @@ __all__ = [
     "AbstractOutputJson",
     "AbstractOutputPickle",
     "AbstractOutputText",
-    "AbstractProcessing"
+    "AbstractProcessing",
+    "AbstractBaseGenerator",
+
 ]

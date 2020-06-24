@@ -271,7 +271,7 @@ src/timeatlas/io/pickle.py
 src/timeatlas/io/text.py
 src/timeatlas/metadata/__init__.py
 src/timeatlas/metadata/metadata.py
-src/timeatlas/models/LinearRegression.py
+src/timeatlas/models/LSTM.py
 src/timeatlas/models/Prophet.py
 src/timeatlas/models/__init__.py
 src/timeatlas/time_series/__init__.py

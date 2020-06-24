@@ -30,7 +30,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None):
+                 metadata: Metadata = None, label: str or None = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -46,10 +46,19 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         # Create the TimeSeries object
         self.series = series
 
+        # The label of the timeseries (can be used for the classification)
+        self.label = label
+
         if metadata is not None:
             self.metadata = metadata
         else:
             self.metadata = None
+
+    def __len__(self):
+        return len(self.series)
+
+    def __iter__(self):
+        return (v for v in self.series)
 
     # Methods
     # =======

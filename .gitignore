@@ -220,4 +220,6 @@ dmypy.json
 # Ignore all local history of files
 .history
 
-# End of https://www.gitignore.io/api/python,pycharm,jupyternotebooks,visualstudiocode
+# End of https://www.gitignore.io/api/python,pycharm,jupyternotebooks,visualstudiocodegen_data/
+
+gen_data/
