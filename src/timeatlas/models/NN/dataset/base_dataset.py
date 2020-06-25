@@ -11,6 +11,11 @@ class BaseDataset(Dataset):
     def __init__(self, data=None):
         self.data = data
 
+        self.min = None
+        self.max = None
+        self.mu = None
+        self.sigma = None
+
     def min_max_norm(self):
         """
 
@@ -18,12 +23,9 @@ class BaseDataset(Dataset):
 
         x_norm_ji = (x_ji - min) / (max -min)
 
-        Returns: normalized data
-
         """
-        xmax, xmin = self.data.max(), self.data.min()
-        data_norm = (self.data - xmin) / (xmax - xmin)
-        return data_norm
+        self.max, self.min = self.data.max(), self.data.min()
+        self.data = (self.data - self.min) / (self.max - self.min)
 
     def z_score_norm(self):
         """
@@ -32,9 +34,6 @@ class BaseDataset(Dataset):
 
         x_norm_ij = (x_ji - mean) / std
 
-        Returns: normalized data
-
         """
-        mu, sigma = self.data.mean(), self.data.std()
-        data_norm = (self.data - mu) / sigma
-        return data_norm
+        self.mu, self.sigma = self.data.mean(), self.data.std()
+        self.data = (self.data - self.mu) / self.sigma

@@ -60,6 +60,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     def __iter__(self):
         return (v for v in self.series)
 
+    def __getitem__(self, item):
+        return TimeSeries(self.series[item])
+
     # Methods
     # =======
 

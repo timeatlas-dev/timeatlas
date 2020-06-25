@@ -9,7 +9,7 @@ class TimeSeriesClassificationDataset(BaseDataset):
     """
 
     def __init__(self, data: TimeSeriesDataset):
-        super(TimeSeriesClassificationDataset, self).__init__()
+        super(TimeSeriesClassificationDataset, self).__init__(data=data)
         self.data = np.array([d.series for d in data])
         self.labels = [ts.label for ts in data]
 

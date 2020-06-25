@@ -18,7 +18,7 @@ class TimeSeriesPredictionDataset(BaseDataset):
             data: TimeSeriesDataset
             n: number of previous steps
         """
-        super(TimeSeriesPredictionDataset, self).__init__()
+        super(TimeSeriesPredictionDataset, self).__init__(data=data)
         self.data, self.labels = chunkify(tsd=data.data, seq_len=n)
 
     def __len__(self):

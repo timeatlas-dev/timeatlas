@@ -7,9 +7,19 @@ class PredictionDataLoader(BaseDataLoader):
         super(PredictionDataLoader, self).__init__(dataset=dataset, *args, **kwargs)
 
     def split(self, train: float, test: float or None = None, validation: float or None = None):
+        """
 
-        idx = list(range(len(self)))
-        n = len(self)
+        Args:
+            train: percentage of train split
+            test: percentage of test split
+            validation: percentage of validation split
+
+        Returns: Subset of the DataSet
+
+        """
+
+        idx = list(range(len(self.dataset)))
+        n = len(self.dataset)
 
         if validation is None:
 
@@ -21,7 +31,7 @@ class PredictionDataLoader(BaseDataLoader):
             train_set = Subset(self.dataset, train_idx)
             test_set = Subset(self.dataset, test_idx)
 
-            return PredictionDataLoader(train_set), PredictionDataLoader(test_set)
+            return train_set, test_set
 
         else:
             if test is None:
@@ -38,4 +48,4 @@ class PredictionDataLoader(BaseDataLoader):
             val_set = Subset(self.dataset, val_idx)
             test_set = Subset(self.dataset, test_idx)
 
-            return PredictionDataLoader(train_set), PredictionDataLoader(val_set), PredictionDataLoader(test_set)
+            return train_set, val_set, test_set

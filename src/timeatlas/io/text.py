@@ -9,7 +9,6 @@ import pandas as pd
 def read_text(path: str) -> Any:
     """
     Create a TimeSeries object from a text file
-    TODO: Add TimeSeriesDataset
 
     Args:
         path: a String representing the path to the file to read
@@ -18,6 +17,9 @@ def read_text(path: str) -> Any:
        TimeSeries
 
     """
+
+    #TODO: Add TimeSeriesDataset
+
     dir_type = check_directory_structure(path)
 
     if dir_type == "timeseries":

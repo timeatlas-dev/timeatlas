@@ -162,6 +162,15 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         """
         pass
 
+    def duration(self):
+        pass
+
+    def frequency(self):
+        pass
+
+    def resolution(self):
+        pass
+
     # =============================================
     # Processing
     # =============================================
