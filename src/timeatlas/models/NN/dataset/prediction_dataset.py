@@ -11,15 +11,15 @@ class TimeSeriesPredictionDataset(BaseDataset):
     y:  next step of the TimeSeries
     """
 
-    def __init__(self, data: TimeSeriesDataset, n: int or None):
+    def __init__(self, timeseriesdataset: TimeSeriesDataset, n: int or None):
         """
 
         Args:
             data: TimeSeriesDataset
             n: number of previous steps
         """
-        super(TimeSeriesPredictionDataset, self).__init__(data=data)
-        self.data, self.labels = chunkify(tsd=data.data, seq_len=n)
+        super(TimeSeriesPredictionDataset, self).__init__(tsd=timeseriesdataset)
+        self.data, self.labels = chunkify(tsd=timeseriesdataset.data, seq_len=n)
 
     def __len__(self):
         return len(self.data)

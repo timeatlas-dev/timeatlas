@@ -8,10 +8,10 @@ class TimeSeriesClassificationDataset(BaseDataset):
     A DataLoader for the classification of complete TimeSeries, where X: TimeSeries and y: label of the TimeSeries
     """
 
-    def __init__(self, data: TimeSeriesDataset):
-        super(TimeSeriesClassificationDataset, self).__init__(data=data)
-        self.data = np.array([d.series for d in data])
-        self.labels = [ts.label for ts in data]
+    def __init__(self, timeseriesdataset: TimeSeriesDataset):
+        super(TimeSeriesClassificationDataset, self).__init__(tsd=timeseriesdataset)
+        self.data = np.array([ts.series for ts in timeseriesdataset])
+        self.labels = [ts.label for ts in timeseriesdataset]
 
     def __len__(self):
         return len(self.data)
