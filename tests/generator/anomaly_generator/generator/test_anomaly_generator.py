@@ -4,7 +4,6 @@ from timeatlas import TimeSeries, TimeSeriesDataset
 
 from timeatlas import AnomalyGenerator
 
-
 # TODO: This test is pretty bad...I need to rework it (Lorenz)
 
 def test_anomaly_generator():

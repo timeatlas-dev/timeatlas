@@ -31,7 +31,6 @@ class AnomalyGenerator(AbstractBaseGenerator):
         self.config = AnomalyConfigParser(config_file=conf_file)
         self.GLOBAL = self.config['GLOBAL']
         self.ANOMALIES = self.config['ANOMALIES']
-        self.percent = self.GLOBAL['percent']
         self.selection = self.GLOBAL['selection']
         self.percent = self.GLOBAL['percent']
         self.amount = self.GLOBAL['amount']
@@ -122,7 +121,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
              ts.series.values])
         # This is more of a security. A correctly formated TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
-        return round(precision_df.mean())
+
+        return int(round(precision_df.mean()))
 
     def save(self):
         self.labels.finalize()

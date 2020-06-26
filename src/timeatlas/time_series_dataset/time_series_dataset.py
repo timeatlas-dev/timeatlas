@@ -116,7 +116,7 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
         if indices:
             inds, data = zip(*random.sample(population=list(enumerate(self.data)), k=n))
-            return list(inds), TimeSeriesDataset(data)
+            return list(inds), TimeSeriesDataset(list(data))
         else:
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
