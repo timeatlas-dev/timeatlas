@@ -10,10 +10,5 @@ python_version = "3.7"
 timeatlas = {editable = true,path = "."}
 
 [dev-packages]
-sphinx = "*"
-nbsphinx = "*"
 pytest = "*"
 jupyter = "*"
-pylint = "*"
-sphinx-rtd-theme = "*"
-pydata-sphinx-theme = "*"
