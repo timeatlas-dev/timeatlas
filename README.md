@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c4612926-1b26-491e-ae8a-2aeff77b27ed/deploy-status)](https://app.netlify.com/sites/timeatlas/deploys)
+
 TimeAtlas
 =========
 

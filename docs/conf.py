@@ -31,7 +31,7 @@ author = 'Frédéric Montet, Lorenz Rychener'
 # ones.
 extensions = [
     'nbsphinx',
-    'sphinx_rtd_theme',
+    'pydata_sphinx_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon'
@@ -51,7 +51,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
