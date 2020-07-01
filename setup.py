@@ -1,14 +1,20 @@
 import setuptools
+from pathlib import Path
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+
+def read_requirements(path):
+    return list(Path(path).read_text().splitlines())
+
 
 setuptools.setup(
     name="timeatlas",
     version="0.0.1",
     author="Frédéric Montet",
     author_email="frederic.montet@hefr.ch",
-    description="A toolbox to handle, analyze and predict time series data.",
+    description="A time series data manipulation tool for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True,
@@ -20,14 +26,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    install_requires=[
-        'bbdata>=0.4.3',
-        'matplotlib',
-        'pandas',
-        'fbprophet',
-        'tqdm',
-        'u8timeseries',
-        'configobj',
-        'torch'
-    ]
+    install_requires=read_requirements('requirements.txt'),
 )
