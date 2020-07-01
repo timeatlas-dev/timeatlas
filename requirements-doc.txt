@@ -1,4 +1,5 @@
 # Documentation requirements
+timeatlas
 sphinx
 nbsphinx
 pylint
