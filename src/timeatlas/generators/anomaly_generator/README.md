@@ -42,7 +42,6 @@ Parameters:
 ##### change_point: 
 
 A sudden spike in the TimeSeries where the data stays for a time $\delta t$.
-This creates a flatline.
 
 Parameters:
  - data: TimeSeries object

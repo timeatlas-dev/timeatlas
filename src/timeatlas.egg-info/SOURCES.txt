@@ -5,11 +5,13 @@ MANIFEST.in
 Pipfile
 Pipfile.lock
 README.md
+requirements-doc.txt
 requirements.txt
 setup.py
 test.py
 .github/workflows/python-package.yml
 .github/workflows/python-publish.yml
+.github/workflows/sphinx-publish.yml
 docs/Makefile
 docs/conf.py
 docs/index.rst
