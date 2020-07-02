@@ -127,7 +127,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
     def save(self):
         self.labels.finalize()
         self.data.to_text(f'./{self.outfile}_data')
-        self.labels.annotation.to_csv(f'../{self.outfile}_data/{self.outfile}_labels.csv', index=False)
+        self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
 
     def get_anomaly_function(self):
         '''
