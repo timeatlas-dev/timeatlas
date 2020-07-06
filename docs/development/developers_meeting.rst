@@ -1,5 +1,5 @@
-Developers Meeting
-==================
+Developers' Meeting
+===================
 
 We try to make a developer's meeting every two weeks to lead the development of
 TimeAtlas. The goal of those meetings is mainly:
