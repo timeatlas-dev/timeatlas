@@ -1,0 +1,4 @@
+Contributing
+============
+
+Lorem Ipsum
