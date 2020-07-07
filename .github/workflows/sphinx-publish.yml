@@ -29,10 +29,10 @@ jobs:
         sudo apt-get install -y pandoc
         pip install -r ./requirements-doc.txt
 
-    - name: Build documentation
-      run: |
-        cd docs
-        make html
+    - name: Sphinx Build
+      uses: ammaraskar/sphinx-action@0.4
+      with:
+        docs-folder: "./docs/"
 
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@v1.1
