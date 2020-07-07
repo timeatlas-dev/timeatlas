@@ -19,8 +19,8 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-Author
-======
+Authors
+=======
 
 Frédéric Montet
 frederic.montet@hefr.ch
