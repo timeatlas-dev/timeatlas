@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../src/timeatlas'))
 # -- Project information -----------------------------------------------------
 
 project = 'TimeAtlas'
-copyright = '2020, Frédéric Montet, Lorenz Rychener'
+copyright = '2020'
 author = 'Frédéric Montet, Lorenz Rychener'
 
 
@@ -34,7 +34,8 @@ extensions = [
     'pydata_sphinx_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'recommonmark'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,3 +59,17 @@ html_theme = "pydata_sphinx_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# -- Pydata Sphinx Theme configuration ----------------------------------------
+
+html_logo = "_static/logo-inline.png"
+html_theme_options = {
+    "github_url": "https://github.com/timeatlas-dev/timeatlas",
+    "twitter_url": "https://twitter.com/timeatlas_dev",
+    "external_links": [
+        {"name": "Releases", "url": "https://github.com/timeatlas-dev/timeatlas/releases"},
+    ],
+    "show_prev_next": False
+}
+
+

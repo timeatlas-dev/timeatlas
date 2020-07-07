@@ -12,3 +12,7 @@ timeatlas = {editable = true,path = "."}
 [dev-packages]
 pytest = "*"
 jupyter = "*"
+pylint = "*"
+sphinx-rtd-theme = "*"
+pydata-sphinx-theme = "*"
+recommonmark = "*"

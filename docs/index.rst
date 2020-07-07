@@ -1,11 +1,13 @@
-Welcome to TimeAtlas's documentation!
+Welcome to TimeAtlas' documentation!
 =====================================
 
+.. include:: ../README.md
 
 .. toctree::
    getting_started/index
    user_guide/index
    api_reference/index
+   development/index
 
 
 Indices and tables
