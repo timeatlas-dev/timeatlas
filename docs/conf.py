@@ -34,7 +34,8 @@ extensions = [
     'pydata_sphinx_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'recommonmark'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

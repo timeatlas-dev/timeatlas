@@ -6,7 +6,9 @@ Home-page: UNKNOWN
 Author: Frédéric Montet
 Author-email: frederic.montet@hefr.ch
 License: UNKNOWN
-Description: TimeAtlas
+Description: [![Netlify Status](https://api.netlify.com/api/v1/badges/c4612926-1b26-491e-ae8a-2aeff77b27ed/deploy-status)](https://app.netlify.com/sites/timeatlas/deploys)
+        
+        TimeAtlas
         =========
         
         A toolbox to handle, analyze and make predictions with time series data.

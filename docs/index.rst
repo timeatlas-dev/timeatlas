@@ -1,6 +1,8 @@
 Welcome to TimeAtlas' documentation!
 =====================================
 
+.. include:: ../README.md
+
 .. toctree::
    getting_started/index
    user_guide/index
