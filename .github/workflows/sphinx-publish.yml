@@ -30,9 +30,9 @@ jobs:
         pip install -r ./requirements-doc.txt
 
     - name: Sphinx Build
-      uses: ammaraskar/sphinx-action@0.4
-      with:
-        docs-folder: "./docs/"
+      run: |
+        cd ./docs
+        make html
 
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@v1.1
