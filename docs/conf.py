@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../src/timeatlas'))
 # -- Project information -----------------------------------------------------
 
 project = 'TimeAtlas'
-copyright = '2020'
+copyright = '2020, TimeAtlas development team'
 author = 'Frédéric Montet, Lorenz Rychener'
 
 

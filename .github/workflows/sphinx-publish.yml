@@ -31,6 +31,7 @@ jobs:
 
     - name: Sphinx Build
       run: |
+        m2r README.md
         cd ./docs
         make html
 

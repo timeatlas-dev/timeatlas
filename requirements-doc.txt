@@ -4,4 +4,4 @@ sphinx
 nbsphinx
 pylint
 pydata-sphinx-theme
-recommonmark
+m2r
