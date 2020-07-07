@@ -13,6 +13,5 @@ timeatlas = {editable = true,path = "."}
 pytest = "*"
 jupyter = "*"
 pylint = "*"
-sphinx-rtd-theme = "*"
 pydata-sphinx-theme = "*"
 recommonmark = "*"
