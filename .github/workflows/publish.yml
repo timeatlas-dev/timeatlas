@@ -29,7 +29,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        echo ${{ github.ref }}
         python -m pip install --upgrade pip
         pip install --no-input -r ./requirements/publish-package.txt
 
@@ -46,7 +45,7 @@ jobs:
         twine upload dist/*
 
     - name: Publish on PyPI
-      if: ${{ github.ref == 'master' }}
+      if: ${{ github.ref == 'refs/heads/master' }}
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
@@ -80,7 +79,7 @@ jobs:
 
       - name: Staging Deploy to Netlify
         uses: nwtgck/actions-netlify@v1.1
-        if: ${{ github.ref == 'develop' }}
+        if: ${{ github.ref == 'refs/heads/develop' }}
         with:
           publish-dir: './docs/_build/html'
           production-branch: master
@@ -97,7 +96,7 @@ jobs:
 
       - name: Production Deploy to Netlify
         uses: nwtgck/actions-netlify@v1.1
-        if: ${{ github.ref == 'master' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           publish-dir: './docs/_build/html'
           production-branch: master
