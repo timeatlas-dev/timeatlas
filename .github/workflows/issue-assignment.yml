@@ -1,0 +1,20 @@
+# This workflow assigns an issue to a Github user when they write a comment with
+# "take" as content.
+# Inspiration comes from Pandas (cf. https://github.com/pandas-dev/pandas)
+
+name: Issue Assignment
+
+on:
+  issue_comment:
+    types: created
+
+jobs:
+  assign-issue:
+    name: Assign Issue
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event.comment.body == 'take'
+        name:
+        run: |
+          echo "Assigning issue ${{ github.event.issue.number }} to ${{ github.event.comment.user.login }}"
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -d '{"assignees": ["${{ github.event.comment.user.login }}"]}' https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees

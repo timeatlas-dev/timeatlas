@@ -6,7 +6,5 @@ TimeAtlas
 =========
 
 **timeatlas** is an open source library for sensor data analysis and more. 
-It aims at providing a comprehensive interface for time series analysis,
+It aims at providing a comprehensive API for time series analysis,
 prediction, as well as anomaly detections.
-
-
