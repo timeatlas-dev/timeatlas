@@ -1,3 +1,4 @@
+# Requirements for the publish-package job in the GitHub actions
 setuptools
 wheel
 twine

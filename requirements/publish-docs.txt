@@ -1,4 +1,4 @@
-# Documentation requirements
+# Requirements for the publish-docs job in the GitHub actions
 .
 sphinx
 nbsphinx
