@@ -12,6 +12,7 @@ on:
 
 jobs:
   lint:
+    name: Linting Codebase
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,6 +41,7 @@ jobs:
 
 
   unit-test:
+    name: Unit Testing
     runs-on: ubuntu-latest
     strategy:
       matrix:
