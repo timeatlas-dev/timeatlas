@@ -1,9 +1,9 @@
 # Main requirements
 bbdata>=0.4.3
+configobj
+fbprophet
 matplotlib
 pandas
-fbprophet
-tqdm
 u8timeseries
-configobj
 torch
+tqdm
