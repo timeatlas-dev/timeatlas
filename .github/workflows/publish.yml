@@ -29,6 +29,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        echo ${{ github.ref }}
         python -m pip install --upgrade pip
         pip install --no-input -r ./requirements/publish-package.txt
 
