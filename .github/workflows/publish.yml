@@ -39,10 +39,10 @@ jobs:
     - name: Publish on TestPyPI
       if: ${{ github.ref == 'refs/heads/develop' }}
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.TESTPYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
       run: |
-        twine upload dist/*
+        twine upload --repository testpypi dist/*
 
     - name: Publish on PyPI
       if: ${{ github.ref == 'refs/heads/master' }}
