@@ -1,5 +1,8 @@
 Metadata
 ========
 
-.. autoclass:: timeatlas.Metadata
+.. currentmodule:: timeatlas
+
+.. autoclass:: Metadata
     :members:
+

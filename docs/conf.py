@@ -67,7 +67,7 @@ html_theme_options = {
     "external_links": [
         {"name": "Releases", "url": "https://github.com/timeatlas-dev/timeatlas/releases"},
     ],
-    "show_prev_next": False
+    "show_prev_next": True
 }
 
 
