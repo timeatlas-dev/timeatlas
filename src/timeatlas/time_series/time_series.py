@@ -120,14 +120,31 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # =============================================
     # Analysis
     # =============================================
-    def plot(self):
+    def plot(self, *args, **kwargs):
         """
         Plot a TimeSeries
 
-        Returns:
+        This is a wrapper around Pandas.Series.plot() augmented if the
+        TimeSeries to plot has associated Metadata.
+
+        :param args: positional arguments for Pandas plot() method
+        :param kwargs: keyword arguments fot Pandas plot() method
         """
         register_matplotlib_converters()
-        self.series.plot()
+
+        if 'figsize' not in kwargs:
+            kwargs['figsize'] = (18,2) # Default TimeSeries plot format
+
+        ax = self.series.plot(*args, **kwargs)
+
+        # Add legend from metadata if existing
+        if self.metadata is not None:
+            if "unit" in self.metadata:
+                unit = self.metadata["unit"]
+                ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
+            if "sensor" in self.metadata:
+                sensor = self.metadata["sensor"]
+                ax.set_title("{} : {}".format(sensor.id, sensor.name))
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """
