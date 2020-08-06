@@ -1,6 +1,14 @@
 .. Add the README from the root directory (must be transformed in rst with m2r)
 .. include:: ../README.rst
 
+.. toctree::
+   :hidden:
+
+   getting_started/index
+   user_guide/index
+   api_reference/index
+   development/index
+
 .. raw:: html
 
     <div class="container">
@@ -79,14 +87,6 @@
             </div>
         </div>
     </div>
-
-.. toctree::
-   :hidden:
-
-   getting_started/index
-   user_guide/index
-   api_reference/index
-   development/index
 
 Authors
 =======
