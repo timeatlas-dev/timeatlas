@@ -40,4 +40,3 @@ def prediction(ts, pred):
     ax.legend()
 
 
-
