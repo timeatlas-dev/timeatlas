@@ -1,8 +1,14 @@
-from pandas import Timestamp
 from matplotlib import pyplot as plt
 
 
 def prediction(ts, pred):
+    """
+    Make a plot to display a chunk of a TimeSeries and a prediction with its
+    confidence interval
+
+    :param ts: TimeSeries of the historical data
+    :param pred: TimeSeries of the prediction
+    """
     fig = plt.figure(figsize=(18,4))
     ax = fig.add_subplot(111)
     ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
@@ -32,3 +38,6 @@ def prediction(ts, pred):
                     color='0.86',
                     label="Confidence Interval")
     ax.legend()
+
+
+
