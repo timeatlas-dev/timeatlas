@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 def prediction(ts, pred):
     fig = plt.figure(figsize=(18,4))
     ax = fig.add_subplot(111)
+    ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
 
     # Add contextual information to the plot
     if ts.metadata is not None:
@@ -20,8 +21,6 @@ def prediction(ts, pred):
             unit = ts.metadata["unit"]
             ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
     ax.set_xlabel("Date")
-    ax.legend()
-    ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
 
     # Add the lines to the plot
     ax.plot(ts.series.index, ts.series.values, ls='-', c="0.3",
@@ -32,3 +31,4 @@ def prediction(ts, pred):
                     pred.series["ci_upper"].values,
                     color='0.86',
                     label="Confidence Interval")
+    ax.legend()
