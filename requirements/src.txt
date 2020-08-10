@@ -1,5 +1,6 @@
 # Main requirements
 bbdata>=0.4.3
+colour
 configobj
 fbprophet
 matplotlib

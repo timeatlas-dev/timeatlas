@@ -24,7 +24,12 @@ class Prophet(AbstractBaseModel):
         elif isinstance(horizon, TimeSeries):
             future = self.__prepare_series_for_prophet(horizon.erase())
         forecast = self.model.predict(future)
-        return TimeSeries.from_df(forecast, 'yhat', 'ds')
+        forecast.rename(columns={"yhat_lower": "ci_lower",
+                                 "yhat_upper": "ci_upper"},
+                        inplace=True)
+        return TimeSeries.from_df(forecast,
+                                  ['yhat', 'ci_lower', 'ci_upper'],
+                                  'ds')
 
     @staticmethod
     def __prepare_series_for_prophet(series: TimeSeries):

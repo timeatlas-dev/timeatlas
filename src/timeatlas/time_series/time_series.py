@@ -1,6 +1,6 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, Timestamp, Timedelta
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional
+from typing import NoReturn, List, Tuple, Any, Union, Optional
 
 from u8timeseries import TimeSeries as U8TimeSeries
 
@@ -30,7 +30,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None, label: str or None = None):
+                 metadata: Metadata = None, label: str or None = None,
+                 ):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -41,7 +42,11 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             assert len(series) >= 1, 'Values must have at least one values.'
 
             # Give a default name to the series (for the CSV output)
-            series.name = "values"
+            if isinstance(series, Series):
+                series.name = "values"
+            elif isinstance(series, DataFrame):
+                series.rename(columns={series.columns[0]: "values"},
+                              inplace=True)
 
         # Create the TimeSeries object
         self.series = series
@@ -53,6 +58,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             self.metadata = metadata
         else:
             self.metadata = None
+
+    def __repr__(self):
+        return DataFrame(self.series).__repr__()
 
     def __len__(self):
         return len(self.series)
@@ -135,7 +143,12 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         if 'figsize' not in kwargs:
             kwargs['figsize'] = (18,2) # Default TimeSeries plot format
 
+        if 'color' not in kwargs:
+            kwargs['color'] = "k"
+
         ax = self.series.plot(*args, **kwargs)
+        ax.set_xlabel("Date")
+        ax.grid(True, c='gray', ls='-', lw=1, alpha=0.2)
 
         # Add legend from metadata if existing
         if self.metadata is not None:
@@ -144,7 +157,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                 ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
             if "sensor" in self.metadata:
                 sensor = self.metadata["sensor"]
-                ax.set_title("{} : {}".format(sensor.id, sensor.name))
+                ax.set_title("{}—{}".format(sensor.id, sensor.name))
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """
@@ -310,19 +323,35 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: Unit 8 TimeSeries object
         """
-        return U8TimeSeries.from_times_and_values(self.series.index, self.series.values)
+        return U8TimeSeries.from_times_and_values(self.series.index,
+                                                  self.series.values)
 
     @staticmethod
-    def from_df(df: DataFrame, values_column: str, index_column: str = None) -> 'TimeSeries':
+    def from_df(df: DataFrame, values_columns: Union[str, List[str]],
+                index_column: str = None) -> 'TimeSeries':
         """Pandas DataFrame to TimeAtlas TimeSeries
         conversion method
 
         Returns: TimeAtlas TimeSeries
         """
-        series = Series(data=df[values_column].values) \
-            if index_column is None \
-            else Series(data=df[values_column].values, index=df[index_column])
-        return TimeSeries(series)
+        # Cover the case of univariate time series
+        if isinstance(values_columns, str):
+            series = Series(data=df[values_columns].values) \
+                if index_column is None \
+                else Series(data=df[values_columns].values,
+                            index=df[index_column])
+            return TimeSeries(series)
+        # and also the case of multivariate time series
+        elif isinstance(values_columns, List):
+            series = DataFrame(data=df[values_columns].values) \
+                if index_column is None \
+                else DataFrame(data=df[values_columns].values,
+                               columns=df[values_columns].columns,
+                               index=df[index_column])
+            return TimeSeries(series)
+        else:
+            raise TypeError("values_columns should be either a String or a "
+                            "List of String")
 
     def to_df(self) -> DataFrame:
         """ TimeAtlas TimeSeries to Pandas DataFrame
@@ -330,12 +359,16 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         Returns: Pandas DataFrame
         """
-        return DataFrame(self.series.values,
-                         index=self.series.index,
-                         columns=["values"])
+        if isinstance(self.series, Series):
+            return DataFrame(self.series.values,
+                             index=self.series.index,
+                             columns=["values"])
+        elif isinstance(self.series, DataFrame):
+            return self.series
+
 
     @staticmethod
-    def __series_to_csv(series: Series, path: str):
+    def __series_to_csv(series: Union[Series, DataFrame], path: str):
         """
         Read a Pandas Series and put it into a CSV file
 

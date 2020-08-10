@@ -1,8 +1,9 @@
 bbdata>=0.4.3
+colour
+configobj
+fbprophet
 matplotlib
 pandas
-fbprophet
-tqdm
 u8timeseries
-configobj
 torch
+tqdm
