@@ -8,7 +8,7 @@ from timeatlas import metrics
 from timeatlas import plots
 from timeatlas import processing
 from timeatlas import types
-from timeatlas.io import (
+from timeatlas.read_write import (
     read_pickle,
     read_text
 )

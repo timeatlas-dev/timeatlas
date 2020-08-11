@@ -6,7 +6,7 @@ API Reference
 
     abstract
     generators
-    io
+    read_write
     metadata
     metrics
     models

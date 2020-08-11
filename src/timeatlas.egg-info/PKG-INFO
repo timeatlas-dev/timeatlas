@@ -6,9 +6,9 @@ Home-page: UNKNOWN
 Author: Frédéric Montet
 Author-email: frederic.montet@hefr.ch
 License: UNKNOWN
-Description: [![PyPI version](https://badge.fury.io/py/timeatlas.svg)](https://badge.fury.io/py/timeatlas)
-        ![PyPI Downloads](https://img.shields.io/pypi/dm/timeatlas)
-        ![GitHub - License](https://img.shields.io/github/license/timeatlas-dev/timeatlas)
+Description: [![PyPI version](https://badge.fury.read_write/py/timeatlas.svg)](https://badge.fury.read_write/py/timeatlas)
+        ![PyPI Downloads](https://img.shields.read_write/pypi/dm/timeatlas)
+        ![GitHub - License](https://img.shields.read_write/github/license/timeatlas-dev/timeatlas)
         
         TimeAtlas
         =========

@@ -29,7 +29,7 @@ docs/_static/timeatlas.ai
 docs/api_reference/abstract.rst
 docs/api_reference/generators.rst
 docs/api_reference/index.rst
-docs/api_reference/io.rst
+docs/api_reference/read_write.rst
 docs/api_reference/metadata.rst
 docs/api_reference/metrics.rst
 docs/api_reference/models.rst
@@ -128,10 +128,10 @@ src/timeatlas/generators/anomaly_generator/config/validate_configfile.py
 src/timeatlas/generators/anomaly_generator/config/write_template.py
 src/timeatlas/generators/anomaly_generator/labeler/__init__.py
 src/timeatlas/generators/anomaly_generator/labeler/labeler.py
-src/timeatlas/io/__init__.py
-src/timeatlas/io/_utils.py
-src/timeatlas/io/pickle.py
-src/timeatlas/io/text.py
+src/timeatlas/read_write/__init__.py
+src/timeatlas/read_write/_utils.py
+src/timeatlas/read_write/pickle.py
+src/timeatlas/read_write/text.py
 src/timeatlas/metadata/__init__.py
 src/timeatlas/metadata/metadata.py
 src/timeatlas/metrics/__init__.py
@@ -180,8 +180,8 @@ tests/generator/anomaly_generator/generator/test_anomaly_generator.py
 tests/generator/anomaly_generator/generator/test_config.ini
 tests/generator/anomaly_generator/templater/__init__.py
 tests/generator/anomaly_generator/templater/create_template.py
-tests/io/__init__.py
-tests/io/test_io.py
+tests/read_write/__init__.py
+tests/read_write/test_io.py
 tests/metadata/__init__.py
 tests/metadata/test_metadata.py
 tests/time_series/__init__.py

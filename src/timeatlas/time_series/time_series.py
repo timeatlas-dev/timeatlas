@@ -25,11 +25,11 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     A TimeSeries object is a series of time indexed values.
 
     Attributes:
-        series: An optional Pandas Series
+        series: An optional Pandas DataFrame
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, series: Union[Series, DataFrame] = None,
+    def __init__(self, series: DataFrame = None,
                  metadata: Metadata = None, label: str or None = None,
                  ):
 
@@ -42,11 +42,11 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             assert len(series) >= 1, 'Values must have at least one values.'
 
             # Give a default name to the series (for the CSV output)
-            if isinstance(series, Series):
-                series.name = "values"
-            elif isinstance(series, DataFrame):
+            if series.columns is not None:
                 series.rename(columns={series.columns[0]: "values"},
                               inplace=True)
+            else:
+                series.columns = ["values"]
 
         # Create the TimeSeries object
         self.series = series
@@ -60,7 +60,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             self.metadata = None
 
     def __repr__(self):
-        return DataFrame(self.series).__repr__()
+        return self.series.__repr__()
 
     def __len__(self):
         return len(self.series)
@@ -93,7 +93,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                 freq = infer_freq(freq.series.index)
             elif isinstance(freq, str):
                 freq = freq
-        series = Series(index=date_range(start, end, freq=freq))
+        series = DataFrame(columns=["values"],
+                           index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
     def split(self, splitting_point: str) -> Tuple['TimeSeries', 'TimeSeries']:
@@ -226,7 +227,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        return TimeSeries(self.series.index.to_series().diff(), self.metadata)
+        diff = self.series.index.to_series().diff()
+        return TimeSeries(DataFrame(diff, columns=["values"]), self.metadata)
 
     # =============================================
     # Processing
@@ -260,13 +262,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         """
         if ts is not None:
-            s1 = self.series
-            s2 = ts.series
+            s1 = self.series["values"]
+            s2 = ts.series["values"]
             df = DataFrame(data={"s1": s1, "s2": s2})
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
                              self.metadata)
         else:
-            res = TimeSeries(self.series.apply(func),
+            res = TimeSeries(self.series.to_frame().apply(func),
                              self.metadata)
         return res
 

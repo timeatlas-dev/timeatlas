@@ -1,7 +1,7 @@
 import os
 from os import listdir
 from os.path import isfile, join
-import io
+import read_write
 import json
 
 import pandas as pd
@@ -41,7 +41,7 @@ class SmnHelper:
             dict : The loaded JSON
             
         """
-        with io.open(json_path, mode='r') as json_file:
+        with read_write.open(json_path, mode='r') as json_file:
             data = json.load(json_file)
         return data
     

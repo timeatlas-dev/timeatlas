@@ -4,10 +4,10 @@ IO
 
 Pickle
 ------
-.. automodule:: timeatlas.io.pickle
+.. automodule:: timeatlas.read_write.pickle
     :members:
 
 Text
 ----
-.. automodule:: timeatlas.io.text
+.. automodule:: timeatlas.read_write.text
     :members:
