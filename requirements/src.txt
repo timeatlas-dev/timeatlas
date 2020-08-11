@@ -5,6 +5,6 @@ configobj
 fbprophet
 matplotlib
 pandas
-u8timeseries
+darts
 torch
 tqdm
