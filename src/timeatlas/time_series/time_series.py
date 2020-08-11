@@ -278,13 +278,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
         """
         if ts is not None:
-            s1 = self.series["values"]
-            s2 = ts.series["values"]
+            s1 = self.series[TIME_SERIES_VALUES]
+            s2 = ts.series[TIME_SERIES_VALUES]
             df = DataFrame(data={"s1": s1, "s2": s2})
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
                              self.metadata)
         else:
-            res = TimeSeries(self.series.to_frame().apply(func),
+            res = TimeSeries(self.series.apply(func),
                              self.metadata)
         return res
 
