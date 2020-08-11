@@ -87,7 +87,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # =======
 
     @staticmethod
-    def create(start: str, end: str, freq=None, metadata: Metadata = None):
+    def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
+               metadata: Metadata = None):
         """
         Creates an empty TimeSeries object with the period as index
 
@@ -105,7 +106,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                 freq = infer_freq(freq.series.index)
             elif isinstance(freq, str):
                 freq = freq
-        series = DataFrame(columns=["values"],
+        series = DataFrame(columns=[TIME_SERIES_VALUES],
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
@@ -123,8 +124,10 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         start = self.series.index[0]
         end = self.series.index[-1]
-        before = TimeSeries(self.series[start:splitting_point], self.metadata)
-        after = TimeSeries(self.series[splitting_point:end], self.metadata)
+        first_split = self.series[start:splitting_point].copy()
+        second_split = self.series[splitting_point:end].copy()
+        before = TimeSeries(first_split, self.metadata)
+        after = TimeSeries(second_split, self.metadata)
         return before, after
 
     def erase(self) -> 'TimeSeries':
@@ -240,7 +243,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             TimeSeries
         """
         diff = self.series.index.to_series().diff()
-        return TimeSeries(DataFrame(diff, columns=["values"]), self.metadata)
+        return TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
+                          self.metadata)
 
     # =============================================
     # Processing
@@ -311,7 +315,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Args:
             decimals: number of digits after the comma
         """
-        return TimeSeries(self.series.astype(float).round(decimals=decimals), metadata=self.metadata)
+        return TimeSeries(self.series.astype(float).round(decimals=decimals),
+                          metadata=self.metadata)
 
     # =============================================
     # IO

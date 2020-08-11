@@ -38,7 +38,6 @@ class TestTimeSeries(TestCase):
         self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
         self.assertIsInstance(ts, TimeSeries)
 
-
     def test__TimeSeries__with_DataFrame_input_single_column(self):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
@@ -60,6 +59,49 @@ class TestTimeSeries(TestCase):
         df = DataFrame({TIME_SERIES_VALUES: my_series, "two": my_series})
         ts = TimeSeries(df)
         self.assertIsInstance(ts, TimeSeries)
+
+    def test__TimeSeries__create(self):
+        ts = TimeSeries.create("01-01-2020", "02-01-2020")
+        self.assertIsInstance(ts, TimeSeries)
+        # Test if all elements are NaNs
+        self.assertTrue(ts.series.isna().all().values[0])
+        # Test if frequency is daily
+        self.assertEqual(ts.series.index.inferred_freq, 'D')
+
+    def test__TimeSeries__create_with_freq_as_str(self):
+        ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
+        self.assertIsInstance(ts, TimeSeries)
+        # Test if all elements are NaNs
+        self.assertTrue(ts.series.isna().all().values[0])
+        # Test if frequency is daily
+        self.assertEqual(ts.series.index.inferred_freq, 'H')
+
+    def test__TimeSeries__create_with_freq_as_time_series(self):
+        ts_freq = TimeSeries.create("01-01-2020", "02-01-2020", "H")
+        ts = TimeSeries.create("01-01-2020", "02-01-2020", ts_freq)
+        self.assertIsInstance(ts, TimeSeries)
+        # Test if all elements are NaNs
+        self.assertTrue(ts.series.isna().all().values[0])
+        # Test if frequency is daily
+        self.assertEqual(ts.series.index.inferred_freq,
+                         ts_freq.series.index.inferred_freq)
+
+    def test__TimeSeries__split(self):
+        # Create TimeSeries and split it
+        ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
+        a, b = ts.split("02-01-2020 00:00")
+        # Get all the indexes
+        ts_start = ts.series["values"].index[0]
+        ts_end = ts.series["values"].index[-1]
+        a_start = a.series["values"].index[0]
+        a_end = a.series["values"].index[-1]
+        b_start = b.series["values"].index[0]
+        b_end = b.series["values"].index[-1]
+        # Test boundaries
+        self.assertEqual(ts_start, a_start)
+        self.assertEqual(ts_end, b_end)
+        # Test split point
+        self.assertEqual(a_end, b_start)
 
     def tearDown(self) -> None:
         del self.my_time_series
