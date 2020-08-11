@@ -10,11 +10,11 @@ from timeatlas.config.constants import *
 class TestTimeSeriesDatasetIO(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "../data/test-import/to_text_with_metadata"
+        self.target_dir = "data/test-import/to_text_with_metadata"
         ts_1 = ta.read_text(self.target_dir)
         ts_2 = ta.read_text(self.target_dir)
         self.tsd = TimeSeriesDataset([ts_1, ts_2])
-        self.target_dir = "../data/test-export"
+        self.target_dir = "data/test-export"
 
     def test__TimeSeriesDataset_IO__to_text(self):
         my_path = "{}/{}".format(self.target_dir, "tsd_to_text")

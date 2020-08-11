@@ -29,11 +29,11 @@ def check_directory_structure(path: str):
         return None
 
 
-def csv_to_series(path: str) -> Series:
+def csv_to_dataframe(path: str) -> Series:
     df = pd.read_csv(path)
     df = df.set_index(pd.to_datetime(df["index"]))
     df = df.drop(columns=["index"])
-    return df["values"]
+    return df["values"].to_frame()
 
 
 def json_to_metadata(path: str) -> Metadata:

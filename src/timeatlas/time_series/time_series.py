@@ -8,6 +8,7 @@ from timeatlas.abstract.abstract_analysis import AbstractAnalysis
 from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
 from timeatlas.abstract.abstract_processing import AbstractProcessing
 from timeatlas.config.constants import (
+    TIME_SERIES_VALUES,
     TIME_SERIES_FILENAME,
     TIME_SERIES_EXT,
     METADATA_FILENAME,
@@ -29,7 +30,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, series: DataFrame = None,
+    def __init__(self, series: Union[Series, DataFrame] = None,
                  metadata: Metadata = None, label: str or None = None,
                  ):
 
@@ -38,15 +39,26 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             assert isinstance(series.index, DatetimeIndex), \
                 'Values must be indexed with a DatetimeIndex.'
 
-            # Check if the length is bigger than one
+            # Check if the length is greater than one
             assert len(series) >= 1, 'Values must have at least one values.'
 
-            # Give a default name to the series (for the CSV output)
-            if series.columns is not None:
-                series.rename(columns={series.columns[0]: "values"},
-                              inplace=True)
-            else:
-                series.columns = ["values"]
+            # Save the data with the right format
+            if isinstance(series, Series):
+                series.name = TIME_SERIES_VALUES
+                series = series.to_frame()
+
+            elif isinstance(series, DataFrame):
+                assert len(series.columns) >= 1, \
+                    "DataFrame as input series must have at least one column."
+
+                # If there's only one column, then it is the values column
+                if len(series.columns) == 1:
+                    series.columns = [TIME_SERIES_VALUES]
+
+                # Otherwise, one column should be called "values"
+                assert TIME_SERIES_VALUES in series.columns, \
+                    "DataFrame as input series must contain a column called {}"\
+                    .format(TIME_SERIES_VALUES)
 
         # Create the TimeSeries object
         self.series = series
@@ -328,46 +340,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         return U8TimeSeries.from_times_and_values(self.series.index,
                                                   self.series.values)
 
-    @staticmethod
-    def from_df(df: DataFrame, values_columns: Union[str, List[str]],
-                index_column: str = None) -> 'TimeSeries':
-        """Pandas DataFrame to TimeAtlas TimeSeries
-        conversion method
-
-        Returns: TimeAtlas TimeSeries
-        """
-        # Cover the case of univariate time series
-        if isinstance(values_columns, str):
-            series = Series(data=df[values_columns].values) \
-                if index_column is None \
-                else Series(data=df[values_columns].values,
-                            index=df[index_column])
-            return TimeSeries(series)
-        # and also the case of multivariate time series
-        elif isinstance(values_columns, List):
-            series = DataFrame(data=df[values_columns].values) \
-                if index_column is None \
-                else DataFrame(data=df[values_columns].values,
-                               columns=df[values_columns].columns,
-                               index=df[index_column])
-            return TimeSeries(series)
-        else:
-            raise TypeError("values_columns should be either a String or a "
-                            "List of String")
-
     def to_df(self) -> DataFrame:
         """ TimeAtlas TimeSeries to Pandas DataFrame
         conversion method
 
         Returns: Pandas DataFrame
         """
-        if isinstance(self.series, Series):
-            return DataFrame(self.series.values,
-                             index=self.series.index,
-                             columns=["values"])
-        elif isinstance(self.series, DataFrame):
-            return self.series
-
+        return self.series
 
     @staticmethod
     def __series_to_csv(series: Union[Series, DataFrame], path: str):

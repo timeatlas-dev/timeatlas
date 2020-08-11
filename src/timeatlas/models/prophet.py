@@ -4,7 +4,7 @@ from pandas import DataFrame
 import fbprophet as fbp
 
 from timeatlas.abstract import AbstractBaseModel
-
+from timeatlas.config.constants import TIME_SERIES_VALUES
 
 class Prophet(AbstractBaseModel):
 
@@ -24,12 +24,13 @@ class Prophet(AbstractBaseModel):
         elif isinstance(horizon, TimeSeries):
             future = self.__prepare_series_for_prophet(horizon.erase())
         forecast = self.model.predict(future)
-        forecast.rename(columns={"yhat_lower": "ci_lower",
+        forecast.rename(columns={"yhat": TIME_SERIES_VALUES,
+                                 "yhat_lower": "ci_lower",
                                  "yhat_upper": "ci_upper"},
                         inplace=True)
-        return TimeSeries.from_df(forecast,
-                                  ['yhat', 'ci_lower', 'ci_upper'],
-                                  'ds')
+        df = forecast[[TIME_SERIES_VALUES, 'ci_lower', 'ci_upper']]
+        df.index = forecast["ds"]
+        return TimeSeries(df)
 
     @staticmethod
     def __prepare_series_for_prophet(series: TimeSeries):

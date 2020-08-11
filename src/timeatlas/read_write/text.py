@@ -1,7 +1,7 @@
 from typing import Any
 from timeatlas.config.constants import *
 from timeatlas import TimeSeries, TimeSeriesDataset
-from ._utils import check_directory_structure, csv_to_series, json_to_metadata
+from ._utils import check_directory_structure, csv_to_dataframe, json_to_metadata
 
 import pandas as pd
 
@@ -24,13 +24,13 @@ def read_text(path: str) -> Any:
 
     if dir_type == "timeseries":
         data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
-        series = csv_to_series(data)
+        series = csv_to_dataframe(data)
         return TimeSeries(series)
 
     elif dir_type == "timeseries with metadata":
         data = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
         meta = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
-        series = csv_to_series(data)
+        series = csv_to_dataframe(data)
         metadata = json_to_metadata(meta)
         return TimeSeries(series, metadata)
 
