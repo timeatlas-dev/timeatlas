@@ -324,13 +324,29 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                              self.metadata)
         return res
 
-    def resample(self, by: str) -> Any:
+    def resample(self, freq: str, method: Optional[str] = None) -> 'TimeSeries':
         """
-        https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
-        - upsampling
-        - downsampling
+        Convert TimeSeries to specified frequency. Optionally provide filling
+        method to pad/backfill missing values.
+
+        Args:
+            freq: string
+                The new time difference between two adjacent entries in the
+                returned TimeSeries. A DateOffset alias is expected.
+
+            method: {'backfill'/'bfill', 'pad'/'ffill'}, default None
+                Method to use for filling holes in reindexed Series (note this
+                does not fill NaNs that already were present):
+
+                * 'pad'/'ffil': propagate last valid observation forward to next
+                  valid
+                * 'backfill'/'ffill': use next valid observation to fill
+            
+        Returns:
+            TimeSeries
         """
-        pass
+        new_series = self.series.asfreq(freq, method=method)
+        return TimeSeries(new_series, self.metadata)
 
     def interpolate(self, method: str) -> Any:
         """
