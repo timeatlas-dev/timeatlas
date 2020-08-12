@@ -2,6 +2,7 @@
 LICENSE
 MANIFEST.in
 Pipfile
+Pipfile.lock
 README.md
 setup.py
 .github/workflows/ci.yml

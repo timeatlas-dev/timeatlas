@@ -22,7 +22,7 @@ class Prophet(AbstractBaseModel):
         if isinstance(horizon, str):
             future = self.make_future_dataframe(horizon, freq)
         elif isinstance(horizon, TimeSeries):
-            future = self.__prepare_series_for_prophet(horizon.erase())
+            future = self.__prepare_series_for_prophet(horizon.empty())
         forecast = self.model.predict(future)
         forecast.rename(columns={"yhat": TIME_SERIES_VALUES,
                                  "yhat_lower": "ci_lower",
