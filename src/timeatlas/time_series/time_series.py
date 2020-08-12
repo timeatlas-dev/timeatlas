@@ -152,6 +152,31 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         return self.fill(None)
 
+    def trim(self, side: str = "both"):
+        """
+        Remove NaNs from a TimeSeries start, end or both
+
+        Args:
+            side: the side where to remove the NaNs. Valid values are either
+            "start", "end" or "both". Default to "both"
+
+        Returns:
+            TimeSeries
+        """
+        if side is "both":
+            first = self.series.first_valid_index()
+            last = self.series.last_valid_index()
+            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:last]
+        elif side is "start":
+            first = self.series.first_valid_index()
+            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:]
+        elif side is "end":
+            last = self.series.last_valid_index()
+            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[:last]
+        else:
+            raise AttributeError("side attribute must be either 'start' or 'end', but not {}".format(side))
+        return TimeSeries(series_wo_nans, self.metadata)
+
     # =============================================
     # Analysis
     # =============================================
