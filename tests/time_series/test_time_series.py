@@ -1,5 +1,6 @@
 from unittest import TestCase
 from pandas import DatetimeIndex, DataFrame, Series
+import numpy as np
 from timeatlas import TimeSeries, Metadata
 from timeatlas.config.constants import TIME_SERIES_VALUES
 
@@ -102,6 +103,21 @@ class TestTimeSeries(TestCase):
         self.assertEqual(ts_end, b_end)
         # Test split point
         self.assertEqual(a_end, b_start)
+
+    def test__TimeSeries__to_darts__type_check(self):
+        ts = TimeSeries.create("01-2020", "02-2020", "H")
+        ts = ts.fill(np.random.randint(0,1000,len(ts)))
+        self.assertIsInstance(ts, TimeSeries)
+        dts = ts.to_darts()
+        from darts import TimeSeries as DartsTimeSeries
+        self.assertIsInstance(dts, DartsTimeSeries)
+
+    def test__TimeSeries__to_darts__series_equality(self):
+        ts = TimeSeries.create("01-2020", "02-2020", "H")
+        ts = ts.fill(np.random.randint(0,1000,len(ts)))
+        dts = ts.to_darts()
+        is_equal = ts.series[TIME_SERIES_VALUES].equals(dts.pd_series())
+        self.assertTrue(is_equal)
 
     def tearDown(self) -> None:
         del self.my_time_series
