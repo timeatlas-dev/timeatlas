@@ -1,8 +1,8 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, Timestamp, Timedelta
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, List, Tuple, Any, Union, Optional
+from typing import NoReturn, Tuple, Any, Union, Optional
 
-from u8timeseries import TimeSeries as U8TimeSeries
+from darts import TimeSeries as DartsTimeSeries
 
 from timeatlas.abstract.abstract_analysis import AbstractAnalysis
 from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
@@ -130,16 +130,27 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         after = TimeSeries(second_split, self.metadata)
         return before, after
 
-    def erase(self) -> 'TimeSeries':
+    def fill(self, value: Any) -> 'TimeSeries':
+        """
+        Fill a TimeSeries with a value. If given a unique value, all values will
+        be broadcasted. If given an array of the length of the TimeSeries, it
+        will replace all values.
+
+        :param value: Any values that you want to fill the TimeSeries with
+        :return: TimeSeries
+        """
+        s = self.series.copy()
+        s[TIME_SERIES_VALUES] = value
+        return TimeSeries(s, self.metadata)
+
+    def empty(self) -> 'TimeSeries':
         """
         Empty the TimeSeries (fill all values with NaNs)
 
         Returns:
             TimeSeries
         """
-        s = self.series.copy()
-        s.values[:] = None
-        return TimeSeries(s, self.metadata)
+        return self.fill(None)
 
     # =============================================
     # Analysis
@@ -336,14 +347,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)
 
-    def to_u8(self) -> U8TimeSeries:
-        """ TimeAtlas TimeSeries to Unit8 TimeSeries
+    def to_darts(self) -> DartsTimeSeries:
+        """ TimeAtlas TimeSeries to Darts TimeSeries
         conversion method
 
-        Returns: Unit 8 TimeSeries object
+        Returns: Darts TimeSeries object
         """
-        return U8TimeSeries.from_times_and_values(self.series.index,
-                                                  self.series.values)
+        return DartsTimeSeries.from_series(self.series[TIME_SERIES_VALUES])
 
     def to_df(self) -> DataFrame:
         """ TimeAtlas TimeSeries to Pandas DataFrame
