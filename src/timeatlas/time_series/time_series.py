@@ -347,6 +347,20 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # Processing
     # ==========================================================================
 
+    def sort(self, *args, **kwargs):
+        """
+        Sort a TimeSeries by time stamps
+
+        Basically, it's a wrapper around df.sort_index()
+        see: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_index.html
+
+        :param args:
+        :param kwargs:
+        :return: TimeSeries
+        """
+        sorted_time_series = self.series.sort_index(*args, **kwargs)
+        return TimeSeries(sorted_time_series, self.metadata)
+
     def apply(self, func, ts: 'TimeSeries' = None):
         """
         Wrapper around the Pandas apply function
