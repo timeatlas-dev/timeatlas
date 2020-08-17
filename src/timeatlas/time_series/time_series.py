@@ -1,4 +1,5 @@
-from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, Timestamp, Timedelta
+from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
+    Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
 from typing import NoReturn, Tuple, Any, Union, Optional
 
@@ -180,10 +181,30 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                                  "'end', but not {}".format(side))
         return TimeSeries(series_wo_nans, self.metadata)
 
+    def append(self, ts: 'TimeSeries'):
+        """
+        Append a TimeSeries to another TimeSeries
+
+        :param ts: TimeSeries to append
+        :return: TimeSeries
+        """
+        new_series = self.series.append(ts.series)
+        return TimeSeries(new_series, self.metadata)
+
+    def prepend(self, ts: 'TimeSeries'):
+        """
+        Prepend a TimeSeries to another TimeSeries
+
+        :param ts: TimeSeries to prepend
+        :return: TimeSeries
+        """
+        new_series = concat([ts.series, self.series])
+        return TimeSeries(new_series, self.metadata)
+
     # ==========================================================================
     # Analysis
     # ==========================================================================
-    
+
     def plot(self, *args, **kwargs):
         """
         Plot a TimeSeries
@@ -197,7 +218,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         register_matplotlib_converters()
 
         if 'figsize' not in kwargs:
-            kwargs['figsize'] = (18,2) # Default TimeSeries plot format
+            kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
 
         if 'color' not in kwargs:
             kwargs['color'] = "k"
@@ -241,6 +262,42 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             float
         """
         return self.series.max()
+
+    def mean(self) -> float:
+        """
+        Get the mean value of a TimeSeries
+
+        Returs:
+            float
+        """
+        return self.series.mean()
+
+    def median(self) -> float:
+        """
+        Get the median value of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.median()
+
+    def skewness(self) -> float:
+        """
+        Get the skewness of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.skew()
+
+    def kurtosis(self) -> float:
+        """
+        Get the kurtosis of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.kurtosis()
 
     def boundaries(self) -> Tuple[Timestamp, Timestamp]:
         """
