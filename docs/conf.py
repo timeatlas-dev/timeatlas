@@ -58,6 +58,10 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# -- NB Sphinx configuration --------------------------------------------------
+
+nbsphinx_allow_errors = True
+
 # -- Pydata Sphinx Theme configuration ----------------------------------------
 
 html_logo = "_static/logo-inline.png"
