@@ -15,7 +15,7 @@ from timeatlas.config.constants import (
     METADATA_EXT
 )
 from timeatlas.metadata import Metadata
-
+from timeatlas.processing import scalers
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -341,24 +341,45 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                 * 'pad'/'ffil': propagate last valid observation forward to next
                   valid
                 * 'backfill'/'ffill': use next valid observation to fill
-            
+
         Returns:
             TimeSeries
         """
         new_series = self.series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
 
-    def interpolate(self, method: str) -> Any:
+    def interpolate(self, *args, **kwargs) -> 'TimeSeries':
         """
-        Intelligent interpolation in function of the data unit etc.
+        Wrapper around the Pandas interpolate() method.
+
+        See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.interpolate.html
+        for reference
+
         """
-        pass
+        new_series = self.series.interpolate(*args, **kwargs)
+        return TimeSeries(new_series, self.metadata)
 
     def normalize(self, method: str) -> Any:
         """
-        Normalize a dataset
+        Normalize a Time Series with a given method
+
+        TODO Fix the circular dependency with TimeSeries in scalers
+
+        Args:
+            method: str
+            * 'minmax' for a min max normalization
+            * 'zscore' for Z score normalization
+
+        Returns:
+            TimeSeries
         """
-        pass
+        if method == "minmax":
+            return scalers.minmax(self)
+        elif method == "zscore":
+            return scalers.zscore(self)
+        else:
+            raise ValueError("{} isn't recognized as a normalization method"
+                             .format(method))
 
     def round(self, decimals: int) -> 'TimeSeries':
         """
