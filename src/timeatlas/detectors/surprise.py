@@ -2,7 +2,7 @@ from typing import List, Callable, Tuple, Union
 
 from timeatlas import TimeSeries
 from timeatlas.abstract import AbstractBaseDetector, AbstractBaseModel
-from timeatlas.processing import scalers, miscellaneous
+from timeatlas.processors import scaler, miscellaneous
 
 
 class Surprise(AbstractBaseDetector):
@@ -27,9 +27,9 @@ class Surprise(AbstractBaseDetector):
 
     def normalize(self, method: str):
         if method == "minmax":
-            self.normalizer = scalers.minmax
+            self.normalizer = scaler.minmax
         elif method == "zscore":
-            self.normalizer = scalers.zscore
+            self.normalizer = scaler.zscore
         return self
 
     def alerts(self, method: str = "quantile", thresholds: Union[float, List] = [0.85, 0.95]):

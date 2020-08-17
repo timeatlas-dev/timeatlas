@@ -15,7 +15,7 @@ from timeatlas.config.constants import (
     METADATA_EXT
 )
 from timeatlas.metadata import Metadata
-from timeatlas.processing import scalers
+from timeatlas.processors.scaler import Scaler
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -83,8 +83,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     def __getitem__(self, item):
         return TimeSeries(self.series[item])
 
+    # ==========================================================================
     # Methods
-    # =======
+    # ==========================================================================
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
@@ -116,7 +117,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         in both as in [start,...,at] and [at,...,end].
 
         Args:
-            splitting_point: str where to the TimeSeries will be split (e.g. "2019-12-31 00:00:00")
+            splitting_point: str where to the TimeSeries will be split
+                            (e.g. "2019-12-31 00:00:00")
 
         Returns:
             a Tuple of TimeSeries ([start,...,at] and [at,...,end])
@@ -174,12 +176,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             last = self.series.last_valid_index()
             series_wo_nans = self.series[TIME_SERIES_VALUES].loc[:last]
         else:
-            raise AttributeError("side attribute must be either 'start' or 'end', but not {}".format(side))
+            raise AttributeError("side attribute must be either 'start' or "
+                                 "'end', but not {}".format(side))
         return TimeSeries(series_wo_nans, self.metadata)
 
-    # =============================================
+    # ==========================================================================
     # Analysis
-    # =============================================
+    # ==========================================================================
+    
     def plot(self, *args, **kwargs):
         """
         Plot a TimeSeries
@@ -282,9 +286,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         return TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
                           self.metadata)
 
-    # =============================================
+    # ==========================================================================
     # Processing
-    # =============================================
+    # ==========================================================================
 
     def apply(self, func, ts: 'TimeSeries' = None):
         """
@@ -359,11 +363,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         new_series = self.series.interpolate(*args, **kwargs)
         return TimeSeries(new_series, self.metadata)
 
-    def normalize(self, method: str) -> Any:
+    def normalize(self, method: str) -> 'TimeSeries':
         """
         Normalize a Time Series with a given method
-
-        TODO Fix the circular dependency with TimeSeries in scalers
 
         Args:
             method: str
@@ -374,12 +376,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             TimeSeries
         """
         if method == "minmax":
-            return scalers.minmax(self)
+            scaled_series = Scaler.minmax(self.series)
         elif method == "zscore":
-            return scalers.zscore(self)
+            scaled_series = Scaler.zscore(self.series)
         else:
             raise ValueError("{} isn't recognized as a normalization method"
                              .format(method))
+        return TimeSeries(scaled_series, self.metadata)
 
     def round(self, decimals: int) -> 'TimeSeries':
         """
@@ -391,13 +394,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         return TimeSeries(self.series.astype(float).round(decimals=decimals),
                           metadata=self.metadata)
 
-    # =============================================
+    # ==========================================================================
     # IO
-    # =============================================
+    # ==========================================================================
 
     def to_text(self, path: str) -> NoReturn:
         # Create the time series file
-        file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME,
+                                      TIME_SERIES_EXT)
         ensure_dir(file_path)
         self.__series_to_csv(self.series, file_path)
         # Create the metadata file
