@@ -163,14 +163,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        if side is "both":
+        if side == "both":
             first = self.series.first_valid_index()
             last = self.series.last_valid_index()
             series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:last]
-        elif side is "start":
+        elif side == "start":
             first = self.series.first_valid_index()
             series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:]
-        elif side is "end":
+        elif side == "end":
             last = self.series.last_valid_index()
             series_wo_nans = self.series[TIME_SERIES_VALUES].loc[:last]
         else:

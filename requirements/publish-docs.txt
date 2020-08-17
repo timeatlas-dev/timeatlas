@@ -3,6 +3,7 @@
 sphinx
 nbsphinx
 pylint
+jupyter_client
 pydata-sphinx-theme
 recommonmark
 m2r
