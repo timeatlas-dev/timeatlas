@@ -1,12 +1,11 @@
 from typing import List
 
-from timeatlas.abstract import AbstractBaseModel
-
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 from torch.optim.optimizer import Optimizer
 
+from timeatlas.abstract import AbstractBaseModel
 
 class LSTMPrediction(nn.Module, AbstractBaseModel):
 

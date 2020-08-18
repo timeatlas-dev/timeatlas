@@ -1,5 +1,10 @@
-from .pairwise import relative_error
+from .pairwise import (
+    relative_error,
+    absolute_error
+)
 
 __all__ = [
     "relative_error",
+    "absolute_error"
+
 ]

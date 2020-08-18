@@ -1,9 +1,9 @@
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
-from timeatlas import utils
 from pandas.plotting import register_matplotlib_converters
 
 from timeatlas import TimeSeries
+from ._utils import add_metadata_to_plot
 
 
 def prediction(ts: TimeSeries, pred: TimeSeries):
@@ -78,7 +78,7 @@ def status(ts: TimeSeries):
 
     ax.xaxis_date()
 
-    ax = utils.add_metadata_to_plot(ts.metadata, ax)
+    ax = add_metadata_to_plot(ts.metadata, ax)
 
     fig.autofmt_xdate()
     plt.grid(b=True, which='both')

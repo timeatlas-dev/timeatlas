@@ -1,4 +1,4 @@
-from ._core import (
+from .time_series import (
     prediction,
     status
 )

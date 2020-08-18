@@ -1,17 +1,35 @@
 
-def relative_error(x: float, y: float):
+def relative_error(x_0: float, x: float):
     """
-    Compute the relative error between two values in a numerically stable way.
+    Compute the relative error between two values
 
-    TODO: Should be improved with a definition such as the one in
-        https://mathworld.wolfram.com/RelativeError.html
+    .. math::
+        \delta x = \frac{x_0 - x}{x}
 
     Args:
-        x: float of the true value
-        y: float of the estimated value
+        x_0: float of the inferred value
+        x: float of the measured value
 
     Returns:
         float value of the relative error
 
     """
-    return abs(x-y)/(abs(x)+1)
+    return (x_0 - x) / x
+
+
+def absolute_error(x_0: float, x: float):
+    """
+    Compute the absolute error between two values
+
+    .. math::
+        \Delta x = x_0 - x
+
+    Args:
+        x_0: float of the inferred value
+        x: float of the measured value
+
+    Returns:
+        float value of the absolute error
+
+    """
+    return x_0 - x
