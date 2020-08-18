@@ -1,0 +1,10 @@
+# Main requirements
+bbdata>=0.4.3
+colour
+configobj
+fbprophet
+matplotlib
+pandas
+u8darts
+torch
+tqdm

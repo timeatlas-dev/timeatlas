@@ -1,26 +1,10 @@
-[![Netlify Status](https://api.netlify.com/api/v1/badges/c4612926-1b26-491e-ae8a-2aeff77b27ed/deploy-status)](https://app.netlify.com/sites/timeatlas/deploys)
+[![PyPI version](https://badge.fury.io/py/timeatlas.svg)](https://badge.fury.io/py/timeatlas)
+![PyPI Downloads](https://img.shields.io/pypi/dm/timeatlas)
+![GitHub - License](https://img.shields.io/github/license/timeatlas-dev/timeatlas)
 
 TimeAtlas
 =========
 
-A toolbox to handle, analyze and make predictions with time series data.
-    
-
-Develop
--------
-
-To develop this package. Execute the following command from the root of the project
-
-    pipenv install
-    
-Please add an example of the method(s) you did develop in `docs/getting_started.ipynb`.
-
-
-Author
-------
-
-Frédéric Montet
-frederic.montet@hefr.ch
-
-Lorenz Rychener
-lorenz.rychener@hefr.ch
+**timeatlas** is an open source library for sensor data analysis and more. 
+It aims at providing a comprehensive API for time series analysis,
+prediction, as well as anomaly detections.

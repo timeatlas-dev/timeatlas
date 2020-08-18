@@ -6,7 +6,7 @@ import timeatlas as ta
 class TestTimeSeriesDataset(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "../data/test-import/to_text_without_metadata"
+        self.target_dir = "data/test-import/to_text_without_metadata"
         self.my_time_series_1 = ta.read_text(self.target_dir)
         self.my_time_series_2 = ta.read_text(self.target_dir)
 

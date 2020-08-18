@@ -11,7 +11,7 @@ class TestMetadata(TestCase):
     def setUp(self) -> None:
 
         # Define a target directory
-        self.target_dir = "../data/test-export"
+        self.target_dir = "data/test-export"
 
         # known type in dict
         self.my_unit = {
@@ -85,7 +85,9 @@ class TestMetadata(TestCase):
             "coordinates": self.my_coordinates
         }
         my_metadata.add(my_dict)
-        print(my_metadata.to_json(pretty_print=True))
+        json = my_metadata.to_json(pretty_print=True)
+        self.assertIsInstance(json, str)
+        print(json)
 
     def test__Metadata__to_json__with_file_path(self):
         my_metadata = Metadata()

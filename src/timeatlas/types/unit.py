@@ -1,5 +1,6 @@
 
 class Unit:
+    """ Defines a physical unit of measurement, like Celsius."""
 
     def __init__(self, name: str, symbol: str, data_type: str):
         self.name = name

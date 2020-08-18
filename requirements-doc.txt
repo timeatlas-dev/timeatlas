@@ -1,7 +1,0 @@
-# Documentation requirements
-.
-sphinx
-nbsphinx
-pylint
-sphinx-rtd-theme
-pydata-sphinx-theme

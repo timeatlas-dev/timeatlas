@@ -1,5 +1,10 @@
 Time Series Dataset
 ===================
 
-.. autoclass:: timeatlas.TimeSeriesDataset
+.. currentmodule:: timeatlas
+
+.. autosummary::
+   :toctree: TimeSeriesDataset
+
+.. autoclass:: TimeSeriesDataset
     :members:

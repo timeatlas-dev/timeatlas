@@ -1,5 +1,10 @@
 Time Series
 ===========
 
-.. automodule:: timeatlas.time_series.time_series
+.. currentmodule:: timeatlas
+
+.. autosummary::
+   :toctree: time_series.time_series
+
+.. automodule:: time_series.time_series
     :members:

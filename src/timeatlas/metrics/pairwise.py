@@ -1,5 +1,5 @@
 
-def relative_error(x: float, y:float):
+def relative_error(x: float, y: float):
     """
     Compute the relative error between two values in a numerically stable way.
 

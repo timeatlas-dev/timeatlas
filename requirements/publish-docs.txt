@@ -1,0 +1,9 @@
+# Requirements for the publish-docs job in the GitHub actions
+.
+sphinx
+nbsphinx
+pylint
+jupyter_client
+pydata-sphinx-theme
+recommonmark
+m2r

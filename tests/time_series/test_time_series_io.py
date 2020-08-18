@@ -35,7 +35,7 @@ class TestTimeSeriesIO(TestCase):
         self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
 
         # Define a target directory
-        self.target_dir = "../data/test-export"
+        self.target_dir = "data/test-export"
 
     def test__TimeSeries_IO__to_text_without_metadata(self):
         path = self.target_dir + "/to_text_without_metadata"
@@ -67,13 +67,6 @@ class TestTimeSeriesIO(TestCase):
         self.my_time_series.to_pickle(pickle_path)
         does_pickle_exist = os_path.exists(pickle_path)
         self.assertTrue(does_pickle_exist)
-
-    def test__TimeSeries_IO__from_df(self):
-        index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
-        my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
-        df = DataFrame(data=my_series)
-        ts = TimeSeries.from_df(df, values_column="values")
-        self.assertIsInstance(ts, TimeSeries)
 
     def test__TimeSeries_IO__to_df(self):
         df = self.my_time_series.to_df()
