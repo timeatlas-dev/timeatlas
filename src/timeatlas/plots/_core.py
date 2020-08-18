@@ -1,13 +1,19 @@
 from matplotlib import pyplot as plt
+import matplotlib.dates as mdates
+from timeatlas import utils
+from pandas.plotting import register_matplotlib_converters
+
+from timeatlas import TimeSeries
 
 
-def prediction(ts, pred):
+def prediction(ts: TimeSeries, pred: TimeSeries):
     """
     Make a plot to display a chunk of a TimeSeries and a prediction with its
     confidence interval
 
-    :param ts: TimeSeries of the historical data
-    :param pred: TimeSeries of the prediction
+    Args:
+        ts: TimeSeries of the historical data
+        pred: TimeSeries of the prediction
     """
     fig = plt.figure(figsize=(18,4))
     ax = fig.add_subplot(111)
@@ -26,6 +32,7 @@ def prediction(ts, pred):
         if "unit" in ts.metadata:
             unit = ts.metadata["unit"]
             ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
+
     ax.set_xlabel("Date")
 
     # Add the lines to the plot
@@ -40,3 +47,40 @@ def prediction(ts, pred):
     ax.legend()
 
 
+def status(ts: TimeSeries):
+    """
+    Plot a uni-dimensional imshow to mimic status plots like on
+    https://githubstatus.com
+
+    Args:
+        ts: TimeSeries - the time series to plot
+    """
+    register_matplotlib_converters()
+
+    fig, ax = plt.subplots(figsize=(18,1))
+
+    # Set x limits
+    x_lims = [ts.boundaries()[0].to_pydatetime(),ts.boundaries()[1].to_pydatetime()]
+    x_lims = mdates.date2num(x_lims)
+
+    # Set y limits (for the sake of having something...)
+    y_lims = [ts.min().values[0], ts.max().values[0]]
+
+    date_format = mdates.DateFormatter('%d/%m/%y %H:%M:%S')
+    ax.xaxis.set_major_formatter(date_format)
+
+    ax.set_yticks([])  # remove all yticks
+
+    m = ax.imshow([ts.series],
+              extent=[x_lims[0], x_lims[1],  y_lims[0], y_lims[1]],
+              aspect='auto',
+              cmap="autumn_r")
+
+    ax.xaxis_date()
+
+    ax = utils.add_metadata_to_plot(ts.metadata, ax)
+
+    fig.autofmt_xdate()
+    plt.grid(b=True, which='both')
+    plt.colorbar(m, aspect=5, pad=0.01)
+    plt.show()
