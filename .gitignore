@@ -1,9 +1,6 @@
 ### TimeAtlas ###
 data/
 gen_data/
-.idea/
-.idea/vcs.xml
-
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
