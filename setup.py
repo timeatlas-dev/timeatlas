@@ -11,7 +11,7 @@ def read_requirements(path):
 
 setuptools.setup(
     name="timeatlas",
-    version="0.0.2",
+    version="0.0.3",
     author="Frédéric Montet",
     author_email="frederic.montet@hefr.ch",
     description="A time series data manipulation tool for Python",
