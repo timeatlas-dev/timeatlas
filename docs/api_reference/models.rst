@@ -4,20 +4,9 @@ Models
 
 .. currentmodule:: timeatlas.models
 
-Linear Regression
------------------
+.. autosummary::
+    :toctree:
 
-.. autoclass:: models.LinearRegression
-    :members:
-
-LSTM
-----
-
-.. autoclass:: models.LSTMPrediction
-    :members:
-
-Prophet
--------
-
-.. autoclass:: models.Prophet
-    :members:
+    LinearRegression
+    Prophet
+    LSTMPrediction

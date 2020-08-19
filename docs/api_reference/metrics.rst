@@ -2,8 +2,9 @@
 Metrics
 =======
 
-Pairwise
---------
+.. currentmodule:: timeatlas.metrics
 
-.. automodule:: timeatlas.metrics.pairwise
-    :members:
+.. autosummary::
+    :toctree:
+
+    pairwise

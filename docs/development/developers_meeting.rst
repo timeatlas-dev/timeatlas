@@ -1,5 +1,5 @@
 Developers' Meetings
-===================
+====================
 
 We try to make a developer's meeting every two weeks to lead the development of
 TimeAtlas. The goal of those meetings is mainly:
@@ -11,7 +11,7 @@ TimeAtlas. The goal of those meetings is mainly:
 Also, we occasionally discuss about the roadmap.
 
 Meeting Notes
---------------
+-------------
 
 All the meeting notes can be found on this webpage_.
 

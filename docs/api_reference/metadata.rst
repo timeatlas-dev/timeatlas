@@ -1,8 +1,10 @@
+========
 Metadata
 ========
 
-.. currentmodule:: timeatlas
+.. currentmodule:: timeatlas.metadata
 
-.. autoclass:: Metadata
-    :members:
+.. autosummary::
+    :toctree:
 
+    Metadata

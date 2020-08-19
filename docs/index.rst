@@ -5,7 +5,6 @@
    :hidden:
 
    getting_started/index
-   user_guide/index
    api_reference/index
    development/index
 

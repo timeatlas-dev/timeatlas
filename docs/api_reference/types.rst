@@ -2,16 +2,11 @@
 Types
 =====
 
-.. currentmodule:: timeatlas
+.. currentmodule:: timeatlas.types
 
-Sensor
-------
+.. autosummary::
+    :toctree:
 
-.. automodule:: timeatlas.types.sensor
-    :members:
-
-Unit
-----
-
-.. automodule:: timeatlas.types.unit
-    :members:
+    Coords
+    Sensor
+    Unit

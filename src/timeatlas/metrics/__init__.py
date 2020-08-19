@@ -6,5 +6,4 @@ from .pairwise import (
 __all__ = [
     "relative_error",
     "absolute_error"
-
 ]

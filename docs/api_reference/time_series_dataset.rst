@@ -1,10 +1,10 @@
-Time Series Dataset
-===================
+=================
+TimeSeriesDataset
+=================
 
-.. currentmodule:: timeatlas
+.. currentmodule:: timeatlas.time_series_dataset
 
 .. autosummary::
-   :toctree: TimeSeriesDataset
+    :toctree:
 
-.. autoclass:: TimeSeriesDataset
-    :members:
+    TimeSeriesDataset

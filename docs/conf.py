@@ -13,7 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../src/timeatlas'))
-
+print(sys.path[0])
 
 # -- Project information -----------------------------------------------------
 
@@ -31,6 +31,7 @@ extensions = [
     'nbsphinx',
     'pydata_sphinx_theme',
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'recommonmark'
@@ -61,6 +62,10 @@ html_static_path = ['_static']
 # -- NB Sphinx configuration --------------------------------------------------
 
 nbsphinx_allow_errors = True
+
+# -- Autosummary configuration ------------------------------------------------
+
+autosummary_generate = True
 
 # -- Pydata Sphinx Theme configuration ----------------------------------------
 
