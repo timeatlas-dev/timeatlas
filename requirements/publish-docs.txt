@@ -1,5 +1,12 @@
 # Requirements for the publish-docs job in the GitHub actions
+# timeatlas itself
 .
+
+# external dependencies to make some models
+fbprophet
+torch
+
+# dev dependencies to build
 sphinx
 nbsphinx
 pylint
