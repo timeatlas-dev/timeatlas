@@ -11,3 +11,4 @@ timeatlas = {editable = true,path = "."}
 
 [dev-packages]
 jupyter = "*"
+pycycle = "*"
