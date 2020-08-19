@@ -5,8 +5,9 @@ from ..anomalies import AnomalyABC
 
 
 class AnomalyGeneratorTemplate(ConfigObj):
-    def __init__(self, filename, seed: int = None, functions: list = None, threshold: float = None,
-                 num_anomalies: int = None, anomaly_name: str = "ANOMALY"):
+    def __init__(self, filename, seed: int = None, functions: list = None,
+                 threshold: float = None, num_anomalies: int = None,
+                 anomaly_name: str = "ANOMALY"):
         super().__init__()
 
         if functions and num_anomalies:

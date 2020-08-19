@@ -52,7 +52,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     @staticmethod
     def precision_and_scale(x):
-        '''
+        """
 
         Get the precision of a value
 
@@ -61,7 +61,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         Returns: the number of positions after the comma
 
-        '''
+        """
         # 14 is the maximal number of digits python can handle (more is also unrealistic)
         max_digits = 14
         # if the number is NaN return nothing
@@ -160,13 +160,13 @@ class AnomalyGenerator(AbstractBaseGenerator):
         return list(zip(ind, data))
 
     def plot_anomaly_series(self):
-        '''
+        """
 
         Plotting all series with inserted anomalies -> maybe with the original in the same plot
 
         Returns: Plots the anomalies
 
-        '''
+        """
         raise NotImplementedError
 
     def add_data(self, new_data, ind):
