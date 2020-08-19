@@ -92,4 +92,5 @@ Authors
 =======
 
 Frédéric Montet - frederic.montet@hefr.ch
+
 Lorenz Rychener - lorenz.rychener@hefr.ch

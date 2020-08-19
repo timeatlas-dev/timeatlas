@@ -78,7 +78,7 @@ jobs:
           make html
 
       - name: Staging Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.1
+        uses: nwtgck/actions-netlify@v1.1.5
         if: ${{ github.ref == 'refs/heads/develop' }}
         with:
           publish-dir: './docs/_build/html'
