@@ -5,8 +5,9 @@
    :hidden:
 
    getting_started/index
+   user_guide/index
    api_reference/index
-   development/index
+   contributing/index
 
 .. raw:: html
 
@@ -90,8 +91,5 @@
 Authors
 =======
 
-Frédéric Montet
-frederic.montet@hefr.ch
-
-Lorenz Rychener
-lorenz.rychener@hefr.ch
+Frédéric Montet - frederic.montet@hefr.ch
+Lorenz Rychener - lorenz.rychener@hefr.ch
