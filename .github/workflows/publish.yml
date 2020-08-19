@@ -95,7 +95,7 @@ jobs:
         timeout-minutes: 1
 
       - name: Production Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.1
+        uses: nwtgck/actions-netlify@v1.1.5
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           publish-dir: './docs/_build/html'
