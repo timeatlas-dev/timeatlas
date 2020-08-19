@@ -1,10 +1,11 @@
 from typing import NoReturn, Union
-from timeatlas import TimeSeries
 from pandas import DataFrame
 import fbprophet as fbp
 
 from timeatlas.abstract import AbstractBaseModel
 from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.time_series import TimeSeries
+
 
 class Prophet(AbstractBaseModel):
 

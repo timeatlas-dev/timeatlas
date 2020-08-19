@@ -1,5 +1,6 @@
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
-from timeatlas import TimeSeries, TimeSeriesDataset
+from timeatlas.time_series import TimeSeries
+from timeatlas.time_series_dataset import TimeSeriesDataset
 
 from .anomalies import AnomalyABC
 from .utils import get_operator

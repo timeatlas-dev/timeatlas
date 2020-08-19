@@ -1,9 +1,12 @@
-from typing import Any
-from timeatlas.config.constants import *
-from timeatlas import TimeSeries, TimeSeriesDataset
-from ._utils import check_directory_structure, csv_to_dataframe, json_to_metadata
-
 import pandas as pd
+from typing import Any
+
+from timeatlas.config.constants import *
+from timeatlas.time_series import TimeSeries
+from timeatlas.time_series_dataset import TimeSeriesDataset
+from ._utils import (
+    check_directory_structure, csv_to_dataframe, json_to_metadata
+)
 
 
 def read_text(path: str) -> Any:

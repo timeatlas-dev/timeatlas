@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
 from pandas.plotting import register_matplotlib_converters
 
-from timeatlas import TimeSeries
+from timeatlas.time_series import TimeSeries
 from ._utils import add_metadata_to_plot
 
 

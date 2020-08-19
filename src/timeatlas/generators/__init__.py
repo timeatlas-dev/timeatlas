@@ -1,4 +1,7 @@
-from .anomaly_generator import AnomalyGenerator, AnomalyGeneratorTemplate
+from .anomaly_generator import (
+    AnomalyGenerator,
+    AnomalyGeneratorTemplate
+)
 
 __all__ = [
     "AnomalyGenerator",

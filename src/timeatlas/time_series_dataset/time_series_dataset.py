@@ -3,7 +3,7 @@ from typing import List, Any, NoReturn, Tuple
 from pandas import DataFrame
 import random
 
-from timeatlas import TimeSeries
+from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
 
 from timeatlas.abstract import (

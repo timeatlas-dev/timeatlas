@@ -2,7 +2,7 @@ from typing import NoReturn, Union
 from pandas import Series
 from sklearn import linear_model
 
-from timeatlas import TimeSeries
+from timeatlas.time_series import TimeSeries
 
 from timeatlas.abstract import AbstractBaseModel
 
