@@ -32,8 +32,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None, label: str or None = None,
-                 ):
+            metadata: Metadata = None, label: str or None = None,
+    ):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -58,8 +58,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
                 # Otherwise, one column should be called "values"
                 assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}"\
-                    .format(TIME_SERIES_VALUES)
+                    "DataFrame as input series must contain a column called {}" \
+                        .format(TIME_SERIES_VALUES)
 
         # Create the TimeSeries object
         self.series = series
@@ -90,7 +90,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-               metadata: Metadata = None):
+            metadata: Metadata = None):
         """
         Creates an empty TimeSeries object with the period as index
 
@@ -480,6 +480,15 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
+
+    def to_array(self):
+        """
+
+        TimeSeries Object to numpy array
+
+        """
+
+        return self.series[TIME_SERIES_VALUES].to_numpy()
 
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)

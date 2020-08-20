@@ -1,6 +1,7 @@
 from typing import List, Any, NoReturn, Tuple
 
 from pandas import DataFrame
+from numpy import array
 import random
 
 from timeatlas.time_series import TimeSeries
@@ -41,6 +42,9 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
     def __iter__(self):
         return (ts for ts in self.data)
+
+    def __repr__(self):
+        return self.data.__repr__()
 
     # Methods
     # =======
@@ -223,3 +227,12 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
 
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)
+
+    def to_array(self):
+        """
+
+        TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
+
+        """
+
+        return array([ts.to_array() for ts in self.data])
