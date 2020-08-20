@@ -1,7 +1,7 @@
 TimeAtlas
 =========
 
-[![PyPI version](https://badge.fury.io/py/timeatlas.svg)](https://badge.fury.io/py/timeatlas)
+![PyPI version](https://badge.fury.io/py/timeatlas.svg)](https://badge.fury.io/py/timeatlas)
 ![PyPI Downloads](https://img.shields.io/pypi/dm/timeatlas)
 ![GitHub - License](https://img.shields.io/github/license/timeatlas-dev/timeatlas)
 
