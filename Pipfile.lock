@@ -18,9 +18,10 @@
     "default": {
         "absl-py": {
             "hashes": [
-                "sha256:75e737d6ce7723d9ff9b7aa1ba3233c34be62ef18d5859e706b8fdc828989830"
+                "sha256:b20f504a7871a580be5268a18fbad48af4203df5d33dbc9272426cb806245a45",
+                "sha256:ea07d7d437798bffc14f39fccec3909d251a1e76e233205ded72b71c267e0178"
             ],
-            "version": "==0.9.0"
+            "version": "==0.10.0"
         },
         "appnope": {
             "hashes": [
@@ -71,13 +72,6 @@
                 "sha256:5604d20136785b05883eda20a2e8c1a1f47600b148abf68deb12dda6ccd8951f"
             ],
             "version": "==0.4"
-        },
-        "colour": {
-            "hashes": [
-                "sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c",
-                "sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee"
-            ],
-            "version": "==0.1.5"
         },
         "configobj": {
             "hashes": [
@@ -681,6 +675,13 @@
                 "sha256:fc98f3eac993b9bfdd392e675dfe19850cc8c7246a8fd2b42443e506344be7d9"
             ],
             "version": "==1.5.2"
+        },
+        "seaborn": {
+            "hashes": [
+                "sha256:2d1a0c9d6bd1bc3cadb0364b8f06540f51322a670cf8438d0fde1c1c7317adc0",
+                "sha256:c901ce494541fb4714cfa7db79d0232dc3f4c4dfd3f273bacf17816084df5b53"
+            ],
+            "version": "==0.10.1"
         },
         "setuptools-git": {
             "hashes": [
