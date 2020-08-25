@@ -204,13 +204,18 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
     def chunkify(self, n: int) -> List['TimeSeries']:
         """
-        Splits TimeSeries into chunks of length n
 
-        :param n: length of chunks
-        :return: List of TimeSeries
+        Cuts a TimeSeries into chunks of length n
+
+        Args:
+            n: length of the chunks in the
+
+        Returns: List of TimeSeries
+
         """
 
-        ts_chunks = [TimeSeries(v) for n, v in self.series.groupby(np.arange(len(self.series)) // n)]
+        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
+                     self.series.groupby(np.arange(len(self.series)) // n)]
 
         return ts_chunks
 

@@ -124,10 +124,13 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     def chunkify(self, n: int) -> List['TimeSeriesDataset']:
         """
 
-        Splits each TimeSeries in the TimeSeriesDataset into chunks of length n
+        The TimeSeries in the TimeSeriesDataset are cut into chunks of length n
 
-        :param n: length of chunks in each individual TimeSeries
-        :return: list of TimeSeriesDatasets
+        Args:
+            n: length of the individual chunks
+
+        Returns: List of TimeSeriesDatasets containing the chunks
+
         """
 
         tsd_chunks = []
