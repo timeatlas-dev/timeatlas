@@ -42,8 +42,9 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     def __iter__(self):
         return (ts for ts in self.data)
 
+    # ==========================================================================
     # Methods
-    # =======
+    # ==========================================================================
 
     def add(self, time_series: TimeSeries):
         self.data.append(time_series)
@@ -119,6 +120,23 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
             return list(inds), TimeSeriesDataset(list(data))
         else:
             TimeSeriesDataset(random.sample(population=self.data, k=n))
+
+    def chunkify(self, n: int) -> List['TimeSeriesDataset']:
+        """
+
+        Splits each TimeSeries in the TimeSeriesDataset into chunks of length n
+
+        :param n: length of chunks in each individual TimeSeries
+        :return: list of TimeSeriesDatasets
+        """
+
+        tsd_chunks = []
+
+        for ts in self.data:
+            ts_chunks = ts.chunkify(n=n)
+            tsd_chunks.append(TimeSeriesDataset(ts_chunks))
+
+        return tsd_chunks
 
     # =============================================
     # Analysis
