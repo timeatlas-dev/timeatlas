@@ -17,7 +17,7 @@ from timeatlas.config.constants import (
 )
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
-from timeatlas.plots.time_series import line
+from timeatlas.plots.time_series import line, status
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -335,9 +335,11 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        diff = self.series.index.to_series().diff()
-        return TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
+        diff = self.series.index.to_series().diff().dt.total_seconds()
+        ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
                           self.metadata)
+        ts.register_plotting_function(lambda x: status(x, cmap="bwr"))
+        return ts
 
     # ==========================================================================
     # Processing
