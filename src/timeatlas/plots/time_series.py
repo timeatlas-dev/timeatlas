@@ -121,3 +121,39 @@ def status(ts: 'TimeSeries'):
     plt.grid(b=True, which='both')
     plt.colorbar(m, aspect=5, pad=0.01)
     plt.show()
+
+
+def kde(ts: 'TimeSeries'):
+    """
+    Display a KDE plot through time with a line plot underneath
+
+    Args:
+        ts: TimeSeries - the time series to plot
+    """
+    timestamps = ts.series.index.astype(np.int64) // 10 ** 9
+    values = ts.series["values"].values
+
+    fig, axs = plt.subplots(2, 1,
+                            sharex='col',
+                            figsize=(16, 5),
+                            gridspec_kw={'height_ratios': [4, 1]})
+
+    upper_plot = axs[0]
+    lower_plot = axs[1]
+
+    sns.kdeplot(timestamps, values,
+                shade=True,
+                cmap="YlOrRd",
+                shade_lowest=False,
+                ax=upper_plot)
+
+    x_ticks = upper_plot.get_xticks()
+    x_labels = [datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M') for t in x_ticks]
+
+    upper_plot = add_metadata_to_plot(ts.metadata, upper_plot)
+    upper_plot.set_xticklabels(x_labels)
+    upper_plot.xaxis.tick_bottom()
+
+    lower_plot.plot(timestamps, values, c='k')
+    lower_plot.xaxis.tick_top()
+    lower_plot.grid()
