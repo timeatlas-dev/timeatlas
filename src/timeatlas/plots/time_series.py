@@ -156,7 +156,7 @@ def kde(ts: 'TimeSeries') -> np.ndarray:
         ts: TimeSeries - the time series to plot
 
     Returns:
-        numpy.ndarray
+        numpy.ndarray[matplotlib.axes._subplots.AxesSubplot]
     """
     timestamps = ts.series.index.astype(np.int64) // 10 ** 9
     values = ts.series["values"].values
