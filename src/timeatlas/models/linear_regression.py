@@ -30,8 +30,19 @@ class LinearRegression(AbstractBaseModel):
 
     @staticmethod
     def __prepare_series_for_sklearn(ts: TimeSeries):
+        """
+        Prepare a TimeSeries object for Scikit Learn
+
+        Args:
+            ts: the TimeSeries to prepare
+
+        Returns:
+            a Tuple made with two elements:
+                - a Numpy ndarray with shape (x, 1)
+                - a Numpy ndarray with shape (x,)
+        """
         X_train = ts.series.index.factorize()[0].reshape(-1, 1)
-        y_train = ts.series.to_numpy()
+        y_train = ts.series["values"].to_numpy()
         return X_train, y_train
 
     def make_future_array(self, horizon, freq: str = None):
