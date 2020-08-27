@@ -1,10 +1,12 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from datetime import datetime
 
 import numpy as np
 import seaborn as sns
-from matplotlib import pyplot as plt
-import matplotlib.dates as mdates
+from matplotlib import (
+    pyplot as plt,
+    dates as mdates
+)
 from pandas.plotting import register_matplotlib_converters
 
 if TYPE_CHECKING:
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 from ._utils import add_metadata_to_plot
 
 
-def line(ts: 'TimeSeries', *args, **kwargs):
+def line(ts: 'TimeSeries', *args, **kwargs) -> Any:
     """
     Plot a TimeSeries
 
@@ -23,6 +25,9 @@ def line(ts: 'TimeSeries', *args, **kwargs):
         ts: the TimeSeries to plot
         *args: positional arguments for Pandas plot() method
         **kwargs: keyword arguments fot Pandas plot() method
+
+    Returns:
+        matplotlib.axes._subplots.AxesSubplot
     """
     register_matplotlib_converters()
 
@@ -45,8 +50,10 @@ def line(ts: 'TimeSeries', *args, **kwargs):
             sensor = ts.metadata["sensor"]
             ax.set_title("{}—{}".format(sensor.id, sensor.name))
 
+    return ax
 
-def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None):
+
+def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
     """
     Make a plot to display a time series with forecasted values and its
     confidence interval. If given, the observation time series can be added as
@@ -55,6 +62,9 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None):
     Args:
         forecast: TimeSeries of the prediction
         observation: TimeSeries of the historical data
+
+    Returns:
+        matplotlib.axes._subplots.AxesSubplot
     """
     fig = plt.figure(figsize=(18, 4))
     ax = fig.add_subplot(111)
@@ -92,9 +102,10 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None):
                 label="observation")
 
     ax.legend()
+    return ax
 
 
-def status(ts: 'TimeSeries', cmap: str = "autumn_r"):
+def status(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     """
     Plot a uni-dimensional imshow to mimic status plots like on
     https://githubstatus.com
@@ -102,6 +113,9 @@ def status(ts: 'TimeSeries', cmap: str = "autumn_r"):
     Args:
         ts: TimeSeries - the time series to plot
         cmap: String - the matplotlib colormap to use
+
+    Returns:
+        matplotlib.axes._subplots.AxesSubplot
     """
     register_matplotlib_converters()
 
@@ -131,14 +145,18 @@ def status(ts: 'TimeSeries', cmap: str = "autumn_r"):
     plt.grid(b=True, which='both')
     plt.colorbar(m, aspect=5, pad=0.01)
     plt.show()
+    return ax
 
 
-def kde(ts: 'TimeSeries'):
+def kde(ts: 'TimeSeries') -> np.ndarray:
     """
     Display a KDE plot through time with a line plot underneath
 
     Args:
         ts: TimeSeries - the time series to plot
+
+    Returns:
+        numpy.ndarray
     """
     timestamps = ts.series.index.astype(np.int64) // 10 ** 9
     values = ts.series["values"].values
@@ -167,3 +185,4 @@ def kde(ts: 'TimeSeries'):
     lower_plot.plot(timestamps, values, c='k')
     lower_plot.xaxis.tick_top()
     lower_plot.grid()
+    return axs
