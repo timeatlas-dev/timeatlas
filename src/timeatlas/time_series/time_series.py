@@ -116,7 +116,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
-    def register_plotting_function(self, plotting_function: Callable):
+    def register_plotting_function(self, plotting_function: Callable) -> NoReturn:
         """
         Register a specific plotting function for this TimeSeries
 
