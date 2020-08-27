@@ -1,12 +1,49 @@
+from typing import TYPE_CHECKING
+
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
 from pandas.plotting import register_matplotlib_converters
 
-from timeatlas.time_series import TimeSeries
+if TYPE_CHECKING:
+    from timeatlas.time_series import TimeSeries
 from ._utils import add_metadata_to_plot
 
 
-def prediction(ts: TimeSeries, pred: TimeSeries):
+def line(ts: 'TimeSeries', *args, **kwargs):
+    """
+    Plot a TimeSeries
+
+    This is a wrapper around Pandas.Series.plot() augmented if the
+    TimeSeries to plot has associated Metadata.
+
+    Args:
+        ts: the TimeSeries to plot
+        *args: positional arguments for Pandas plot() method
+        **kwargs: keyword arguments fot Pandas plot() method
+    """
+    register_matplotlib_converters()
+
+    if 'figsize' not in kwargs:
+        kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
+
+    if 'color' not in kwargs:
+        kwargs['color'] = "k"
+
+    ax = ts.series.plot(*args, **kwargs)
+    ax.set_xlabel("Date")
+    ax.grid(True, c='gray', ls='-', lw=1, alpha=0.2)
+
+    # Add legend from metadata if existing
+    if ts.metadata is not None:
+        if "unit" in ts.metadata:
+            unit = ts.metadata["unit"]
+            ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
+        if "sensor" in ts.metadata:
+            sensor = ts.metadata["sensor"]
+            ax.set_title("{}—{}".format(sensor.id, sensor.name))
+
+
+def prediction(ts: 'TimeSeries', pred: 'TimeSeries'):
     """
     Make a plot to display a chunk of a TimeSeries and a prediction with its
     confidence interval
@@ -47,7 +84,7 @@ def prediction(ts: TimeSeries, pred: TimeSeries):
     ax.legend()
 
 
-def status(ts: TimeSeries):
+def status(ts: 'TimeSeries'):
     """
     Plot a uni-dimensional imshow to mimic status plots like on
     https://githubstatus.com
