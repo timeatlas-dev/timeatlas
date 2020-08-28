@@ -21,6 +21,8 @@ from timeatlas.processors.scaler import Scaler
 from timeatlas.plots.time_series import line, status
 from timeatlas.utils import ensure_dir, to_pickle
 
+from numpy import ndarray
+
 
 class TimeSeries(AbstractAnalysis, AbstractOutputText,
                  AbstractOutputPickle, AbstractProcessing):
@@ -486,6 +488,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     # ==========================================================================
 
     def to_text(self, path: str) -> NoReturn:
+        """
+
+        Args:
+            path: path, where the TimeSeries is saved.
+
+        Returns: NoReturn
+
+        """
         # Create the time series file
         file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME,
                                       TIME_SERIES_EXT)
@@ -496,6 +506,17 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
+
+    def to_array(self) -> ndarray:
+        """
+
+        Converts a TimeSeries into a numpy.array
+
+        Returns: numpy.array with dimensions (1, n), where n is th length of the TimeSeries
+
+        """
+
+        return self.series[TIME_SERIES_VALUES].to_numpy()
 
     def to_pickle(self, path: str) -> NoReturn:
         to_pickle(self, path)

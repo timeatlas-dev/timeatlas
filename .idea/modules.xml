@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../../.idea/timeatlas.iml" filepath="$PROJECT_DIR$/../../.idea/timeatlas.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/timeatlas.iml" filepath="$PROJECT_DIR$/.idea/timeatlas.iml" />
     </modules>
   </component>
 </project>
