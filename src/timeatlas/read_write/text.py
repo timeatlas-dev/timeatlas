@@ -72,7 +72,8 @@ def read_tsd(path: str) -> TimeSeriesDataset:
     Args:
         path: Path to the folder that contains the subfolder containing the individual data csv-files
 
-    Returns: TimeSeriesDataset
+    Returns:
+        TimeSeriesDataset
 
     """
     ts_list = []
