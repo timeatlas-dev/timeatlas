@@ -1,7 +1,8 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
     Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional, Callable
+from typing import NoReturn, Tuple, Any, Union, Optional, List
+import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
 
@@ -33,8 +34,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None, label: str or None = None,
-                 ):
+            metadata: Metadata = None, label: str or None = None,
+    ):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -59,8 +60,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
                 # Otherwise, one column should be called "values"
                 assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}"\
-                    .format(TIME_SERIES_VALUES)
+                    "DataFrame as input series must contain a column called {}" \
+                        .format(TIME_SERIES_VALUES)
 
         # Create the TimeSeries object
         self.series = series
@@ -94,7 +95,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-               metadata: Metadata = None):
+            metadata: Metadata = None):
         """
         Creates an empty TimeSeries object with the period as index
 
@@ -227,6 +228,23 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         new_series = concat([ts.series, self.series])
         return TimeSeries(new_series, self.metadata)
+
+    def chunkify(self, n: int) -> List['TimeSeries']:
+        """
+
+        Cuts a TimeSeries into chunks of length n
+
+        Args:
+            n: length of the chunks in the
+
+        Returns: List of TimeSeries
+
+        """
+
+        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
+                     self.series.groupby(np.arange(len(self.series)) // n)]
+
+        return ts_chunks
 
     # ==========================================================================
     # Analysis
