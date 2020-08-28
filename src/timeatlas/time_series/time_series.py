@@ -1,7 +1,8 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
     Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional
+from typing import NoReturn, Tuple, Any, Union, Optional, List
+import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
 
@@ -17,6 +18,7 @@ from timeatlas.config.constants import (
 )
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
+from timeatlas.plots.time_series import line, status
 from timeatlas.utils import ensure_dir, to_pickle
 
 from numpy import ndarray
@@ -74,6 +76,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         else:
             self.metadata = None
 
+        # Define default plotting function
+        self.plotting_function = line
+
     def __repr__(self):
         return self.series.__repr__()
 
@@ -113,6 +118,29 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         series = DataFrame(columns=[TIME_SERIES_VALUES],
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
+
+    def register_plotting_function(self, plotting_function: Callable) -> NoReturn:
+        """
+        Register a specific plotting function for this TimeSeries
+
+        Args:
+            plotting_function: Callable (like a function) that takes at least
+                a TimeSeries as first argument
+        """
+        self.plotting_function = plotting_function
+
+    def plot(self, *args, **kwargs):
+        """
+        Plot the TimeSeries with the registered plotting function
+        (in self.plotting_function)
+
+        Args:
+            *args: Arguments to give to the plotting function
+            **kwargs: Keyword arguments to give to the plotting function
+        """
+        assert self.plotting_function is not None, \
+            "No plotting function registered"
+        self.plotting_function(self, *args, **kwargs)
 
     def split(self, splitting_point: str) -> Tuple['TimeSeries', 'TimeSeries']:
         """
@@ -203,40 +231,26 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         new_series = concat([ts.series, self.series])
         return TimeSeries(new_series, self.metadata)
 
+    def chunkify(self, n: int) -> List['TimeSeries']:
+        """
+
+        Cuts a TimeSeries into chunks of length n
+
+        Args:
+            n: length of the chunks in the
+
+        Returns: List of TimeSeries
+
+        """
+
+        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
+                     self.series.groupby(np.arange(len(self.series)) // n)]
+
+        return ts_chunks
+
     # ==========================================================================
     # Analysis
     # ==========================================================================
-
-    def plot(self, *args, **kwargs):
-        """
-        Plot a TimeSeries
-
-        This is a wrapper around Pandas.Series.plot() augmented if the
-        TimeSeries to plot has associated Metadata.
-
-        :param args: positional arguments for Pandas plot() method
-        :param kwargs: keyword arguments fot Pandas plot() method
-        """
-        register_matplotlib_converters()
-
-        if 'figsize' not in kwargs:
-            kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
-
-        if 'color' not in kwargs:
-            kwargs['color'] = "k"
-
-        ax = self.series.plot(*args, **kwargs)
-        ax.set_xlabel("Date")
-        ax.grid(True, c='gray', ls='-', lw=1, alpha=0.2)
-
-        # Add legend from metadata if existing
-        if self.metadata is not None:
-            if "unit" in self.metadata:
-                unit = self.metadata["unit"]
-                ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
-            if "sensor" in self.metadata:
-                sensor = self.metadata["sensor"]
-                ax.set_title("{}—{}".format(sensor.id, sensor.name))
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """
@@ -341,9 +355,11 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        diff = self.series.index.to_series().diff()
-        return TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
+        diff = self.series.index.to_series().diff().dt.total_seconds()
+        ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
                           self.metadata)
+        ts.register_plotting_function(lambda x: status(x, cmap="bwr"))
+        return ts
 
     # ==========================================================================
     # Processing
