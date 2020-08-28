@@ -47,6 +47,28 @@ def read_text(path: str) -> Any:
 
 
 def read_tsd(path: str) -> TimeSeriesDataset:
+    """
+
+    Loading the data from the individual data "csv"-files. These files should be in the format created by
+    the "to_text"-function, either by TimeSeries.to_text() or TimeSeriesDataset.to_text().
+
+    Exp:
+
+    data_main
+    |_data
+        |_0
+          |_data.csv
+        |_1
+          |_data.csv
+        |_2
+          |_data.csv
+
+    Args:
+        path: Path to the folder that contains the subfolder containing the individual data csv-files
+
+    Returns: TimeSeriesDataset
+
+    """
     ts_list = []
 
     folders = glob(f'{path}/*')
