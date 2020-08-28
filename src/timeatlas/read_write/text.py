@@ -54,14 +54,20 @@ def read_tsd(path: str) -> TimeSeriesDataset:
 
     Exp:
 
-    data_main
-    |_data <-- path
-        |_0
-          |_data.csv
-        |_1
-          |_data.csv
-        |_2
-          |_data.csv
+    data
+    │    ├── TSD-folder
+    │    │    ├── 0
+    │    │    │   └── data.csv
+    │    │    ├── 1
+    │    │    │   └── data.csv
+    │    │    ├── 2
+    │    │    │   └── data.csv
+    │    │    ├── 3
+    │    │    │   └── data.csv
+    │    │    ├── 4
+    │    │    │   └── (if there is no data the folder will be skipped with a warning)
+    │    │    └── 4
+    │    │        └── data.csv
 
     Args:
         path: Path to the folder that contains the subfolder containing the individual data csv-files
