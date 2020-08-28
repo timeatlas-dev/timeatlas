@@ -55,7 +55,7 @@ def read_tsd(path: str) -> TimeSeriesDataset:
     Exp:
 
     data_main
-    |_data
+    |_data <-- path
         |_0
           |_data.csv
         |_1
