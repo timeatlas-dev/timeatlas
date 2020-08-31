@@ -11,6 +11,11 @@ from pandas.plotting import register_matplotlib_converters
 
 if TYPE_CHECKING:
     from timeatlas.time_series import TimeSeries
+from timeatlas.config.constants import (
+    TIME_SERIES_VALUES,
+    TIME_SERIES_CI_LOWER,
+    TIME_SERIES_CI_UPPER
+)
 from ._utils import add_metadata_to_plot
 
 
@@ -86,14 +91,19 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
             ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
 
     # Add the lines to the plot
-    ax.plot(forecast.series.index, forecast.series["values"].values,
+    ax.plot(forecast.series.index, forecast.series[TIME_SERIES_VALUES,].values,
             ls='--',
             c='k',
             label="prediction")
-    ax.fill_between(forecast.series.index, forecast.series["ci_lower"].values,
-                    forecast.series["ci_upper"].values,
-                    color='0.86',
-                    label="confidence interval")
+
+    # If present, add confidence interval
+    if TIME_SERIES_CI_LOWER in forecast.series.columns and \
+       TIME_SERIES_CI_UPPER in forecast.series.columns:
+        ax.fill_between(forecast.series.index,
+                        forecast.series[TIME_SERIES_CI_LOWER].values,
+                        forecast.series[TIME_SERIES_CI_UPPER].values,
+                        color='0.86',
+                        label="confidence interval")
 
     if observation is not None:
         ax.plot(observation.series.index, observation.series.values,

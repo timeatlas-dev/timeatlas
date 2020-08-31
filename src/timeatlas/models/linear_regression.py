@@ -84,3 +84,4 @@ class LinearRegression(AbstractBaseModel):
         X_train = self.__prepare_series_for_sklearn(self.X_train)
         X_test = index.factorize()[0].reshape(-1, 1) + len(X_train)
         return X_test, index
+
