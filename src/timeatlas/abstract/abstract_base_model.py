@@ -25,7 +25,7 @@ class AbstractBaseModel(ABC):
         if self._is_fitted is False:
             raise Exception('fit() must be called before predict()')
 
-    def make_future_index(self, horizon, freq: str = None):
+    def make_future_index(self, horizon: str, freq: str = None):
         """ Creates a DatetimeIndex from the last timestamp given
         in the training set X_train for a given horizon.
 
