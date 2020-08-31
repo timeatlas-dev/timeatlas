@@ -91,7 +91,7 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
             ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
 
     # Add the lines to the plot
-    ax.plot(forecast.series.index, forecast.series[TIME_SERIES_VALUES,].values,
+    ax.plot(forecast.series.index, forecast.series[TIME_SERIES_VALUES].values,
             ls='--',
             c='k',
             label="prediction")
