@@ -4,4 +4,5 @@ configobj
 matplotlib
 pandas
 seaborn
+scipy
 u8darts
