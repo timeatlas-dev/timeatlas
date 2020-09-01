@@ -1,7 +1,6 @@
 ### TimeAtlas ###
 README.rst
 data/
-gen_data/
 docs/api_reference/timeatlas.*
 */**/__pycache__/
 

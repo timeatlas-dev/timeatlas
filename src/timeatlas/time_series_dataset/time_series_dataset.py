@@ -1,6 +1,7 @@
 from typing import List, Any, NoReturn, Tuple
 
 from pandas import DataFrame
+from numpy import array, ndarray
 import random
 
 from timeatlas.time_series import TimeSeries
@@ -42,8 +43,12 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     def __iter__(self):
         return (ts for ts in self.data)
 
+    def __repr__(self):
+        return self.data.__repr__()
+
+    # ==========================================================================
     # Methods
-    # =======
+    # ==========================================================================
 
     def add(self, time_series: TimeSeries):
         self.data.append(time_series)
@@ -119,6 +124,26 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
             return list(inds), TimeSeriesDataset(list(data))
         else:
             TimeSeriesDataset(random.sample(population=self.data, k=n))
+
+    def chunkify(self, n: int) -> List['TimeSeriesDataset']:
+        """
+
+        The TimeSeries in the TimeSeriesDataset are cut into chunks of length n
+
+        Args:
+            n: length of the individual chunks
+
+        Returns: List of TimeSeriesDatasets containing the chunks
+
+        """
+
+        tsd_chunks = []
+
+        for ts in self.data:
+            ts_chunks = ts.chunkify(n=n)
+            tsd_chunks.append(TimeSeriesDataset(ts_chunks))
+
+        return tsd_chunks
 
     # =============================================
     # Analysis
@@ -215,6 +240,14 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
     # Outputs
 
     def to_text(self, path: str) -> NoReturn:
+        """
+
+        Args:
+            path: Path, where the TimeSeriesDataset will be saved in
+
+        Returns: NoReturn
+
+        """
         ensure_dir(path)
         for i, ts in enumerate(self.data):
             ts_path = "{}/{}".format(path, i)
@@ -222,4 +255,25 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
             ts.to_text(ts_path)
 
     def to_pickle(self, path: str) -> NoReturn:
+        """
+
+        Creating a pickle out of the TimeSeriesDataset
+
+        Args:
+            path: Path, where the TimeSeriesDataset will be saved
+
+        Returns: NoReturn
+
+        """
         to_pickle(self, path)
+
+    def to_array(self) -> ndarray:
+        """
+
+        TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
+
+        Returns: numpy.array of shape (n x len(tsd))
+
+        """
+
+        return array([ts.to_array() for ts in self.data], dtype=object)

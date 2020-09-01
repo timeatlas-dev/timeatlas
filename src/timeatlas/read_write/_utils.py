@@ -5,7 +5,6 @@ from pandas import Series
 from timeatlas.config.constants import *
 from timeatlas import Metadata
 
-
 def check_directory_structure(path: str):
     """
     Check if a directory given as dataset path has a structure corresponding
@@ -40,4 +39,3 @@ def json_to_metadata(path: str) -> Metadata:
     with open(path) as json_file:
         meta = json.load(json_file)
     return Metadata(meta)
-
