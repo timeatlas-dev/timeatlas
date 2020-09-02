@@ -7,6 +7,7 @@ from torch.optim.optimizer import Optimizer
 
 from timeatlas.abstract import AbstractBaseModel
 
+
 class LSTMPrediction(nn.Module, AbstractBaseModel):
 
     def __init__(self, n_features, n_hidden, seq_len, optimizer: Optimizer, loss_function, n_layers=1,
@@ -91,9 +92,6 @@ class LSTMPrediction(nn.Module, AbstractBaseModel):
 
                 self.loss.append(single_loss.item())
 
-            if verbose:
-                if i in range(0, epochs + round(epochs / 10), round(epochs / 10)):
-                    print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
         if verbose:
             print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
 
