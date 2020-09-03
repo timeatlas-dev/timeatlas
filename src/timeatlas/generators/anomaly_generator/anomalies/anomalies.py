@@ -360,12 +360,3 @@ class AnomalyABC():
 
         return np.array(values), coordinates
 
-    def ripple(self):
-        '''
-
-        IDEA: There is a start point that makes the data-stream "unstable"...it will increase with time and then vanish
-
-        Returns:
-
-        '''
-        pass

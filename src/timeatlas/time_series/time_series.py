@@ -1,7 +1,7 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
     Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional, List
+from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
 import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries

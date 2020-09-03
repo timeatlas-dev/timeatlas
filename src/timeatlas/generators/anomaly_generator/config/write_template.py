@@ -2,32 +2,50 @@ from configobj import ConfigObj
 import inspect
 
 from ..anomalies import AnomalyABC
+from ..anomalies.utils import get_function_names
 
 
 class AnomalyGeneratorTemplate(ConfigObj):
-    def __init__(self, filename, seed: int = None, functions: list = None,
-                 threshold: float = None, num_anomalies: int = None,
-                 anomaly_name: str = "ANOMALY"):
+    def __init__(self, filename, seed: int = None, functions: list or str = "__all__",
+            threshold: float = None, num_anomalies: int = None,
+            anomaly_name: str = "ANOMALY"):
         super().__init__()
 
+        # setting up the seed
+        if seed is None:
+            self.initial_comment.append("WARNING: No seed was set. This will make the results not reproducible")
+
+        self.seed = seed
+
+        # creating the anomaly object
+        self.ABC = AnomalyABC(seed=self.seed)
+
+        # check functions and number of anomalies
         if functions and num_anomalies:
             assert len(functions) == num_anomalies
 
+        # setting up the list of anomalies and their functions
         if functions:
+            # check if functions are defined as list, str or "__all__"
             self.num_anomalies = len(functions)
+            if isinstance(functions, list):
+                self.functions = functions
+            elif isinstance(functions, str):
+                if functions == '__all__':
+                    # if all functions get them from the anomaly object
+                    self.functions = get_function_names(self.ABC)
+                else:
+                    self.functions = [functions]
+
+        # if only number of anomalies are given set up empty confic
         elif num_anomalies:
             self.num_anomalies = num_anomalies
         else:
             raise Exception("Either num_anomalies(int) or functions(list) has to be defined")
 
+        # setup filename and comments
         self.filename = filename + '.ini'
-
         self.initial_comment = ["Automatically created config-file "]
-
-        if seed is None:
-            self.initial_comment.append("WARNING: No seed was set. This will make the results not reproducible")
-
-        self.seed = seed
 
         # some internal parameters by ConfigObj
         self.write_empty_values = True
@@ -37,10 +55,6 @@ class AnomalyGeneratorTemplate(ConfigObj):
         self.anomaly_name = anomaly_name + ' '
 
         self.threshold = threshold
-
-        self.ABC = AnomalyABC()
-
-        self.functions = functions
 
         self.create_config()
 
