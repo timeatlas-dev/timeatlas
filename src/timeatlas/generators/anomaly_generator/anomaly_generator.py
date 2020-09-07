@@ -120,7 +120,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         precision_df = np.array(
             [self.precision_and_scale(x) for ts in self.data for x in
              ts.series.values])
-        # This is more of a security. A correctly formated TimeSeries-object has no None elements
+        # This is more of a security. A correctly formatted TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
 
         return int(round(precision_df.mean()))
@@ -191,7 +191,9 @@ class AnomalyGenerator(AbstractBaseGenerator):
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')
-            anomaly, coordinates = function(data, **function_params)
+            print(function.__name__)
+            #TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
+            anomaly, coordinates = function(data['values'], **function_params)
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)

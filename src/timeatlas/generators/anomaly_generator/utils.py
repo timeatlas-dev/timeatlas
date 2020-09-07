@@ -20,6 +20,19 @@ def get_operator(mode):
 
 
 def add(data, start, values):
+    """
+
+    Args:
+        data: DataFrame of where we enter the new data -> only the row with "values" will be used
+        start: list of start coordinates
+        values: list of values to add
+
+    Returns: Pandas Series with added anomaly
+
+    """
+
+    data = data['values'].values
+
     for e, v in zip(start, values):
         data[e[0]:e[0] + len(v)] = data[e[0]:e[0] + len(v)] + v
 
@@ -40,6 +53,9 @@ def replace(data, start, values):
     Returns:
 
     '''
+
+    data = data['values'].values
+
     for e, v in zip(start, values):
         data[e[0]:e[0] + len(v)] = v
 
@@ -60,6 +76,8 @@ def insert(data, start, values):
     Returns: numpy array with values arrays inserted
 
     '''
+
+    data = data['values'].values
 
     tmp = list(data)
 

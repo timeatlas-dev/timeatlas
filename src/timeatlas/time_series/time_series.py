@@ -357,7 +357,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         diff = self.series.index.to_series().diff().dt.total_seconds()
         ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
-                          self.metadata)
+                        self.metadata)
         ts.register_plotting_function(lambda x: status(x, cmap="bwr"))
         return ts
 
@@ -473,15 +473,17 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                              .format(method))
         return TimeSeries(scaled_series, self.metadata)
 
-    def round(self, decimals: int) -> 'TimeSeries':
+    def round(self, decimals: int) -> NoReturn:
         """
         Round the values in the series.values
 
         Args:
             decimals: number of digits after the comma
         """
-        return TimeSeries(self.series.astype(float).round(decimals=decimals),
-                          metadata=self.metadata)
+
+        rounded_series = self.series.astype(float).round(decimals=decimals)
+
+        self.series = rounded_series
 
     # ==========================================================================
     # IO
