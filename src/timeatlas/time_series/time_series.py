@@ -1,7 +1,7 @@
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
     Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional, List
+from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
 import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
@@ -358,7 +358,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         diff = self.series.index.to_series().diff().dt.total_seconds()
         ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
                           self.metadata)
-        ts.register_plotting_function(lambda x: status(x, cmap="bwr"))
+        ts.register_plotting_function(lambda x: status(x, cmap="prism"))
         return ts
 
     # ==========================================================================
@@ -413,8 +413,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
                              self.metadata)
         else:
-            res = TimeSeries(self.series.apply(func),
+            res = TimeSeries(self.series[TIME_SERIES_VALUES].apply(func),
                              self.metadata)
+
         return res
 
     def resample(self, freq: str, method: Optional[str] = None) -> 'TimeSeries':
