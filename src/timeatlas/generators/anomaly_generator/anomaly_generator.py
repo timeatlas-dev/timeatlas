@@ -175,6 +175,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
             labels = [None] * len(self.data[index].series)
             labels[start:end] = [function_name] * len(labels[start:end])
             self.data[index].series[f'label_{self.label_suffix}'] = labels
+            self.data[index].label = function_name
 
     def generate(self):
 
