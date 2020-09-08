@@ -26,8 +26,6 @@ def read_text(path: str) -> Any:
 
     """
 
-    # TODO: Add TimeSeriesDataset
-
     dir_type = check_directory_structure(path)
 
     if dir_type == "timeseries":
