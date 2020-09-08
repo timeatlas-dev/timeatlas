@@ -40,7 +40,10 @@ def read_text(path: str) -> Any:
         meta = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
         series = csv_to_dataframe(data)
         metadata = json_to_metadata(meta)
-        return TimeSeries(series, metadata)
+        ts = TimeSeries(series, metadata)
+        if 'label' in ts.metadata:
+            ts.label = ts.metadata['label']
+        return ts
 
     elif dir_type is None:
         raise IOError("The path doesn't' include any recognizable files")
