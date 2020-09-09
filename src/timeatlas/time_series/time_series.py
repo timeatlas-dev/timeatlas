@@ -283,7 +283,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         Get the mean value of a TimeSeries
 
-        Returs:
+        Returns:
             float
         """
         return self.series.mean()
