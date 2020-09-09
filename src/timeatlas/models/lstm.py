@@ -7,6 +7,7 @@ from torch.optim.optimizer import Optimizer
 
 from timeatlas.abstract import AbstractBaseModel
 
+
 class LSTMPrediction(nn.Module, AbstractBaseModel):
 
     def __init__(self, n_features, n_hidden, seq_len, optimizer: Optimizer, loss_function, n_layers=1,

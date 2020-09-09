@@ -166,7 +166,9 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     def add_data(self, new_data, index):
 
-        self.data[index].series['values'] = pd.Series(new_data, index=self.data[index].series.index)
+        test = self.data[index].series['values']
+
+        self.data[index].series['values'].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
         for coords in coordinates:
