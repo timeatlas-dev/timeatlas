@@ -27,7 +27,6 @@ class AnomalyGeneratorTemplate(ConfigObj):
         # setting up the list of anomalies and their functions
         if functions:
             # check if functions are defined as list, str or "__all__"
-            self.num_anomalies = len(functions)
             if isinstance(functions, list):
                 self.functions = functions
             elif isinstance(functions, str):
@@ -36,6 +35,8 @@ class AnomalyGeneratorTemplate(ConfigObj):
                     self.functions = get_function_names(self.ABC)
                 else:
                     self.functions = [functions]
+
+            self.num_anomalies = len(self.functions)
 
         # if only number of anomalies are given set up empty confic
         elif num_anomalies:
