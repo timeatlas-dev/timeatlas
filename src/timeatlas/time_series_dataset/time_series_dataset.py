@@ -1,10 +1,11 @@
-from typing import List, Any, NoReturn, Tuple
+from typing import List, Any, NoReturn, Tuple, Union
 
 from pandas import DataFrame
 from numpy import array, ndarray
 import random
 
 from timeatlas.time_series import TimeSeries
+from timeatlas.metadata import Metadata
 from timeatlas.utils import ensure_dir, to_pickle
 
 from timeatlas.abstract import (
@@ -51,18 +52,62 @@ class TimeSeriesDataset(AbstractBaseTimeSeries, AbstractOutputText,
     # ==========================================================================
 
     def add(self, time_series: TimeSeries):
+        """
+        Add a time series to the time series dataset
+
+        Args:
+            time_series: the TimeSeries object to add
+        """
         self.data.append(time_series)
 
     def remove(self, index):
+        """
+        Remove a time series from the time series dataset by its index
+
+        Args:
+            index: int of the time series to remove
+        """
         del self.data[index]
 
     def len(self):
+        """
+        Return the number of time series in the time series dataset
+
+        Returns:
+            int of the number of time series
+        """
         return len(self.data)
+
+    @staticmethod
+    def create(length: int, start: str, end: str, freq: Union[str, 'TimeSeries'] = None):
+        """
+        Create an empty TimeSeriesDataset object with a defined index and period
+
+        Args:
+            length: int representing the number of TimeSeries to include in the
+                TimeSeriesDataset
+            start: str of the start of the DatetimeIndex
+                (as in Pandas.date_range())
+            end: the end of the DatetimeIndex (as in Pandas.date_range())
+            freq: the optional frequency it can be a str or a TimeSeries
+                (to copy its frequency)
+
+        Returns:
+            TimeSeriesDataset
+        """
+        # Check length parameter
+        assert length >= 1, 'Length must be >= 1'
+        data = []
+        ts = TimeSeries.create(start, end, freq)
+        for i in range(length):
+            data.append(ts)
+        return TimeSeriesDataset(data)
 
     def percent(self, percent: float, seed: int = None, indices: bool = False) -> Any:
         """
 
-        returns a subset of the TimeSeriesDataset with randomly chosen percentage elements without replacement.
+        returns a subset of the TimeSeriesDataset with randomly chosen
+        percentage elements without replacement.
 
         Args:
             percent: percentage of elements returned

@@ -36,3 +36,21 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(tsd.len() == 1)
         tsd.remove(-1)
         self.assertTrue(tsd.len() == 0)
+
+    def test__TimeSeriesDataset__create(self):
+        # params
+        length = 2
+        start = "01-01-2020"
+        end = "02-01-2020"
+        # object creation
+        tsd = TimeSeriesDataset.create(length, start, end)
+        # test
+        self.assertIsInstance(tsd, TimeSeriesDataset)
+        # Test if length is the same as planned
+        self.assertEqual(len(tsd), length)
+
+    def test__TimeSeriesDataset__create_with_freq_as_str(self):
+        pass
+
+    def test__TimeSeries__create_with_freq_as_time_series(self):
+        pass
