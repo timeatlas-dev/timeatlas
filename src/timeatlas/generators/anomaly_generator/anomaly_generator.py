@@ -133,7 +133,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
     def save(self):
         self.labels.finalize()
         self.data.to_text(f'./{self.outfile}_data')
-        self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
+        #self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
 
     def get_anomaly_function(self):
         '''
@@ -166,15 +166,13 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     def add_data(self, new_data, index):
 
-        test = self.data[index].series['values']
-
         self.data[index].series['values'].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
+        labels = [None] * len(self.data[index].series)
         for coords in coordinates:
             start = coords[0]
-            end = coords[1]
-            labels = [None] * len(self.data[index].series)
+            end = coords[1] + 1
             labels[start:end] = [function_name] * len(labels[start:end])
             self.data[index].series[f'label_{self.label_suffix}'] = labels
             self.data[index].label = function_name
