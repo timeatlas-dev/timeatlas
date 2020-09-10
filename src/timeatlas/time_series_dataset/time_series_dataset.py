@@ -8,14 +8,14 @@ from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
 
 from timeatlas.abstract import (
-    AbstractAnalysis,
+    AbstractBaseTimeSeries,
     AbstractOutputText,
-    AbstractOutputPickle,
-    AbstractProcessing
+    AbstractOutputPickle
 )
 
 
-class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText, AbstractOutputPickle):
+class TimeSeriesDataset(AbstractBaseTimeSeries, AbstractOutputText,
+                        AbstractOutputPickle):
     """ Defines a set of time series
 
     A TimeSeriesDataset represent a set of TimeSeries

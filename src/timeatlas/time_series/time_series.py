@@ -6,9 +6,8 @@ import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
 
-from timeatlas.abstract.abstract_analysis import AbstractAnalysis
+from timeatlas.abstract.abstract_base_time_series import AbstractBaseTimeSeries
 from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
-from timeatlas.abstract.abstract_processing import AbstractProcessing
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_FILENAME,
@@ -24,8 +23,8 @@ from timeatlas.utils import ensure_dir, to_pickle
 from numpy import ndarray
 
 
-class TimeSeries(AbstractAnalysis, AbstractOutputText,
-                 AbstractOutputPickle, AbstractProcessing):
+class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
+                 AbstractOutputPickle):
     """ Defines a time series
 
     A TimeSeries object is a series of time indexed values.
