@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union, Tuple, List, Callable, Optional, NoReturn
+from typing import TYPE_CHECKING, Any, Union, Tuple, List, Callable, Optional, \
+    NoReturn
 from pandas import DataFrame, Timestamp, Timedelta
 
-from timeatlas.time_series import TimeSeries
-from timeatlas.time_series_dataset import TimeSeriesDataset
-from timeatlas.abstract.abstract_base_model import AbstractBaseModel
+if TYPE_CHECKING:
+    from timeatlas.time_series import TimeSeries
+    from timeatlas.time_series_dataset import TimeSeriesDataset
+    from timeatlas.abstract.abstract_base_model import AbstractBaseModel
+
 
 class AbstractBaseTimeSeries(ABC):
     """ Definition of the methods signatures
@@ -16,12 +19,7 @@ class AbstractBaseTimeSeries(ABC):
     # ==========================================================================
 
     @abstractmethod
-    def create(self, *args) -> Union[TimeSeries, TimeSeriesDataset]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def register_plotting_function(self, plotting_function: Callable) \
-            -> NoReturn:
+    def create(self, *args) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
@@ -30,30 +28,30 @@ class AbstractBaseTimeSeries(ABC):
 
     @abstractmethod
     def split_at(self, timestamp: Union[str, Timestamp]) \
-            -> Union[Tuple[TimeSeries, TimeSeries],
-                     Tuple[TimeSeriesDataset, TimeSeriesDataset]]:
+            -> Union[Tuple['TimeSeries', 'TimeSeries'],
+                     Tuple['TimeSeriesDataset', 'TimeSeriesDataset']]:
         raise NotImplementedError
 
     @abstractmethod
     def split_in_chunks(self, n: int) \
-            -> Union[List[TimeSeries], List[TimeSeriesDataset]]:
+            -> Union[List['TimeSeries'], List['TimeSeriesDataset']]:
         raise NotImplementedError
 
     @abstractmethod
-    def fill(self, value: Any) -> Union[TimeSeries, TimeSeriesDataset]:
+    def fill(self, value: Any) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def empty(self) -> Union[TimeSeries, TimeSeriesDataset]:
+    def empty(self) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def trim(self, side: str) -> Union[TimeSeries, TimeSeriesDataset]:
+    def trim(self, side: str) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def merge(self, ts: Union[TimeSeries, TimeSeriesDataset]) \
-            -> Union[TimeSeries, TimeSeriesDataset]:
+    def merge(self, ts: Union['TimeSeries', 'TimeSeriesDataset']) \
+            -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     # ==========================================================================
@@ -61,30 +59,32 @@ class AbstractBaseTimeSeries(ABC):
     # ==========================================================================
 
     @abstractmethod
-    def apply(self, func, ts: Union[TimeSeries, TimeSeriesDataset] = None) \
-            -> Union[TimeSeries, TimeSeriesDataset]:
+    def apply(self, func, ts: Union['TimeSeries', 'TimeSeriesDataset'] = None) \
+            -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
     def resample(self, freq: Union[str],
-                 method: Optional[str, AbstractBaseModel] = None) \
-            -> Union[TimeSeries, TimeSeriesDataset]:
+                 method: Optional[Union[str, 'AbstractBaseModel']] = None) \
+            -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def interpolate(self, method: str) -> Union[TimeSeries, TimeSeriesDataset]:
+    def interpolate(self, method: str) \
+            -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def normalize(self, method: str) -> Union[TimeSeries, TimeSeriesDataset]:
+    def normalize(self, method: str) \
+            -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def round(self, decimals: int) -> Union[TimeSeries, TimeSeriesDataset]:
+    def round(self, decimals: int) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
-    def sort(self, *args) -> Union[TimeSeries, TimeSeriesDataset]:
+    def sort(self, *args) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     # ==========================================================================
@@ -140,11 +140,11 @@ class AbstractBaseTimeSeries(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def frequency(self) -> Union[TimeSeries, TimeSeriesDataset]:
+    def frequency(self) -> Union[Optional[str], List[Optional[str]]]:
         raise NotImplementedError
 
     @abstractmethod
-    def resolution(self) -> Union[TimeSeries, TimeSeriesDataset]:
+    def resolution(self) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod

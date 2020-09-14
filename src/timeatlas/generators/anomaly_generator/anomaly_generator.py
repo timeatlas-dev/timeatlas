@@ -148,15 +148,15 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     def chose_amount(self):
 
-        ind, data = self.data.random(n=self.amount, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_randomly(n=self.amount, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def chose_selection(self):
-        ind, data = self.data.select(selection=self.selection, indices=True)
+        ind, data = self.data.select_components_by_index(selection=self.selection, indices=True)
         return list(zip(ind, data))
 
     def chose_percentage(self):
-        ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_by_percentage(percent=self.percent, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def plot_anomaly_series(self):

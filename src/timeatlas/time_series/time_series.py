@@ -6,8 +6,12 @@ import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
 
-from timeatlas.abstract.abstract_base_time_series import AbstractBaseTimeSeries
-from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
+from timeatlas.abstract import (
+    AbstractBaseTimeSeries,
+    AbstractOutputText,
+    AbstractOutputPickle
+)
+
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_FILENAME,
@@ -64,8 +68,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                     "DataFrame as input series must contain a column called {}" \
                         .format(TIME_SERIES_VALUES)
 
-        # Create the TimeSeries object
-        self.series = series
+        # Create the TimeSeries object with certainty that values
+        # are sorted by the time index
+        self.series = series.sort_index()
 
         # The label of the timeseries (can be used for the classification)
         self.label = label
@@ -232,8 +237,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        # TODO
-        raise NotImplementedError
+        return TimeSeries(self.series.append(ts.series), self.metadata)
 
     # ==========================================================================
     # Processing
@@ -333,9 +337,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Basically, it's a wrapper around df.sort_index()
         see: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_index.html
 
-        :param args:
-        :param kwargs:
-        :return: TimeSeries
+        Args:
+            args: the positional arguments
+            kwargs: the keyword arguments
+
+        Returns:
+            TimeSeries
         """
         sorted_time_series = self.series.sort_index(*args, **kwargs)
         return TimeSeries(sorted_time_series, self.metadata)
