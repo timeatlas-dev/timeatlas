@@ -114,11 +114,21 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
         Returns: List of TimeSeriesDatasets containing the chunks
         """
-        tsd_chunks = []
+        # Split all TS in the TSD in chunks and store them in an array
+        chunkified_ts_arr = []
         for ts in self.data:
-            ts_chunks = ts.chunkify(n=n)
-            tsd_chunks.append(TimeSeriesDataset(ts_chunks))
-        return tsd_chunks
+            chunkified_ts = ts.split_in_chunks(n)
+            chunkified_ts_arr.append(chunkified_ts)
+        # Create n TSDs containing each the ith chunks of all TS. Then add each
+        # TSD in an array
+        chunkified_tsd_arr = []
+        for ith_chunk in range(n):
+            tsd_data = []
+            for chunkified_ts in chunkified_ts_arr:
+                tsd_data.append(chunkified_ts[ith_chunk])
+            tsd = TimeSeriesDataset(tsd_data)
+            chunkified_tsd_arr.append(tsd)
+        return chunkified_tsd_arr
 
     def fill(self, value: Any) -> 'TimeSeriesDataset':
         """Fill a TimeSeriesDataset with a value. If given a unique value, all
