@@ -194,9 +194,11 @@ class AnomalyABC():
         """
 
         if mode == 'top':
-            max_ind = np.where(data > clip_value)[0]
+            max_ind_top = np.where(data > clip_value)[0]
+            max_ind = max_ind_top
         elif mode == 'bottom':
-            max_ind = np.where(data < clip_value)[0]
+            max_ind_bot = np.where(data < clip_value)[0]
+            max_ind = max_ind_bot
         else:
             invert_clip_value = clip_value * -1
             max_ind_top = np.where(data > clip_value)[0]
@@ -207,9 +209,12 @@ class AnomalyABC():
         clip_ind = max_ind[start:]
         coordinates = []
         values = []
-        for c in clip_ind:
+        for c in max_ind_top:
             coordinates.append([c, c])
             values.append([clip_value])
+        for c in max_ind_bot:
+            coordinates.append([c, c])
+            values.append([invert_clip_value])
 
         return np.array(values), coordinates
 
@@ -276,6 +281,8 @@ class AnomalyABC():
         return np.array(values), coordinates
 
     def hard_knee(self, data: pd.Series, threshold: float, factor: float = 0.5, n: int = 1):
+
+        #TODO: This might not even be a thing...it is basically a ratio_compression
         '''
 
         Values above a threshold are squeezed by a factor (0 < factor <= 1)
@@ -297,8 +304,12 @@ class AnomalyABC():
         for e in event_starts:
             for i, v in enumerate(data[e:None]):
                 if np.abs(v) >= threshold:
-                    values.append([data[i] * factor])
-                    coordinates.append([i, i])
+                    if v >= 0:
+                        values.append([data[i] - (data[i] - threshold) * factor])
+                        coordinates.append([i, i])
+                    else:
+                        values.append([data[i] + (data[i] + threshold) * factor])
+                        coordinates.append([i, i])
 
         return np.array(values), coordinates
 
@@ -355,8 +366,12 @@ class AnomalyABC():
         for e in event_starts:
             for i, v in enumerate(data):
                 if i >= e and np.abs(v) >= threshold:
-                    values.append([data[i] - (data[i] / ratio)])
-                    coordinates.append([i, i])
+                    if v >= 0:
+                        values.append([data[i] - ((data[i] - threshold) / ratio)])
+                        coordinates.append([i, i])
+                    else:
+                        values.append([data[i] - ((data[i] + threshold) / ratio)])
+                        coordinates.append([i, i])
 
         return np.array(values), coordinates
 
