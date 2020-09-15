@@ -429,7 +429,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             Timestamp
         """
         end = self.series.index[-1]
-        raise end
+        return end
 
     def boundaries(self) -> Tuple[Timestamp, Timestamp]:
         """Get a tuple with the TimeSeries first and last index
