@@ -1,17 +1,15 @@
-from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
-    Timestamp, Timedelta, concat
-from pandas.plotting import register_matplotlib_converters
 from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
-import numpy as np
 
 from darts import TimeSeries as DartsTimeSeries
+import numpy as np
+from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
+    Timestamp, Timedelta
 
 from timeatlas.abstract import (
     AbstractBaseTimeSeries,
     AbstractOutputText,
     AbstractOutputPickle
 )
-
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_FILENAME,
@@ -23,8 +21,6 @@ from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
 from timeatlas.plots.time_series import line, status
 from timeatlas.utils import ensure_dir, to_pickle
-
-from numpy import ndarray
 
 
 class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
@@ -39,8 +35,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None, label: str or None = None,
-    ):
+                 metadata: Metadata = None, label: str or None = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -65,12 +60,14 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
                 # Otherwise, one column should be called "values"
                 assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}" \
-                        .format(TIME_SERIES_VALUES)
+                    "DataFrame as input series must contain a column called {}"\
+                    .format(TIME_SERIES_VALUES)
 
-        # Create the TimeSeries object with certainty that values
-        # are sorted by the time index
-        self.series = series.sort_index()
+            # Create the TimeSeries object with certainty that values
+            # are sorted by the time index
+            self.series = series.sort_index()
+        else:
+            self.series = None
 
         # The label of the timeseries (can be used for the classification)
         self.label = label
@@ -200,7 +197,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        return self.fill(None)
+        return self.fill(np.nan)
 
     def trim(self, side: str = "both") -> 'TimeSeries':
         """Remove NaNs from a TimeSeries start, end or both
@@ -494,7 +491,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
 
-    def to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """Convert a TimeSeries to Numpy Array
 
         Returns:
