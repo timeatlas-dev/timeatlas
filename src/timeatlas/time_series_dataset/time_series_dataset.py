@@ -1,13 +1,11 @@
-from typing import List, Any, NoReturn, Tuple, Union, Callable, Optional
+from typing import List, Any, NoReturn, Tuple, Union, Optional
 
+import numpy as np
 from pandas import DataFrame, Timestamp, Timedelta
-from numpy import array, ndarray
 import random
 
 from timeatlas.time_series import TimeSeries
-from timeatlas.metadata import Metadata
 from timeatlas.utils import ensure_dir, to_pickle
-
 from timeatlas.abstract import (
     AbstractBaseTimeSeries,
     AbstractOutputText,
@@ -149,7 +147,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TimeSeriesDataset
         """
-        return self.fill(None)
+        return self.fill(np.nan)
 
     def trim(self, side: str = "both") -> 'TimeSeriesDataset':
         """Remove NaNs from a TimeSeries start, end or both
@@ -500,14 +498,14 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # TODO issue 56
         raise NotImplementedError
 
-    def to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
         # TODO Should output a warning if the ts have different length
             (issue 56)
 
         Returns: numpy.array of shape (n x len(tsd))
         """
-        return array([ts.to_array() for ts in self.data], dtype=object)
+        return np.array([ts.to_array() for ts in self.data], dtype=object)
 
     def to_darts(self):
         """Convert a TimeSeriesDataset to Darts TimeSeries
