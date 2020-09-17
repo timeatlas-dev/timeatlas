@@ -1,6 +1,7 @@
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
+from timeatlas.config.constants import TIME_SERIES_VALUES
 
 from .anomalies import AnomalyABC
 from .utils import get_operator
@@ -166,7 +167,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     def add_data(self, new_data, index):
 
-        self.data[index].series['values'].replace(to_replace=pd.Series(new_data))
+        self.data[index].series[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
         labels = [None] * len(self.data[index].series)
@@ -196,7 +197,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
             function_params = copy(params)
             function_params.pop('operation')
             # TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
-            anomaly, coordinates = function(data['values'], **function_params)
+            anomaly, coordinates = function(data[TIME_SERIES_VALUES], **function_params)
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)
