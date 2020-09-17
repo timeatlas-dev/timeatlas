@@ -7,6 +7,7 @@ from typing import Any
 from timeatlas.config.constants import *
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
+from timeatlas.config.constants import METADATA_CLASS_LABEL
 from ._utils import (
     check_directory_structure,
     csv_to_dataframe,
@@ -39,8 +40,8 @@ def read_text(path: str) -> Any:
         series = csv_to_dataframe(data)
         metadata = json_to_metadata(meta)
         ts = TimeSeries(series, metadata)
-        if 'label' in ts.metadata:
-            ts.label = ts.metadata['label']
+        if METADATA_CLASS_LABEL in ts.metadata:
+            ts.label = ts.metadata[METADATA_CLASS_LABEL]
         return ts
 
     elif dir_type is None:
