@@ -19,7 +19,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
     def __init__(self, data: TimeSeriesDataset, conf_file):
 
         # Each generator set a label_suffix
-        # Here: AGM -> Anomaly Generator Manuel
+        # Here: AGM -> Anomaly Generator Manual
         super().__init__()
         self.label_suffix = "AGM"
 
