@@ -1,6 +1,7 @@
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
+from timeatlas.config.constants import TIME_SERIES_VALUES
 
 from .anomalies import AnomalyABC
 from .utils import get_operator
@@ -17,6 +18,11 @@ from os import path
 
 class AnomalyGenerator(AbstractBaseGenerator):
     def __init__(self, data: TimeSeriesDataset, conf_file):
+
+        # Each generator set a label_suffix
+        # Here: AGM -> Anomaly Generator Manual
+        super().__init__()
+        self.label_suffix = "AGM"
 
         # assertions
         assert isinstance(data, TimeSeriesDataset)
@@ -128,7 +134,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
     def save(self):
         self.labels.finalize()
         self.data.to_text(f'./{self.outfile}_data')
-        self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
+        #self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
 
     def get_anomaly_function(self):
         '''
@@ -159,19 +165,18 @@ class AnomalyGenerator(AbstractBaseGenerator):
         ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
-    def plot_anomaly_series(self):
-        """
+    def add_data(self, new_data, index):
 
-        Plotting all series with inserted anomalies -> maybe with the original in the same plot
+        self.data[index].series[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
 
-        Returns: Plots the anomalies
-
-        """
-        raise NotImplementedError
-
-    def add_data(self, new_data, ind):
-
-        self.data[ind].series = pd.Series(new_data)
+    def add_labels(self, index, coordinates, function_name):
+        labels = [None] * len(self.data[index].series)
+        for coords in coordinates:
+            start = coords[0]
+            end = coords[1] + 1
+            labels[start:end] = [function_name] * len(labels[start:end])
+            self.data[index].series[f'label_{self.label_suffix}'] = labels
+            self.data[index].label = function_name
 
     def generate(self):
 
@@ -191,21 +196,23 @@ class AnomalyGenerator(AbstractBaseGenerator):
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')
-            print(function.__name__)
-            #TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
-            anomaly, coordinates = function(data['values'], **function_params)
+            # TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
+            anomaly, coordinates = function(data[TIME_SERIES_VALUES], **function_params)
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)
-            self.add_data(new_data, ind)
+            # rounding the data to a precision typical for the given dataset
+            new_data = new_data.round(decimals=self.precision)
+            self.add_data(new_data=new_data, index=ind)
             self.labels.create_operation_dict(coordinates=coordinates,
                                               param=operation_param,
                                               function_name=function.__name__,
                                               name=ind,
                                               outfile=self.outfile)
 
-            # round all values to the same precision
-            ts.round(decimals=self.precision)
+            self.add_labels(index=ind,
+                            coordinates=coordinates,
+                            function_name=function.__name__)
 
         if self.GLOBAL['save']:
             self.save()

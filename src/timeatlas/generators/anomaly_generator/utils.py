@@ -36,7 +36,7 @@ def add(data, start, values):
     for e, v in zip(start, values):
         data[e[0]:e[0] + len(v)] = data[e[0]:e[0] + len(v)] + v
 
-    return data
+    return pd.Series(data)
 
 
 def replace(data, start, values):
