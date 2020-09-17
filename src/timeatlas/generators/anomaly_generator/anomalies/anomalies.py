@@ -197,13 +197,13 @@ class AnomalyABC():
             max_ind_top = np.where(data > clip_value)[0]
             max_ind = max_ind_top
         elif mode == 'bottom':
-            max_ind_bot = np.where(data < clip_value)[0]
-            max_ind = max_ind_bot
+            max_ind_bottom = np.where(data < clip_value)[0]
+            max_ind = max_ind_bottom
         else:
             invert_clip_value = clip_value * -1
             max_ind_top = np.where(data > clip_value)[0]
-            max_ind_bot = np.where(data < invert_clip_value)[0]
-            max_ind = np.unique(np.concatenate((max_ind_top, max_ind_bot), 0))
+            max_ind_bottom = np.where(data < invert_clip_value)[0]
+            max_ind = np.unique(np.concatenate((max_ind_top, max_ind_bottom), 0))
 
         start = np.random.choice(range(len(max_ind) + 1), 1, replace=False)[0]
         clip_ind = max_ind[start:]
@@ -212,7 +212,7 @@ class AnomalyABC():
         for c in max_ind_top:
             coordinates.append([c, c])
             values.append([clip_value])
-        for c in max_ind_bot:
+        for c in max_ind_bottom:
             coordinates.append([c, c])
             values.append([invert_clip_value])
 
