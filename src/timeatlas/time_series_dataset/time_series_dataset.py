@@ -162,8 +162,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return TimeSeriesDataset([ts.trim(side) for ts in self.data])
 
-    def merge(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
-        """Merge two TimeSeriesDataset
+    def merge_by_index(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
+        """Merge two TimeSeriesDataset by the index of the TimeSeries
 
         This methods merges the TimeSeries from the TimeSeriesDataset (TSD) in
         argument with self based on the indexes of each one of the TSDs.
