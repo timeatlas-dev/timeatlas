@@ -1,13 +1,32 @@
+from typing import NoReturn
 import pandas as pd
 
 
 class AnomalySetLabeler:
     def __init__(self):
-        # anomaly labels
+        """
+
+        Class of the AnomalyGenerator Labels
+
+        """
         self.annotation = {}
 
-    def create_operation_dict(self, coordinates, param,function_name, name, outfile):
+    def create_operation_dict(self, coordinates: list, param: str, function_name: str, name: str,
+            outfile: str) -> NoReturn:
+        """
 
+        Create a dictionary of all the newly added anomalies.
+
+        Args:
+            coordinates: index of the start and end of the anomaly
+            param: parameters used to create the anomaly
+            function_name: name of the function that created the anomaly
+            name: name of the dataframe used to insert the anomalies into. Filename
+            outfile: Filename to save the labels to #deprecated
+
+        Returns: NoReturn
+
+        """
         coordinates = sorted(coordinates, key=lambda x: x[0])
         # TODO: This offset style is not good since it is redundant with he code in utils.insert
         offset = 0
