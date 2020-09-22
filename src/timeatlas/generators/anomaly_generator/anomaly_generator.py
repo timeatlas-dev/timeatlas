@@ -1,3 +1,5 @@
+from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable, Dict
+
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
@@ -17,7 +19,22 @@ from os import path
 
 
 class AnomalyGenerator(AbstractBaseGenerator):
+    """
+
+    A generator that introcudes an anomaly into a given TimeSeriesDataset.
+
+    The types and parameters are controlled with a .ini file,
+    that can be created with "AnomalyGeneratorTemplate"
+
+    """
+
     def __init__(self, data: TimeSeriesDataset, conf_file):
+        """
+
+        Args:
+            data: TimeSeriesDataset containing the data
+            conf_file: config file created with AnomalyGeneratorTemplate
+        """
 
         # Each generator set a label_suffix
         # Here: AGM -> Anomaly Generator Manual
@@ -57,7 +74,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         self.precision = self.generation_precision()
 
     @staticmethod
-    def precision_and_scale(x):
+    def precision_and_scale(x: float):
         """
 
         Get the precision of a value
@@ -88,11 +105,19 @@ class AnomalyGenerator(AbstractBaseGenerator):
         return scale
 
     @staticmethod
-    def clean_parameters(values):
+    def clean_parameters(values) -> Dict:
+        """
+        Function to cleanup the parameters. If the parameter in the config-file are None, they are removed.
+        Args:
+            values: parameter values from he config files
+
+        Returns: Dict of the paramters without the None
+
+        """
         return {k: v for k, v in values['PARAMETERS'].items() if v is not None}
 
     @staticmethod
-    def create_zip_object(data, anomaly_f):
+    def create_zip_object(data: List, anomaly_f: List):
         '''
 
         combines the two lists of the data, where the anomalies are added to and the anomaly-function
@@ -114,7 +139,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         zip_list = zip(data, cycle(anomaly_f))
         return zip_list
 
-    def generation_precision(self):
+    def generation_precision(self) -> int:
         '''
 
         Set the rounded average precision of the values inside a dataframe
@@ -131,12 +156,22 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         return int(round(precision_df.mean()))
 
-    def save(self):
+    def save(self) -> NoReturn:
+        """
+
+        Saving the labels and the new TimeSeriesDataset to file.
+
+        Returns: NoReturn
+
+        """
+
         self.labels.finalize()
         self.data.to_text(f'./{self.outfile}_data')
-        #self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
 
-    def get_anomaly_function(self):
+        # This function is no longer needed, since we save the labels now in the TimeSeries
+        # self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
+
+    def get_anomaly_function(self) -> List:
         '''
 
         Get all functions in the config file
@@ -152,24 +187,75 @@ class AnomalyGenerator(AbstractBaseGenerator):
             functions.append((function, parameters))
         return functions
 
-    def chose_amount(self):
+    def chose_amount(self) -> List:
+        """
+
+        Chose the number of time windows based on a fixed amount given by the user in the config file:
+
+        eg. amount = 10, will select 10 elements
+
+        Returns: List of pair of indices and data
+
+        """
 
         ind, data = self.data.random(n=self.amount, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
-    def chose_selection(self):
+    def chose_selection(self) -> List:
+        """
+
+        Chose the number of time windows based on a user selection given by the user in the config file:
+
+        eg. selection = [0,1,5,9] will select the first, second, sixth and tenth element.
+
+        Returns: List of pair of indices and data
+
+        """
         ind, data = self.data.select(selection=self.selection, indices=True)
         return list(zip(ind, data))
 
-    def chose_percentage(self):
+    def chose_percentage(self) -> List:
+        """
+
+        Chose the number of time windows based on a user selection given by the user in the config file:
+
+        e.g. percent = 0.2 will select 20% of the TimeSeriesDataset (min=0, max=1)
+
+        Returns: List of pair of indices and data
+
+        """
         ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
-    def add_data(self, new_data, index):
+    def add_data(self, new_data: TimeSeries, index: int) -> NoReturn:
+        """
+
+        Replacing the old TimeSeries with the new TimeSeries containing the anomaly.
+
+        Args:
+            new_data: new TimeSeries that will replace the old one
+            index: index of the TimeSeries to replace in the TimeSeriesDataset
+
+        Returns: NoReturn
+
+        """
 
         self.data[index].series[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
+        """
+
+        Create the labels that need to be added to the TimeSeries.
+        Will create a new column for the labels and name them.
+
+        Args:
+            index: index of the TimeSeries in the TimeSeriesDataframe
+            coordinates: start and end index of the anomaly in the TimeSeries
+            function_name: label of the anomaly
+
+        Returns:
+
+        """
         labels = [None] * len(self.data[index].series)
         for coords in coordinates:
             start = coords[0]
@@ -178,7 +264,14 @@ class AnomalyGenerator(AbstractBaseGenerator):
             self.data[index].series[f'label_{self.label_suffix}'] = labels
             self.data[index].label = function_name
 
-    def generate(self):
+    def generate(self) -> NoReturn:
+        """
+
+        Main function to generate the anomalies.
+
+        Returns: NoReturn
+
+        """
 
         if self.amount:
             anomaly_series = self.chose_amount()
