@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from configobj import ConfigObj
 import inspect
 
@@ -59,7 +61,14 @@ class AnomalyGeneratorTemplate(ConfigObj):
 
         self.create_config()
 
-    def create_config(self):
+    def create_config(self) -> NoReturn:
+        """
+
+        Creating the config file based on the input of the user
+
+        Returns: NoReturn -> saves the file directly.
+
+        """
         self[self.header_name] = {}
         self.inline_comments[
             self.header_name] = "!!One of the settings 'percent', 'selection' or 'amount' has to be set!!"
@@ -86,7 +95,17 @@ class AnomalyGeneratorTemplate(ConfigObj):
             else:
                 self['ANOMALIES'][self.anomaly_name + str(n)]['function'] = ''
 
-    def anomaly_function_parameters(self, function_index):
+    def anomaly_function_parameters(self, function_index: int) -> list:
+        """
+
+        Get the function parameters form the function so they can be written into the config.ini
+
+        Args:
+            function_index: index of the anomaly to the the paramters from
+
+        Returns: List of parameters
+
+        """
         try:
             params = inspect.getfullargspec(getattr(self.ABC, self.functions[function_index])).args
             # removing the two parameters self and data, that should not be given in the config file
