@@ -4,7 +4,6 @@ from pandas import Timestamp
 import numpy as np
 
 from timeatlas import TimeSeries, TimeSeriesDataset
-import timeatlas as ta
 
 
 class TestTimeSeriesDataset(TestCase):
@@ -196,3 +195,14 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(tsd.len() == 1)
         tsd.remove_component(-1)
         self.assertTrue(tsd.len() == 0)
+
+    def test__TimeSeriesDataset__synchronize(self):
+        # Create series
+        ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
+        ts_2 = TimeSeries.create("01-2020", "03-2020", "min")
+        my_arr = [ts_1, ts_2]
+        tsd = TimeSeriesDataset(my_arr)
+        # Call function
+        tsd = tsd.synchronize(method="lowest")
+
+
