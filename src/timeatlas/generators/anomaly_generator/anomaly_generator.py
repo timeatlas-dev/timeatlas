@@ -28,7 +28,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     """
 
-    def __init__(self, data: TimeSeriesDataset, conf_file):
+    def __init__(self, data: TimeSeriesDataset, conf_file: str, save_as: str = 'text'):
         """
 
         Args:
@@ -40,6 +40,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         # Here: AGM -> Anomaly Generator Manual
         super().__init__()
         self.label_suffix = "AGM"
+        self.save_as = save_as
 
         # assertions
         assert isinstance(data, TimeSeriesDataset)
@@ -166,7 +167,11 @@ class AnomalyGenerator(AbstractBaseGenerator):
         """
 
         self.labels.finalize()
-        self.data.to_text(f'./{self.outfile}_data')
+
+        if self.save_as == 'text':
+            self.data.to_text(path=f'./{self.outfile}_data')
+        elif self.save_as == 'pickle':
+            self.data.to_pickle(path=f'./{self.outfile}_data.pkl')
 
         # This function is no longer needed, since we save the labels now in the TimeSeries
         # self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
