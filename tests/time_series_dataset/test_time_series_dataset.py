@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from pandas import Timestamp
+from pandas.tseries.frequencies import to_offset
 import numpy as np
 
 from timeatlas import TimeSeries, TimeSeriesDataset
@@ -196,13 +197,40 @@ class TestTimeSeriesDataset(TestCase):
         tsd.remove_component(-1)
         self.assertTrue(tsd.len() == 0)
 
-    def test__TimeSeriesDataset__synchronize(self):
+    def test__TimeSeriesDataset__resample(self):
         # Create series
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
         ts_2 = TimeSeries.create("01-2020", "03-2020", "min")
         my_arr = [ts_1, ts_2]
         tsd = TimeSeriesDataset(my_arr)
-        # Call function
-        tsd = tsd.synchronize(method="lowest")
 
+        # Test lowest
+        tsd_freq_before = tsd.frequency()
+        lowest_freq = max([to_offset(f) for f in tsd_freq_before])
+        tsd_res = tsd.resample(freq="lowest")
+        for ts in tsd_res:
+            current_offset = to_offset(ts.frequency())
+            self.assertEqual(current_offset, lowest_freq)
 
+        # Test highest
+        tsd_freq_before = tsd.frequency()
+        highest_freq = min([to_offset(f) for f in tsd_freq_before])
+        tsd_res = tsd.resample(freq="highest")
+        for ts in tsd_res:
+            current_offset = to_offset(ts.frequency())
+            self.assertEqual(current_offset, lowest_freq)
+
+        # Test Dateoffset str
+        offest_str = "15min"
+        tsd_res = tsd.resample(freq=offest_str)
+        for ts in tsd_res:
+            current_offset = to_offset(ts.frequency())
+            self.assertEqual(current_offset, offest_str)
+
+        # Test TimeSeries as arg
+        offset_str_arg = "30min"
+        ts_arg = TimeSeries.create("01-2020", "03-2020", offset_str_arg)
+        tsd_res = tsd.resample(freq=ts_arg)
+        for ts in tsd_res:
+            current_offset = to_offset(ts.frequency())
+            self.assertEqual(current_offset, offset_str_arg)

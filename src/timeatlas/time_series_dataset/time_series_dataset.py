@@ -3,6 +3,7 @@ from typing import List, Any, NoReturn, Tuple, Union, Optional
 import numpy as np
 from pandas import DataFrame, Timestamp, Timedelta
 from pandas.tseries.frequencies import to_offset
+from pandas.tseries.offsets import DateOffset
 import random
 
 from timeatlas.time_series import TimeSeries
@@ -286,16 +287,25 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # TODO (See GitHub issue 56)
         raise NotImplementedError
 
-    def resample(self, freq: str, method: Optional[str] = None) \
+    def resample(self, freq: Union[str, TimeSeries], method: Optional[str] = None) \
             -> 'TimeSeriesDataset':
         """Convert the TimeSeries in a TimeSeriesDataset to a specified
         frequency. Optionally provide filling method to pad/backfill missing
         values.
 
         Args:
-            freq: string
+            freq: str or TimeSeries.
                 The new time difference between two adjacent entries in the
-                returned TimeSeries. A DateOffset alias is expected.
+                returned TimeSeries.
+
+                If a TimeSeries is given, the freq in self will become
+                the same as in the given TimeSeries.
+
+                If a string is given, three options are available:
+                    * 'lowest' : to sync the TimeSeriesDataset to the lowest frequency
+                    * 'highest' : to sync the TimeSeriesDataset to the highest frequency
+                    * A DateOffset alias e.g.: 15min, H, etc.
+
 
             method: {'backfill'/'bfill', 'pad'/'ffill'}, default None
                 Method to use for filling holes in reindexed Series (note this
@@ -308,8 +318,29 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TimeSeriesDataset
         """
-        return \
-            TimeSeriesDataset([ts.resample(freq, method) for ts in self.data])
+        # TimeSeries as arg
+        if isinstance(freq, TimeSeries):
+            target_freq = freq.frequency()
+
+        # special str as arg
+        elif freq == "lowest":
+            frequencies = [to_offset(ts.frequency()) for ts in self.data]
+            target_freq = max(frequencies)
+
+        elif freq == "highest":
+            frequencies = [to_offset(ts.frequency()) for ts in self.data]
+            target_freq = min(frequencies)
+
+        # DateOffset str as arg
+        elif isinstance(to_offset(freq), DateOffset):
+            target_freq = freq
+
+        # Invalid arg
+        else:
+            raise ValueError("freq argument isn't valid")
+
+        return TimeSeriesDataset(
+            [ts.resample(target_freq, method) for ts in self.data])
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeriesDataset':
         """Wrapper around the Pandas interpolate() method.
@@ -363,48 +394,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     # TimeSeriesDataset
     # -----------------
-    def synchronize(self, freq: Union[str, TimeSeries], method: Optional[str] = None):
-        """
-
-        Synchronize the frequencies of all time series in a TimeSeriesDataset so
-        that they are all the same.
-
-        Args:
-            freq: str or TimeSeries. If str, two options are available:
-
-                * 'lowest' : to sync the TimeSeriesDataset to the lowest frequency
-                * 'highest' : to sync the TimeSeriesDataset to the highest frequency
-
-            method: {'backfill'/'bfill', 'pad'/'ffill'}, default None
-                Method to use for filling holes in reindexed Series (note this
-                does not fill NaNs that already were present):
-
-                * 'pad'/'ffil': propagate last valid observation forward to next
-                  valid
-                * 'backfill'/'ffill': use next valid observation to fill
-
-        Returns:
-            TimeSeriesDataset
-
-        """
-        # 1. Get all frequencies
-        frequencies = [to_offset(ts.frequency()) for ts in self.data]
-
-        # 2. find the TS with freq according to freq param
-        if freq == "lowest":
-            target_freq = max(frequencies)
-        elif freq == "highest":
-            target_freq = min(frequencies)
-        elif isinstance(freq, TimeSeries):
-            target_freq = freq.frequency()
-
-        # 3. resample all TSs
-        for ts in self.data:
-            ts.resample(target_freq, method)
-
-        return TimeSeriesDataset(self.data)
-
-    def regularize(self, side: str = "[]", fill = np.nan ):
+    def regularize(self, side: str = "[]", fill=np.nan):
         """
         Regularize a TimeSeriesDataset so that all starting and ending
         timestamps are similar. This method keeps the frequency of every
@@ -417,20 +407,33 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TSD
         """
         # 1. find the boundaries of all TSs
-        # 2. find
-        #   earliest start
-        #   earliest end
-        #   latest start
-        #   latest end
-        # 3. compute fill parameter if needed
+        all_boundaries = self.boundaries()
 
+        # 2. find earliest/latest values
+        starts = np.array(all_boundaries).T[0]
+        earliest_start = min(starts)
+        latest_start = max(starts)
+        ends = np.array(all_boundaries).T[1]
+        earliest_end = min(ends)
+        latest_end = max(ends)
+
+        # 3. compute fill parameter if needed
         if side == "[]":
-            raise NotImplementedError
+            earliest_start
+            latest_end
+
         elif side == "[[":
-            raise NotImplementedError
+            earliest_start
+            earliest_end
+
         elif side == "]]":
-            raise NotImplementedError
+            latest_start
+            latest_end
+
         elif side == "][":
+            latest_start
+            earliest_end
+
             # 2. find latest start and earliest end
             # 3. if end > start then, it intersect, otherwise null
             raise NotImplementedError
