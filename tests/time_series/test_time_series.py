@@ -124,6 +124,16 @@ class TestTimeSeries(TestCase):
         # TODO
         pass
 
+    def test__TimeSeries__pad(self):
+        # Create TimeSeries
+        ts_1 = TimeSeries.create("04-2020", "05-2020", "D")
+        # Pad before
+        ts_1_padded_before = ts_1.pad("03-2020")["2020-03-31":"2020-04-01"]
+        # Pad after
+        ts_1_padded_after = ts_1.pad("06-2020")["2020-05-31":"2020-06-02"]
+        # Pad during (wrong case)
+        ts_1_padded_during = ts_1.pad("2020-04-15")
+
     def test__TimeSeries__trim(self):
         # TODO
         pass

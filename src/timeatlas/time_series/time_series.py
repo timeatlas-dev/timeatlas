@@ -199,6 +199,84 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """
         return self.fill(np.nan)
 
+    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
+            value: Any = np.NaN):
+        """
+        Pad a TimeSeries until a given limit
+
+        Args:
+            limit: int, str or Pandas Timestamp
+                if int, it will pad the side given in the side arguments by n
+                elements.
+
+            side: Optional[str]
+                side to which the TimeSeries will be padded. This arg can have
+                two value: "before" and "after" depending where the padding is
+                needed.
+
+                This arg is needed only in case the limit is given in int.
+
+            value: Any values
+
+        Returns:
+            TimeSeries
+        """
+        def create_pad(new_limit, ts, fill_val):
+            """
+            Local utility function to create padding time series from a Pandas
+            Timestamp for a given TimeSeries
+
+            Args:
+                new_limit: Pandas Timestamp of the new limit to pad from/to
+                ts: TimeSeries to pad
+                fill_val: value to fill the TimeSeries with
+
+            Returns:
+                TimeSeries
+            """
+            if new_limit < ts.start():
+                return ts.create(new_limit, ts.start(), freq=ts)\
+                           .fill(fill_val)[:-1]
+            elif new_limit > ts.end():
+                return ts.create(ts.end(), new_limit, freq=ts)\
+                           .fill(fill_val)[1:]
+            else:
+                raise ValueError("The given limit is included in the time "
+                           "series, padding is impossible")
+
+        # Create padding TimeSeries from a given number of elements to pad with
+        if isinstance(limit, int):
+            # Add 1 to make the interval is too small
+            target_limit = limit + 1
+
+            if side == "before":
+                index = date_range(end=self.start(), freq=self.frequency(),
+                                   periods=target_limit, closed="left")
+            elif side == "after":
+                index = date_range(start=self.end(), freq=self.frequency(),
+                                   periods=target_limit, closed="right")
+            else:
+                raise ValueError("side argument isn't valid")
+
+            values = [value] * len(index)
+            df = DataFrame(index=index, data=values)
+            pad = TimeSeries(df)
+
+        # Create padding TimeSeries from time stamp as str
+        if isinstance(limit, str):
+            target_limit = Timestamp(limit)
+            pad = create_pad(target_limit, self, value)
+
+        # Create padding TimeSeries from time stamp as Pandas Timestamp
+        elif isinstance(limit, Timestamp):
+            target_limit = limit
+            pad = create_pad(target_limit, self, value)
+
+        else:
+            ValueError("limit argument isn't valid")
+
+        return self.merge(pad)
+
     def trim(self, side: str = "both") -> 'TimeSeries':
         """Remove NaNs from a TimeSeries start, end or both
 
