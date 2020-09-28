@@ -151,7 +151,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         precision_df = np.array(
             [self.precision_and_scale(x) for ts in self.data for x in
-             ts.series.values])
+             ts.series['values'].values])
         # This is more of a security. A correctly formatted TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
 
