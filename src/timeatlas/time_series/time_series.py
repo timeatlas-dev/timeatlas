@@ -66,11 +66,17 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             # Create the TimeSeries object with certainty that values
             # are sorted by the time index
             self.series = series.sort_index()
+
+            # Add the freq if regular
+            infer_freq(self.series.index)
+
+            # Create instance variables
+            self.index = self.series.index  # index accessor
+            self.values = self.series[TIME_SERIES_VALUES]  # values accessor
         else:
             self.series = None
 
-        # The label of the timeseries (can be used for the classification)
-        self.label = label
+        self.label = label  # label of the TimeSeries (for classification)
 
         if metadata is not None:
             self.metadata = metadata
@@ -87,7 +93,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         return len(self.series)
 
     def __iter__(self):
-        return (v for v in self.series)
+        return (v for v in self.series[TIME_SERIES_VALUES])
 
     def __getitem__(self, item):
         return TimeSeries(self.series[item])
@@ -312,7 +318,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        return TimeSeries(self.series.append(ts.series), self.metadata)
+        # append and infer new freq
+        merged = self.series.append(ts.series)
+        infer_freq(merged.index)
+
+        # instanciate a TimeSeries to sort it
+        return TimeSeries(merged, self.metadata)
 
     # ==========================================================================
     # Processing

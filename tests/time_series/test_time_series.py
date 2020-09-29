@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pandas import DatetimeIndex, DataFrame, Series
+from pandas import DatetimeIndex, DataFrame, Series, Timedelta
 import numpy as np
 from timeatlas import TimeSeries, Metadata
 from timeatlas.config.constants import TIME_SERIES_VALUES
@@ -7,10 +7,8 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 
 class TestTimeSeries(TestCase):
 
-    def setUp(self) -> None:
-        self.my_time_series = TimeSeries()
-
     def test__TimeSeries__is_instance(self):
+        self.my_time_series = TimeSeries()
         self.assertIsInstance(self.my_time_series, TimeSeries,
                               "The TimeSeries hasn't the right type")
 
@@ -69,6 +67,13 @@ class TestTimeSeries(TestCase):
         # Test if frequency is daily
         self.assertEqual(ts.series.index.inferred_freq, 'D')
 
+    def test__TimeSeries__create_is_regular(self):
+        ts = TimeSeries.create("01-01-2020", "02-01-2020")
+        no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
+            Timedelta(0)
+        is_regular = no_duration_diff.eq(True).all()
+        self.assertTrue(is_regular)
+
     def test__TimeSeries__create_with_freq_as_str(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         self.assertIsInstance(ts, TimeSeries)
@@ -125,14 +130,41 @@ class TestTimeSeries(TestCase):
         pass
 
     def test__TimeSeries__pad(self):
+
+        def is_regular(ts):
+            # test if double timestamps in ts
+            no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
+                               Timedelta(0)
+            return no_duration_diff.eq(True).all()
+
+        def is_monotonic(ts):
+            # test if monotonic
+            return ts.series.index.is_monotonic
+
+        def is_freq_similar(ts_before, ts_after):
+            # test if freq is the same
+            print(ts_before.frequency())
+            print(ts_after.frequency())
+            return ts_before.frequency() == ts_after.frequency()
+
         # Create TimeSeries
         ts_1 = TimeSeries.create("04-2020", "05-2020", "D")
+
         # Pad before
-        ts_1_padded_before = ts_1.pad("03-2020")["2020-03-31":"2020-04-01"]
+        ts_1_padded_before = ts_1.pad("03-2020")["2020-03-31":"2020-04-02"]
+        self.assertTrue(is_regular(ts_1_padded_before))
+        self.assertTrue(is_monotonic(ts_1_padded_before))
+        self.assertTrue(is_freq_similar(ts_1, ts_1_padded_before))
+
         # Pad after
-        ts_1_padded_after = ts_1.pad("06-2020")["2020-05-31":"2020-06-02"]
+        ts_1_padded_after = ts_1.pad("06-2020")["2020-05-29":"2020-06-02"]
+        self.assertTrue(is_regular(ts_1_padded_after))
+        self.assertTrue(is_monotonic(ts_1_padded_after))
+        self.assertTrue(is_freq_similar(ts_1, ts_1_padded_after))
+
         # Pad during (wrong case)
-        ts_1_padded_during = ts_1.pad("2020-04-15")
+        with self.assertRaises(ValueError):
+            ts_1.pad("2020-04-15")
 
     def test__TimeSeries__trim(self):
         # TODO
@@ -166,5 +198,3 @@ class TestTimeSeries(TestCase):
         is_equal = ts.series[TIME_SERIES_VALUES].equals(dts.pd_series())
         self.assertTrue(is_equal)
 
-    def tearDown(self) -> None:
-        del self.my_time_series
