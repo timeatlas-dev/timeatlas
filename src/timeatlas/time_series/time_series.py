@@ -68,7 +68,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             self.series = series.sort_index()
 
             # Add the freq if regular
-            infer_freq(self.series.index)
+            if len(series) >= 3:
+                infer_freq(self.series.index)
 
             # Create instance variables
             self.index = self.series.index  # index accessor
