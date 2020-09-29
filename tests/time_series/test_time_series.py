@@ -143,8 +143,6 @@ class TestTimeSeries(TestCase):
 
         def is_freq_similar(ts_before, ts_after):
             # test if freq is the same
-            print(ts_before.frequency())
-            print(ts_after.frequency())
             return ts_before.frequency() == ts_after.frequency()
 
         # Create TimeSeries
