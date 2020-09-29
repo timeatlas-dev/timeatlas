@@ -151,6 +151,31 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return self.fill(np.nan)
 
+    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
+            value: Any = np.NaN):
+        """
+        Pad a TimeSeriesDataset until a given limit
+
+        Args:
+            limit: int, str or Pandas Timestamp
+                if int, it will pad the side given in the side arguments by n
+                elements.
+
+            side: Optional[str]
+                side to which the TimeSeries will be padded. This arg can have
+                two value: "before" and "after" depending where the padding is
+                needed.
+
+                This arg is needed only in case the limit is given in int.
+
+            value: Any values
+
+        Returns:
+            TimeSeries
+        """
+        return TimeSeriesDataset([ts.pad(limit=limit, side=side, value=value)
+                                  for ts in self.data])
+
     def trim(self, side: str = "both") -> 'TimeSeriesDataset':
         """Remove NaNs from a TimeSeries start, end or both
 
@@ -417,29 +442,23 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         earliest_end = min(ends)
         latest_end = max(ends)
 
-        # 3. compute fill parameter if needed
+        # 3. pad all TSs accordingly
         if side == "[]":
-            earliest_start
-            latest_end
-
+            tsd = self.pad(earliest_start).pad(latest_end)
         elif side == "[[":
-            earliest_start
-            earliest_end
-
+            tsd = TimeSeriesDataset([ts[:earliest_end]
+                                     for ts in self.pad(earliest_start).data])
         elif side == "]]":
-            latest_start
-            latest_end
-
+            tsd = TimeSeriesDataset([ts[latest_start:]
+                                     for ts in self.pad(latest_end).data])
         elif side == "][":
-            latest_start
-            earliest_end
-
-            # 2. find latest start and earliest end
-            # 3. if end > start then, it intersect, otherwise null
-            raise NotImplementedError
+            tsd = TimeSeriesDataset([ts[latest_start:earliest_end]
+                                     for ts in self.data])
         else:
-            raise AttributeError("side attribute must be either 'start' or "
-                             "'end', but not {}".format(side))
+            raise ValueError("method argument is not recognized")
+
+        return tsd
+
 
     # ==========================================================================
     # Analysis

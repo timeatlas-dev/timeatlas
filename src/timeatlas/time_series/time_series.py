@@ -247,6 +247,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             elif new_limit > ts.end():
                 return ts.create(ts.end(), new_limit, freq=ts)\
                            .fill(fill_val)[1:]
+            if new_limit == ts.start() or new_limit == ts.end():
+                return TimeSeries()
             else:
                 raise ValueError("The given limit is included in the time "
                            "series, padding is impossible")
