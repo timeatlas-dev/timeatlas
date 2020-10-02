@@ -3,6 +3,7 @@ from typing import List, Any, NoReturn, Tuple
 from pandas import DataFrame
 from numpy import array, ndarray
 import random
+from warnings import warn
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
@@ -74,16 +75,21 @@ class TimeSeriesDataset(AbstractAnalysis, AbstractProcessing, AbstractOutputText
         """
 
         # setting the seed if None no seed will be set automatically
+
+        assert percent <= 1
+
         random.seed(seed)
         n = round(len(self.data) * percent)
 
         if n <= 0:
-            raise ValueError(f'set percentage to small resulting selection is <= 0')
+            warn(f'set percentage to small resulting selection is <= 0\n Using n=1.')
+            n = 1
+            print(n)
 
         if indices:
-            return self.random(n=n, indices=indices)
+            return self.random(n=n, seed=seed, indices=indices)
         else:
-            return self.random(n=n)
+            return self.random(n=n, seed=seed)
 
     def select(self, selection: List[int], indices: bool = False) -> Any:
         """
