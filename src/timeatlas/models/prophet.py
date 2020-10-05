@@ -1,4 +1,4 @@
-from typing import NoReturn, Union
+from typing import NoReturn, Union, Optional
 from pandas import DataFrame
 import fbprophet as fbp
 
@@ -9,6 +9,8 @@ from timeatlas.config.constants import (
     TIME_SERIES_CI_LOWER
 )
 from timeatlas.time_series import TimeSeries
+from timeatlas.time_series_dataset import TimeSeriesDataset
+
 from timeatlas.plots.time_series import prediction
 
 
@@ -18,9 +20,18 @@ class Prophet(AbstractBaseModel):
         super().__init__()
         self.model = fbp.Prophet()
 
-    def fit(self, ts: TimeSeries) -> NoReturn:
+    def fit(self, ts: Union[TimeSeries, TimeSeriesDataset],
+            value: Optional = None) -> NoReturn:
         super().fit(ts)
-        df = self.__prepare_series_for_prophet(self.X_train)
+
+        if isinstance(ts, TimeSeries):
+            df = self.__prepare_time_series_for_prophet(self.X_train)
+        elif isinstance(ts, TimeSeriesDataset):
+            df = self.__prepare_time_series_dataset_for_prophet(self.X_train)
+        else:
+            ValueError('The fit method  accepts only TimeSeries or '
+                       'TimeSeriesDataset as argument')
+
         self.model.fit(df)
 
     def predict(self, horizon: Union[str, TimeSeries], freq: str = None) \
@@ -31,7 +42,7 @@ class Prophet(AbstractBaseModel):
             future = self.make_future_dataframe(horizon, freq)
             metadata = None
         elif isinstance(horizon, TimeSeries):
-            future = self.__prepare_series_for_prophet(horizon.empty())
+            future = self.__prepare_time_series_for_prophet(horizon.empty())
             metadata = horizon.metadata
 
         forecast = self.model.predict(future)
@@ -52,12 +63,16 @@ class Prophet(AbstractBaseModel):
 
 
     @staticmethod
-    def __prepare_series_for_prophet(ts: TimeSeries):
+    def __prepare_time_series_for_prophet(ts: TimeSeries):
         df = ts.to_df().copy()
         df["ds"] = df.index
         df = df.reset_index(drop=True)
         df = df.rename(columns={"values": "y"})
         return df
+
+    @staticmethod
+    def __prepare_time_series_dataset_for_prophet(tsd: TimeSeriesDataset):
+        df = tsd.to_df()
 
     def make_future_dataframe(self, horizon: str, freq: str = None):
         index = self.make_future_index(horizon, freq)

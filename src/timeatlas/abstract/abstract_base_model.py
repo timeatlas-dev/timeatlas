@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, NoReturn
+from typing import Any, NoReturn, Union
+
+from timeatlas.time_series import TimeSeries
+from timeatlas.time_series_dataset import TimeSeriesDataset
 
 from pandas import Timedelta, date_range, infer_freq, DataFrame
 
@@ -14,7 +17,7 @@ class AbstractBaseModel(ABC):
         self.X_train = None
 
     @abstractmethod
-    def fit(self, series) -> NoReturn:
+    def fit(self, series: Union[TimeSeries, TimeSeriesDataset]) -> NoReturn:
         """ Fit a model """
         self._is_fitted = True
         self.X_train = series
