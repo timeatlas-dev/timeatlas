@@ -1,7 +1,7 @@
 from typing import List, Any, NoReturn, Tuple, Union, Optional
 
 import numpy as np
-from pandas import DataFrame, Timestamp, Timedelta
+from pandas import DataFrame, Timestamp, Timedelta, concat
 from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import DateOffset
 import random
@@ -583,9 +583,21 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         to_pickle(self, path)
 
-    def to_dataframe(self) -> DataFrame:
-        # TODO issue 56
-        raise NotImplementedError
+    def to_df(self) -> DataFrame:
+        """Converts a TimeSeriesDataset to a Pandas DataFrame
+
+        The indexes of all the TimeSeries in the TimeSeriesDataset will get
+        merged. That means that you are the only responsible if the merge
+        induces the addition of many NaNs in your data. Therefore, it's better
+        to use this method if you are sure that your TimeSeries share a common
+        frequency as well as start and end.
+
+        Returns:
+            DataFrame
+        """
+        df = concat([ts.series for ts in self], axis=1)
+        df.columns = list(range(len(self)))
+        return df
 
     def to_array(self) -> np.ndarray:
         """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
