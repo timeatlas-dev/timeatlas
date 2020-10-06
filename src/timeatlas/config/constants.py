@@ -12,5 +12,9 @@ TIME_SERIES_CI_UPPER = "ci_upper"
 TIME_SERIES_FILENAME = "data"
 TIME_SERIES_EXT = "csv"
 
+# Model
+MODEL_TYPE_UNIVARIATE = "univariate"
+MODEL_TYPE_MULTIVARIATE = "multivariate"
+
 # Misc. IO
 PICKLE_EXT = "pkl"

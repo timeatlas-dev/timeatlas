@@ -26,6 +26,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
     """
 
     def __init__(self, data: List[TimeSeries] = None):
+        super().__init__()
+
         if data is None:
             self.data = []
         else:
@@ -48,6 +50,9 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     def __getitem__(self, item: int) -> 'TimeSeries':
         return self.data[item]
+
+    def __setitem__(self, item: int, value: 'TimeSeries') -> 'TimeSeries':
+        self.data[item] = value
 
     # ==========================================================================
     # Method
@@ -216,15 +221,35 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
         Args:
             time_series: the TimeSeries object to add
+
+        Return:
+            TimeSeriesDataset
         """
         return TimeSeriesDataset(self.data.append(time_series))
 
-    def remove_component(self, index) -> 'TimeSeriesDataset':
+    def insert_component(self, index: int, time_series: TimeSeries,) \
+            -> 'TimeSeriesDataset':
+        """
+        Insert a time series to the time series dataset at a given position
+
+        Args:
+            time_series: the TimeSeries object to add
+            index: int of the position of the TimeSeries
+
+        Return:
+            TimeSeriesDataset
+        """
+        return TimeSeriesDataset(self.data.insert(index, time_series))
+
+    def remove_component(self, index: int) -> 'TimeSeriesDataset':
         """
         Remove a time series from the time series dataset by its index
 
         Args:
             index: int of the time series to remove
+
+        Return:
+            TimeSeriesDataset
         """
         del self.data[index]
         return TimeSeriesDataset(self.data)
