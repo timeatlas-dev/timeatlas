@@ -50,12 +50,13 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     def __getitem__(self, val) -> 'TimeSeriesDataset':
         if isinstance(val, Tuple):
-            time = val[0] if isinstance(val[0], slice) else slice(val[0])
-            components = val[1] if isinstance(val[1], slice) else slice(val[1])
+            time = val[0]
+            components = val[1]
         else:
-            time = val if isinstance(val, slice) else slice(val)
+            time = val
             components = slice(None)
-        return TimeSeriesDataset([ts[time] for ts in self.data[components]])
+
+        return TimeSeriesDataset([ts[time] for ts in self.data][components])
 
     def __setitem__(self, item: int, value: 'TimeSeries') -> 'TimeSeries':
         self.data[item] = value

@@ -82,10 +82,10 @@ class Prophet(AbstractBaseModel):
 
         elif self.type == MODEL_TYPE_MULTIVARIATE:
             if isinstance(horizon, TimeSeriesDataset):
-                horizon[self.y] = horizon[self.y].empty()
+                horizon.data[self.y] = horizon.data[self.y].empty()
                 future = self.__prepare_time_series_dataset_for_prophet(
                     horizon, self.y)
-                metadata = horizon[self.y].metadata
+                metadata = horizon.data[self.y].metadata
 
         # Predict
         forecast = self.model.predict(future)
