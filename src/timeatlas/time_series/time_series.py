@@ -379,7 +379,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        new_series = self.series.asfreq(freq, method=method)
+        new_series = self.series[~self.series.index.duplicated()]
+        new_series = new_series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':

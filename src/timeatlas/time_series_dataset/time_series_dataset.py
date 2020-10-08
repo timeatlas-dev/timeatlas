@@ -48,8 +48,14 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # TODO
         return "{}".format(len(self.data))
 
-    def __getitem__(self, item: int) -> 'TimeSeries':
-        return self.data[item]
+    def __getitem__(self, val) -> 'TimeSeriesDataset':
+        if isinstance(val, Tuple):
+            time = val[0] if isinstance(val[0], slice) else slice(val[0])
+            components = val[1] if isinstance(val[1], slice) else slice(val[1])
+        else:
+            time = val if isinstance(val, slice) else slice(val)
+            components = slice(None)
+        return TimeSeriesDataset([ts[time] for ts in self.data[components]])
 
     def __setitem__(self, item: int, value: 'TimeSeries') -> 'TimeSeries':
         self.data[item] = value
@@ -368,27 +374,20 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TimeSeriesDataset
         """
-        # TimeSeries as arg
+        # Acting differently depending on freq arg type and value
         if isinstance(freq, TimeSeries):
             target_freq = freq.frequency()
-
-        # special str as arg
         elif freq == "lowest":
             frequencies = [to_offset(ts.frequency()) for ts in self.data]
             target_freq = max(frequencies)
-
         elif freq == "highest":
             frequencies = [to_offset(ts.frequency()) for ts in self.data]
             target_freq = min(frequencies)
-
-        # DateOffset str as arg
         elif isinstance(to_offset(freq), DateOffset):
             target_freq = freq
-
-        # Invalid arg
         else:
             raise ValueError("freq argument isn't valid")
-
+        # Resample and return
         return TimeSeriesDataset(
             [ts.resample(target_freq, method) for ts in self.data])
 

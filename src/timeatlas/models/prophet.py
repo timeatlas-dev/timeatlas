@@ -45,13 +45,10 @@ class Prophet(AbstractBaseModel):
             df = self.__prepare_time_series_for_prophet(self.X_train)
 
         elif isinstance(ts, TimeSeriesDataset):
-
             assert y is not None, "For multivariate prediction, the y " \
                                   "argument must be given."
-
             self.type = MODEL_TYPE_MULTIVARIATE
             self.y = y
-
             df = self.__prepare_time_series_dataset_for_prophet(
                 self.X_train,
                 self.y
@@ -61,11 +58,8 @@ class Prophet(AbstractBaseModel):
             regressors = df.columns.to_list()
             regressors.remove("y")
             regressors.remove("ds")
-
-            print(regressors)
-
             for r in regressors:
-                self.model.add_regressor(str(r))
+                self.model.add_regressor(r)
         else:
             ValueError('The fit method  accepts only TimeSeries or '
                        'TimeSeriesDataset as argument')
@@ -77,6 +71,7 @@ class Prophet(AbstractBaseModel):
             -> TimeSeries:
         super().predict(horizon)
 
+        # Prepare the data
         if self.type == MODEL_TYPE_UNIVARIATE:
             if isinstance(horizon, str):
                 future = self.make_future_dataframe(horizon, freq)
@@ -88,8 +83,11 @@ class Prophet(AbstractBaseModel):
         elif self.type == MODEL_TYPE_MULTIVARIATE:
             if isinstance(horizon, TimeSeriesDataset):
                 horizon[self.y] = horizon[self.y].empty()
-                future = self.__prepare_time_series_dataset_for_prophet(horizon)
+                future = self.__prepare_time_series_dataset_for_prophet(
+                    horizon, self.y)
+                metadata = horizon[self.y].metadata
 
+        # Predict
         forecast = self.model.predict(future)
         forecast.rename(columns={"yhat": TIME_SERIES_VALUES,
                                  "yhat_lower": TIME_SERIES_CI_LOWER,
@@ -99,6 +97,7 @@ class Prophet(AbstractBaseModel):
                        TIME_SERIES_CI_LOWER,
                        TIME_SERIES_CI_UPPER]]
         df.index = forecast["ds"]
+
 
         # Register the prediction plot
         ts = TimeSeries(df, metadata)
@@ -113,6 +112,7 @@ class Prophet(AbstractBaseModel):
         df["ds"] = df.index
         df = df.reset_index(drop=True)
         df = df.rename(columns={"values": "y"})
+        df.columns = df.columns.astype(str)
         return df
 
     @staticmethod
@@ -122,6 +122,7 @@ class Prophet(AbstractBaseModel):
         df["ds"] = df.index
         df = df.reset_index(drop=True)
         df = df.rename(columns={y: "y"})
+        df.columns = df.columns.astype(str)
         return df
 
     def make_future_dataframe(self, horizon: str, freq: str = None):
