@@ -56,7 +56,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     @staticmethod
     def create(length: int, start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeriesDataset':
         """
         Create an empty TimeSeriesDataset object with a defined index and period
@@ -169,15 +169,45 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         argument with self based on the indexes of each one of the TSDs.
 
         Args:
-            tsd: the TimeSeriesDataset to merge with self
+            tsd: TimeSeriesDataset to merge with self
 
         Returns:
-            TimeSeries
+            TimeSeriesDataset
         """
         arr = []
         for i, ts in enumerate(self.data):
             merged_ts = ts.merge(tsd[i])
             arr.append(merged_ts)
+        return TimeSeriesDataset(arr)
+
+    def merge_by_class_labels(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
+        """
+
+        Merge two TimeSeriesDatasets by the class labels of the TimeSeries in the TSDs
+
+        Args:
+            tsd: TimeSeriesDataset to be merged with self
+
+        Returns:
+            TimeSeriesDataset
+        """
+
+        self_labels = [ts.label for ts in self]
+        other_labels = [ts.label for ts in tsd]
+
+        assert len(self_labels) == len(
+            set(self_labels)), f"TSD contains duplicates in its labels. Will result in unwanted behaviour."
+
+        arr = []
+        for i, label in enumerate(self_labels):
+            other_indices = [index for index, value in enumerate(other_labels) if value == label]
+            print(other_indices)
+            if not other_indices:
+                arr.append(self[i])
+            else:
+                for ind in other_indices:
+                    arr.append(self[i].merge(tsd[ind]))
+
         return TimeSeriesDataset(arr)
 
     # TimeSeriesDataset
@@ -212,7 +242,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -228,7 +258,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -250,7 +280,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-                                        indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -272,6 +302,10 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return self.select_components_randomly(n=n, indices=indices)
         else:
             return self.select_components_randomly(n=n)
+
+    def merge(self, ts: Union['TimeSeries', 'TimeSeriesDataset']) -> Union['TimeSeries', 'TimeSeriesDataset']:
+
+        raise NotImplementedError
 
     # ==========================================================================
     # Processing
