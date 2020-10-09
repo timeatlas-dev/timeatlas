@@ -41,8 +41,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return (ts for ts in self.data)
 
     def __repr__(self):
-        # TODO
-        return "{}".format(len(self.data))
+        description = self.describe()
+        return description.__repr__()
 
     def __getitem__(self, item: int) -> 'TimeSeries':
         return self.data[item]
@@ -55,9 +55,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
     # ----------
 
     @staticmethod
-    def create(length: int, start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
-            -> 'TimeSeriesDataset':
+    def create(length: int, start: str, end: str, freq: Union[str, 'TimeSeries'] = None) -> 'TimeSeriesDataset':
         """
         Create an empty TimeSeriesDataset object with a defined index and period
 
@@ -212,7 +210,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -228,7 +226,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -250,7 +248,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-                                        indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -272,6 +270,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return self.select_components_randomly(n=n, indices=indices)
         else:
             return self.select_components_randomly(n=n)
+
+    def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
+        """
+
+        PLACEHOLDER
+
+        Args:
+            ts:
+
+        Returns:
+
+        """
+        raise NotImplementedError
 
     # ==========================================================================
     # Processing
@@ -404,7 +415,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TODO Define return type
         """
-        raise NotImplementedError
+        min = self.min()
+        max = self.max()
+        mean = self.mean()
+        median = self.median()
+        kurtosis = self.kurtosis()
+        skewness = self.skewness()
+
+        return DataFrame.from_dict({'minimum': min,
+                                    'maximum': max,
+                                    'mean': mean,
+                                    'median': median,
+                                    'kurtosis': kurtosis,
+                                    'skewness': skewness})
 
     # Time Series Statistics
     # ----------------------
