@@ -271,18 +271,6 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         else:
             return self.select_components_randomly(n=n)
 
-    def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
-        """
-
-        PLACEHOLDER
-
-        Args:
-            ts:
-
-        Returns:
-
-        """
-        raise NotImplementedError
 
     # ==========================================================================
     # Processing
