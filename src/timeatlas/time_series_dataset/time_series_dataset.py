@@ -56,7 +56,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     @staticmethod
     def create(length: int, start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeriesDataset':
         """
         Create an empty TimeSeriesDataset object with a defined index and period
@@ -212,7 +212,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -228,7 +228,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -250,7 +250,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-                                        indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -272,6 +272,38 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return self.select_components_randomly(n=n, indices=indices)
         else:
             return self.select_components_randomly(n=n)
+
+    def shuffle(self, inplace: bool = True) -> 'TimeSeriesDataset':
+        """
+
+        Randomizing the order of the TS in the TSD
+
+        Args:
+            inplace: randomizing inplace or creating new object
+
+        Returns: if inplace = True shuffling self.data else return new TSD with randomized self.data
+
+        """
+
+        if inplace:
+            random.shuffle(self.data)
+        else:
+            new_data = self.data
+            random.shuffle(new_data)
+            return TimeSeriesDataset(data=new_data)
+
+    def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
+        """
+
+        PLACEHOLDER
+
+        Args:
+            ts:
+
+        Returns:
+
+        """
+        raise NotImplementedError
 
     # ==========================================================================
     # Processing
