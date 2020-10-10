@@ -99,6 +99,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
     def __getitem__(self, item):
         return TimeSeries(self.series[item])
 
+    def __setitem__(self, item, value):
+        if isinstance(value, TimeSeries):
+            self.series[item] = value.series[item]
+        else:
+            self.series[item] = value[item]
+
     # ==========================================================================
     # Methods
     # ==========================================================================
