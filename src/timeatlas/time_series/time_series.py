@@ -385,9 +385,66 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
+        # avoid duplicated indexes
         new_series = self.series[~self.series.index.duplicated()]
         new_series = new_series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
+
+    def group_by(self, freq: str, method: Optional[str] = "mean")\
+            -> 'TimeSeries':
+        """Groups values by a frequency.
+
+        This method is quite similar to resample with the difference that it
+        gives the guaranty that the timestamps are full values.
+        e.g. 2019-01-01 08:00:00.
+
+        Resample could make values spaced by 1 min but
+        every x sec e.g. [2019-01-01 08:00:33, 2019-01-01 08:01:33],
+        which isn't convenient for further index merging operations.
+
+        The function has different aggregations methods taken from Pandas
+        groupby aggregations[1]. By default, it'll take the mean of the
+        defined freq bucket.
+
+        [1] https://pandas.pydata.org/pandas-docs/stable/user_guide/groupby.html#aggregation
+
+        Args:
+            freq: string offset alias of a frequency
+            method: string of the Pandas aggregation function.
+
+        Returns:
+            TimeSeries
+        """
+        # Group by freq
+        series = self.series.groupby(self.index.round(freq))
+
+        # Apply aggregation
+        if method == "mean":
+            series = series.mean()
+        elif method == "sum":
+            series = series.sum()
+        elif method == "size":
+            series = series.size()
+        elif method == "count":
+            series = series.count()
+        elif method == "std":
+            series = series.std()
+        elif method == "var":
+            series = series.var()
+        elif method == "sem":
+            series = series.sem()
+        elif method == "first":
+            series = series.first()
+        elif method == "last":
+            series = series.last()
+        elif method == "min":
+            series = series.min()
+        elif method == "max":
+            series = series.max()
+        else:
+            ValueError("method argument not recognized.")
+
+        return TimeSeries(series, self.metadata)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':
         """Wrapper around the Pandas interpolate() method.
