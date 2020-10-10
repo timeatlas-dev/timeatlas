@@ -48,18 +48,34 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # TODO
         return "{}".format(len(self.data))
 
-    def __getitem__(self, val) -> 'TimeSeriesDataset':
-        if isinstance(val, Tuple):
-            time = val[0]
-            components = val[1]
+    def __getitem__(self, item) -> 'TimeSeriesDataset':
+        if isinstance(item, Tuple):
+            time = item[0]
+            components = item[1]
         else:
-            time = val
+            time = item
             components = slice(None)
-
         return TimeSeriesDataset([ts[time] for ts in self.data][components])
 
-    def __setitem__(self, item: int, value: 'TimeSeries') -> 'TimeSeries':
-        self.data[item] = value
+    def __setitem__(self, item, value) \
+            -> 'TimeSeriesDataset':
+        if isinstance(item, Tuple):
+            time = item[0]
+            components = item[1]
+        else:
+            time = item
+            components = slice(None)
+
+        if isinstance(value, TimeSeries):
+            self.data[components][time] = value[time]
+
+        elif isinstance(value, TimeSeriesDataset):
+            self.data[components][time] = value.data[components][time]
+
+        else:
+            #TODO add default set method maybe...
+            raise ValueError("value argument must be TimeSeries or "
+                             "TimeSeriesDataset")
 
     # ==========================================================================
     # Method
