@@ -82,10 +82,13 @@ class Prophet(AbstractBaseModel):
 
         elif self.type == MODEL_TYPE_MULTIVARIATE:
             if isinstance(horizon, TimeSeriesDataset):
-                horizon.data[self.y] = horizon.data[self.y].empty()
+                horizon[:, self.y] = horizon[:, self.y].empty()
                 future = self.__prepare_time_series_dataset_for_prophet(
                     horizon, self.y)
-                metadata = horizon.data[self.y].metadata
+                metadata = horizon[:, self.y].data[self.y].metadata
+
+        else:
+            ValueError("horizon argument type isn't recognized")
 
         # Predict
         forecast = self.model.predict(future)
@@ -97,7 +100,6 @@ class Prophet(AbstractBaseModel):
                        TIME_SERIES_CI_LOWER,
                        TIME_SERIES_CI_UPPER]]
         df.index = forecast["ds"]
-
 
         # Register the prediction plot
         ts = TimeSeries(df, metadata)
