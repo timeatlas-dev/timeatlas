@@ -408,6 +408,35 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return TimeSeriesDataset(
             [ts.resample(target_freq, method) for ts in self.data])
 
+    def group_by(self, freq: str, method: Optional[str] = "mean")\
+            -> 'TimeSeriesDataset':
+        """Groups values by a frequency for each TimeSeries in a
+        TimeSeriesDataset.
+
+        This method is quite similar to resample with the difference that it
+        gives the guaranty that the timestamps are full values.
+        e.g. 2019-01-01 08:00:00.
+
+        Resample could make values spaced by 1 min but
+        every x sec e.g. [2019-01-01 08:00:33, 2019-01-01 08:01:33],
+        which isn't convenient for further index merging operations.
+
+        The function has different aggregations methods taken from Pandas
+        groupby aggregations[1]. By default, it'll take the mean of the
+        defined freq bucket.
+
+        [1] https://pandas.pydata.org/pandas-docs/stable/user_guide/groupby.html#aggregation
+
+        Args:
+            freq: string offset alias of a frequency
+            method: string of the Pandas aggregation function.
+
+        Returns:
+            TimeSeriesDataset
+        """
+        return TimeSeriesDataset(
+            [ts.group_by(freq, method) for ts in self.data])
+
     def interpolate(self, *args, **kwargs) -> 'TimeSeriesDataset':
         """Wrapper around the Pandas interpolate() method.
 
