@@ -14,11 +14,8 @@ if TYPE_CHECKING:
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_CI_LOWER,
-    TIME_SERIES_CI_UPPER,
+    TIME_SERIES_CI_UPPER
 )
-
-from timeatlas.config.colors import colors
-
 from ._utils import add_metadata_to_plot
 
 
@@ -43,11 +40,11 @@ def line(ts: 'TimeSeries', *args, **kwargs) -> Any:
         kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
 
     if 'color' not in kwargs:
-        kwargs['color'] = colors.blue_dark
+        kwargs['color'] = "k"
 
     ax = ts.series.plot(*args, **kwargs)
     ax.set_xlabel("Date")
-    ax.grid(True, c=colors.grey, ls='-', lw=1, alpha=0.2)
+    ax.grid(True, c='gray', ls='-', lw=1, alpha=0.2)
 
     # Add legend from metadata if existing
     if ts.metadata is not None:
@@ -76,7 +73,7 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
     """
     fig = plt.figure(figsize=(18, 4))
     ax = fig.add_subplot(111)
-    ax.grid(True, which='major', c=colors.blue_dark, ls='-', lw=1, alpha=0.2)
+    ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
     ax.set_xlabel("Date")
 
     # Add contextual information to the plot
@@ -96,7 +93,7 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
     # Add the lines to the plot
     ax.plot(forecast.series.index, forecast.series[TIME_SERIES_VALUES].values,
             ls='--',
-            c=colors.blue_dark,
+            c='k',
             label="prediction")
 
     # If present, add confidence interval
@@ -105,13 +102,13 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
         ax.fill_between(forecast.series.index,
                         forecast.series[TIME_SERIES_CI_LOWER].values,
                         forecast.series[TIME_SERIES_CI_UPPER].values,
-                        color=colors.blue_light,
+                        color='0.86',
                         label="confidence interval")
 
     if observation is not None:
         ax.plot(observation.series.index, observation.series.values,
                 ls='-',
-                c=colors.blue_dark,
+                c="0.3",
                 label="observation")
 
     ax.legend()
@@ -125,7 +122,7 @@ def status(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
 
     Args:
         ts: TimeSeries - the time series to plot
-        cmap: String - the matplotlib colormap to use (default is "automn_r")
+        cmap: String - the matplotlib colormap to use
 
     Returns:
         matplotlib.axes._subplots.AxesSubplot
@@ -195,7 +192,7 @@ def kde(ts: 'TimeSeries') -> np.ndarray:
     upper_plot.set_xticklabels(x_labels)
     upper_plot.xaxis.tick_bottom()
 
-    lower_plot.plot(timestamps, values, c=colors.blue_dark)
+    lower_plot.plot(timestamps, values, c='k')
     lower_plot.xaxis.tick_top()
     lower_plot.grid()
     return axs

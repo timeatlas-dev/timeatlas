@@ -2,7 +2,7 @@ import time
 import pandas as pd
 from timeatlas import TimeSeries, TimeSeriesDataset
 
-from timeatlas.generators import AnomalyGenerator
+from timeatlas import AnomalyGenerator
 
 # TODO: This test is pretty bad...I need to rework it (Lorenz)
 
