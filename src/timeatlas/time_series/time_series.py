@@ -449,7 +449,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.min()
+        return self.series['values'].min()
 
     def max(self) -> float:
         """Get the maximum value of a TimeSeries
@@ -457,7 +457,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.max()
+        return self.series['values'].max()
 
     def mean(self) -> float:
         """Get the mean value of a TimeSeries
@@ -465,7 +465,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returs:
             float
         """
-        return self.series.mean()
+        return self.series['values'].mean()
 
     def median(self) -> float:
         """Get the median value of a TimeSeries
@@ -473,7 +473,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.median()
+        return self.series['values'].median()
 
     def skewness(self) -> float:
         """Get the skewness of a TimeSeries
@@ -481,7 +481,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.skew()
+        return self.series['values'].skew()
 
     def kurtosis(self) -> float:
         """Get the kurtosis of a TimeSeries
@@ -489,7 +489,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.kurtosis()
+        return self.series['values'].kurtosis()
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """Describe a TimeSeries with the describe function from Pandas
@@ -497,7 +497,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             Series
         """
-        return self.series.describe()
+        return self.series['values'].describe()
 
     # Time Series Statistics
     # ----------------------

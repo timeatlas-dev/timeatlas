@@ -47,7 +47,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return (ts for ts in self.data)
 
     def __repr__(self):
-        return self.data.__repr__()
+        description = self.describe()
+        return description.__repr__()
 
     # ==========================================================================
     # Methods
@@ -239,7 +240,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-            indices: bool = False) -> Any:
+                                   indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -255,7 +256,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-            indices: bool = False) -> Any:
+                                   indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -277,7 +278,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-            indices: bool = False) -> Any:
+                                        indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -525,7 +526,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TODO Define return type
         """
-        raise NotImplementedError
+        min = self.min()
+        max = self.max()
+        mean = self.mean()
+        median = self.median()
+        kurtosis = self.kurtosis()
+        skewness = self.skewness()
+
+        return DataFrame.from_dict({'minimum': min,
+                                    'maximum': max,
+                                    'mean': mean,
+                                    'median': median,
+                                    'kurtosis': kurtosis,
+                                    'skewness': skewness})
 
     # Time Series Statistics
     # ----------------------
