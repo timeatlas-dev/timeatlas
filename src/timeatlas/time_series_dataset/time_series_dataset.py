@@ -1,10 +1,11 @@
 from typing import List, Any, NoReturn, Tuple, Union, Optional
+import random
+from warnings import warn
 
 import numpy as np
 from pandas import DataFrame, Timestamp, Timedelta, concat
 from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import DateOffset
-import random
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
@@ -45,8 +46,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return (ts for ts in self.data)
 
     def __repr__(self):
-        # TODO
-        return "{}".format(len(self.data))
+        description = self.describe()
+        return description.__repr__()
 
     def __getitem__(self, item) -> 'TimeSeriesDataset':
         if isinstance(item, Tuple):
@@ -78,7 +79,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
                              "TimeSeriesDataset")
 
     # ==========================================================================
-    # Method
+    # Methods
     # ==========================================================================
 
     # TimeSeries
@@ -86,7 +87,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     @staticmethod
     def create(length: int, start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeriesDataset':
         """
         Create an empty TimeSeriesDataset object with a defined index and period
@@ -348,6 +349,25 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         else:
             return self.select_components_randomly(n=n)
 
+    def shuffle(self, inplace: bool = False) -> 'TimeSeriesDataset':
+        """Randomizing the order of the TS in the TSD
+
+        Randomizing the order of the TS in TSDs and returning a new TSD.
+
+        Args:
+            inplace: randomizing inplace or creating new object. (Default: False)
+
+        Returns: if inplace = True shuffling self.data else return new TSD with randomized self.data
+
+        """
+
+        if inplace:
+            random.shuffle(self.data)
+        else:
+            new_data = self.data
+            random.shuffle(new_data)
+            return TimeSeriesDataset(data=new_data)
+
     # ==========================================================================
     # Processing
     # ==========================================================================
@@ -563,7 +583,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TODO Define return type
         """
-        raise NotImplementedError
+        min = self.min()
+        max = self.max()
+        mean = self.mean()
+        median = self.median()
+        kurtosis = self.kurtosis()
+        skewness = self.skewness()
+
+        return DataFrame.from_dict({'minimum': min,
+                                    'maximum': max,
+                                    'mean': mean,
+                                    'median': median,
+                                    'kurtosis': kurtosis,
+                                    'skewness': skewness})
 
     # Time Series Statistics
     # ----------------------

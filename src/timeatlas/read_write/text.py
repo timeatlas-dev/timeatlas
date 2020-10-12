@@ -7,6 +7,7 @@ from typing import Any
 from timeatlas.config.constants import *
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
+from timeatlas.config.constants import METADATA_CLASS_LABEL
 from ._utils import (
     check_directory_structure,
     csv_to_dataframe,
@@ -26,8 +27,6 @@ def read_text(path: str) -> Any:
 
     """
 
-    # TODO: Add TimeSeriesDataset
-
     dir_type = check_directory_structure(path)
 
     if dir_type == "timeseries":
@@ -40,7 +39,10 @@ def read_text(path: str) -> Any:
         meta = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
         series = csv_to_dataframe(data)
         metadata = json_to_metadata(meta)
-        return TimeSeries(series, metadata)
+        ts = TimeSeries(series, metadata)
+        if METADATA_CLASS_LABEL in ts.metadata:
+            ts.label = ts.metadata[METADATA_CLASS_LABEL]
+        return ts
 
     elif dir_type is None:
         raise IOError("The path doesn't' include any recognizable files")
