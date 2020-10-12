@@ -274,9 +274,9 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return self.select_components_randomly(n=n)
 
     def shuffle(self, inplace: bool = False) -> 'TimeSeriesDataset':
-        """
+        """Randomizing the order of the TS in the TSD
 
-        Randomizing the order of the TS in the TSD
+        Randomizing the order of the TS in TSDs and returning a new TSD.
 
         Args:
             inplace: randomizing inplace or creating new object. (Default: False)
