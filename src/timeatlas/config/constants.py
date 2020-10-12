@@ -16,5 +16,3 @@ TIME_SERIES_LABEL_PREFIX = "label_"
 
 # Misc. IO
 PICKLE_EXT = "pkl"
-
-

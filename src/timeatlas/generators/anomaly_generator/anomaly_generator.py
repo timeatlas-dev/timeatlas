@@ -118,7 +118,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         return {k: v for k, v in values['PARAMETERS'].items() if v is not None}
 
     @staticmethod
-    def create_zip_object(data: List, anomaly_f: List):
+    def create_zip_object(data, anomaly_f):
         '''
 
         combines the two lists of the data, where the anomalies are added to and the anomaly-function
@@ -140,7 +140,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         zip_list = zip(data, cycle(anomaly_f))
         return zip_list
 
-    def generation_precision(self) -> int:
+    def generation_precision(self):
         '''
 
         Set the rounded average precision of the values inside a dataframe
@@ -151,8 +151,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         precision_df = np.array(
             [self.precision_and_scale(x) for ts in self.data for x in
-             ts.series['values'].values])
-        # This is more of a security. A correctly formatted TimeSeries-object has no None elements
+             ts.series.values])
+        # This is more of a security. A correctly formated TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
 
         return int(round(precision_df.mean()))
@@ -271,6 +271,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
     def generate(self) -> NoReturn:
         """
+        raise NotImplementedError
 
         Main function to generate the anomalies.
 

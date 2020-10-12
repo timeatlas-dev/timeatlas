@@ -1,14 +1,18 @@
+from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
+
+from darts import TimeSeries as DartsTimeSeries
+import numpy as np
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
     Timestamp, Timedelta, concat
 from pandas.plotting import register_matplotlib_converters
-from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
+from typing import NoReturn, Tuple, Any, Union, Optional, List
 import numpy as np
 
-from darts import TimeSeries as DartsTimeSeries
-
-from timeatlas.abstract.abstract_analysis import AbstractAnalysis
-from timeatlas.abstract import AbstractOutputText, AbstractOutputPickle
-from timeatlas.abstract.abstract_processing import AbstractProcessing
+from timeatlas.abstract import (
+    AbstractBaseTimeSeries,
+    AbstractOutputText,
+    AbstractOutputPickle
+)
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_FILENAME,
@@ -23,10 +27,9 @@ from timeatlas.utils import ensure_dir, to_pickle
 
 from numpy import ndarray
 
-
-class TimeSeries(AbstractAnalysis, AbstractOutputText,
-                 AbstractOutputPickle, AbstractProcessing):
-    """ Defines a time series
+class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
+                 AbstractOutputPickle):
+    """Defines a time series
 
     A TimeSeries object is a series of time indexed values.
 
@@ -36,8 +39,7 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-            metadata: Metadata = None, label: str or None = None,
-    ):
+                 metadata: Metadata = None, label: str or None = None):
 
         if series is not None:
             # Check if values have a DatetimeIndex
@@ -62,11 +64,14 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
                 # Otherwise, one column should be called "values"
                 assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}" \
-                        .format(TIME_SERIES_VALUES)
+                    "DataFrame as input series must contain a column called {}"\
+                    .format(TIME_SERIES_VALUES)
 
-        # Create the TimeSeries object
-        self.series = series
+            # Create the TimeSeries object with certainty that values
+            # are sorted by the time index
+            self.series = series.sort_index()
+        else:
+            self.series = None
 
         # The label of the timeseries (can be used for the classification)
         self.label = label
@@ -97,9 +102,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-            metadata: Metadata = None):
-        """
-        Creates an empty TimeSeries object with the period as index
+               metadata: Metadata = None) \
+            -> 'TimeSeries':
+        """Creates an empty TimeSeries object with the period as index
 
         Args:
             start: str of the start of the DatetimeIndex (as in Pandas.date_range())
@@ -119,9 +124,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
-    def register_plotting_function(self, plotting_function: Callable) -> NoReturn:
-        """
-        Register a specific plotting function for this TimeSeries
+    def register_plotting_function(self, plotting_function: Callable) \
+            -> NoReturn:
+        """Register a specific plotting function for this TimeSeries
 
         Args:
             plotting_function: Callable (like a function) that takes at least
@@ -129,9 +134,8 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         self.plotting_function = plotting_function
 
-    def plot(self, *args, **kwargs):
-        """
-        Plot the TimeSeries with the registered plotting function
+    def plot(self, *args, **kwargs) -> Any:
+        """Plot the TimeSeries with the registered plotting function
         (in self.plotting_function)
 
         Args:
@@ -142,13 +146,13 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             "No plotting function registered"
         self.plotting_function(self, *args, **kwargs)
 
-    def split(self, splitting_point: str) -> Tuple['TimeSeries', 'TimeSeries']:
-        """
-        Split a TimeSeries at a defined point and include the splitting point
+    def split_at(self, timestamp: Union[str, Timestamp]) \
+            -> Tuple['TimeSeries', 'TimeSeries']:
+        """Split a TimeSeries at a defined point and include the splitting point
         in both as in [start,...,at] and [at,...,end].
 
         Args:
-            splitting_point: str where to the TimeSeries will be split
+            timestamp: str or Timestamp where to the TimeSeries will be split
                             (e.g. "2019-12-31 00:00:00")
 
         Returns:
@@ -157,41 +161,55 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         """
         start = self.series.index[0]
         end = self.series.index[-1]
-        first_split = self.series[start:splitting_point].copy()
-        second_split = self.series[splitting_point:end].copy()
+        first_split = self.series[start:timestamp].copy()
+        second_split = self.series[timestamp:end].copy()
         before = TimeSeries(first_split, self.metadata)
         after = TimeSeries(second_split, self.metadata)
         return before, after
 
-    def fill(self, value: Any) -> 'TimeSeries':
-        """
-        Fill a TimeSeries with a value. If given a unique value, all values will
-        be broadcasted. If given an array of the length of the TimeSeries, it
-        will replace all values.
+    def split_in_chunks(self, n: int) -> List['TimeSeries']:
+        """Split a TimeSeries into chunks of length n
 
-        :param value: Any values that you want to fill the TimeSeries with
-        :return: TimeSeries
+        Args:
+            n: length of the chunks
+
+        Returns:
+            List of TimeSeries
+        """
+        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
+                     self.series.groupby(np.arange(len(self.series)) // n)]
+        return ts_chunks
+
+    def fill(self, value: Any) -> 'TimeSeries':
+        """Fill a TimeSeries with a value. If given a unique value, all values
+        will be broadcasted. If given an array of the length of the TimeSeries,
+        it will replace all values.
+
+        Args:
+            value: Any values that you want to fill the TimeSeries with
+
+        Returns:
+            TimeSeries
         """
         s = self.series.copy()
         s[TIME_SERIES_VALUES] = value
         return TimeSeries(s, self.metadata)
 
     def empty(self) -> 'TimeSeries':
-        """
-        Empty the TimeSeries (fill all values with NaNs)
+        """Empty the TimeSeries (fill all values with NaNs)
 
         Returns:
             TimeSeries
         """
-        return self.fill(None)
+        return self.fill(np.nan)
 
-    def trim(self, side: str = "both"):
-        """
-        Remove NaNs from a TimeSeries start, end or both
+    def trim(self, side: str = "both") -> 'TimeSeries':
+        """Remove NaNs from a TimeSeries start, end or both
 
         Args:
-            side: the side where to remove the NaNs. Valid values are either
-            "start", "end" or "both". Default to "both"
+            side:
+                the side where to remove the NaNs. Valid values are either
+                "start", "end" or "both". Default to "both"
 
         Returns:
             TimeSeries
@@ -211,184 +229,30 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                                  "'end', but not {}".format(side))
         return TimeSeries(series_wo_nans, self.metadata)
 
-    def append(self, ts: 'TimeSeries'):
-        """
-        Append a TimeSeries to another TimeSeries
-
-        :param ts: TimeSeries to append
-        :return: TimeSeries
-        """
-        new_series = self.series.append(ts.series)
-        return TimeSeries(new_series, self.metadata)
-
-    def prepend(self, ts: 'TimeSeries'):
-        """
-        Prepend a TimeSeries to another TimeSeries
-
-        :param ts: TimeSeries to prepend
-        :return: TimeSeries
-        """
-        new_series = concat([ts.series, self.series])
-        return TimeSeries(new_series, self.metadata)
-
-    def chunkify(self, n: int) -> List['TimeSeries']:
-        """
-
-        Cuts a TimeSeries into chunks of length n
+    def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
+        """Merge two time series and make sure all the given indexes are sorted.
 
         Args:
-            n: length of the chunks in the
-
-        Returns: List of TimeSeries
-
-        """
-
-        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
-                     self.series.groupby(np.arange(len(self.series)) // n)]
-
-        return ts_chunks
-
-    # ==========================================================================
-    # Analysis
-    # ==========================================================================
-
-    def describe(self, percentiles=None, include=None, exclude=None) -> Series:
-        """
-        Describe a TimeSeries with the describe function from Pandas
-
-        Returns:
-            Series
-        """
-        return self.series.describe()
-
-    def min(self) -> float:
-        """
-        Get the minimum value of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.min()
-
-    def max(self) -> float:
-        """
-        Get the maximum value of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.max()
-
-    def mean(self) -> float:
-        """
-        Get the mean value of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.mean()
-
-    def median(self) -> float:
-        """
-        Get the median value of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.median()
-
-    def skewness(self) -> float:
-        """
-        Get the skewness of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.skew()
-
-    def kurtosis(self) -> float:
-        """
-        Get the kurtosis of a TimeSeries
-
-        Returns:
-            float
-        """
-        return self.series.kurtosis()
-
-    def boundaries(self) -> Tuple[Timestamp, Timestamp]:
-        """
-        Get a tuple with the TimeSeries first and last index
-
-        Returns:
-            a Tuple of Pandas Timestamps
-        """
-        start = self.series.index[0]
-        end = self.series.index[-1]
-        return start, end
-
-    def duration(self) -> Timedelta:
-        """
-        Get the duration of the TimeSeries
-
-        Returns:
-            a Pandas Timedelta
-        """
-        start, end = self.boundaries()
-        return end - start
-
-    def frequency(self) -> Optional[str]:
-        """
-        Get the frequency of a TimeSeries
-
-        Returns:
-            str or None
-            str of the frequency according to the Pandas Offset Aliases
-            (https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
-            None if no discernible frequency
-        """
-        return self.series.index.inferred_freq
-
-    def resolution(self) -> 'TimeSeries':
-        """
-        Compute the time difference between each timestamp of a TimeSeries
+            ts: the TimeSeries to merge with self
 
         Returns:
             TimeSeries
         """
-        diff = self.series.index.to_series().diff().dt.total_seconds()
-        ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
-                        self.metadata)
-        ts.register_plotting_function(lambda x: status(x, cmap="bwr"))
-        return ts
+        return TimeSeries(self.series.append(ts.series), self.metadata)
 
     # ==========================================================================
     # Processing
     # ==========================================================================
 
-    def sort(self, *args, **kwargs):
-        """
-        Sort a TimeSeries by time stamps
-
-        Basically, it's a wrapper around df.sort_index()
-        see: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_index.html
-
-        :param args:
-        :param kwargs:
-        :return: TimeSeries
-        """
-        sorted_time_series = self.series.sort_index(*args, **kwargs)
-        return TimeSeries(sorted_time_series, self.metadata)
-
-    def apply(self, func, ts: 'TimeSeries' = None):
-        """
-        Wrapper around the Pandas apply function
+    def apply(self, func, ts: 'TimeSeries' = None) -> 'TimeSeries':
+        """Wrapper around the Pandas apply function
 
         Args:
-            func : function
+            func: function
                 Python function or NumPy ufunc to apply. If ts is given as
                 param, func must have two params in the form of f(x,y)
 
-            ts : TimeSeries
+            ts: TimeSeries
                 The second TimeSeries if you want to make an operation on two
                 time series
 
@@ -413,8 +277,9 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
                              self.metadata)
         else:
-            res = TimeSeries(self.series.apply(func),
+            res = TimeSeries(self.series[TIME_SERIES_VALUES].apply(func),
                              self.metadata)
+
         return res
 
     def resample(self, freq: str, method: Optional[str] = None) -> 'TimeSeries':
@@ -442,19 +307,16 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
         return TimeSeries(new_series, self.metadata)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':
-        """
-        Wrapper around the Pandas interpolate() method.
+        """Wrapper around the Pandas interpolate() method.
 
         See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.interpolate.html
         for reference
-
         """
         new_series = self.series.interpolate(*args, **kwargs)
         return TimeSeries(new_series, self.metadata)
 
     def normalize(self, method: str) -> 'TimeSeries':
-        """
-        Normalize a Time Series with a given method
+        """Normalize a Time Series with a given method
 
         Args:
             method: str
@@ -473,83 +335,222 @@ class TimeSeries(AbstractAnalysis, AbstractOutputText,
                              .format(method))
         return TimeSeries(scaled_series, self.metadata)
 
-    def round(self, decimals: int) -> NoReturn:
+    def round(self, decimals: int) -> 'TimeSeries':
         """
         Round the values in the series.values
 
         Args:
             decimals: number of digits after the comma
         """
+        return TimeSeries(self.series.astype(float).round(decimals=decimals),
+                          metadata=self.metadata)
 
-        rounded_series = self.series.astype(float).round(decimals=decimals)
+    def sort(self, *args, **kwargs):
+        """Sort a TimeSeries by time stamps
 
-        self.series = rounded_series
+        Basically, it's a wrapper around df.sort_index()
+        see: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_index.html
+
+        Args:
+            args: the positional arguments
+            kwargs: the keyword arguments
+
+        Returns:
+            TimeSeries
+        """
+        sorted_time_series = self.series.sort_index(*args, **kwargs)
+        return TimeSeries(sorted_time_series, self.metadata)
+
+    # ==========================================================================
+    # Analysis
+    # ==========================================================================
+
+    # Basic Statistics
+    # ----------------
+
+    def min(self) -> float:
+        """Get the minimum value of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.min()
+
+    def max(self) -> float:
+        """Get the maximum value of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.max()
+
+    def mean(self) -> float:
+        """Get the mean value of a TimeSeries
+
+        Returs:
+            float
+        """
+        return self.series.mean()
+
+    def median(self) -> float:
+        """Get the median value of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.median()
+
+    def skewness(self) -> float:
+        """Get the skewness of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.skew()
+
+    def kurtosis(self) -> float:
+        """Get the kurtosis of a TimeSeries
+
+        Returns:
+            float
+        """
+        return self.series.kurtosis()
+
+    def describe(self, percentiles=None, include=None, exclude=None) -> Series:
+        """Describe a TimeSeries with the describe function from Pandas
+
+        Returns:
+            Series
+        """
+        return self.series.describe()
+
+    # Time Series Statistics
+    # ----------------------
+
+    def start(self) -> Timestamp:
+        """Get the first Timestamp of a TimeSeries
+
+        Returns:
+            Timestamp
+        """
+        start = self.series.index[0]
+        return start
+
+    def end(self) -> Timestamp:
+        """Get the last Timestamp of a TimeSeries
+
+        Returns:
+            Timestamp
+        """
+        end = self.series.index[-1]
+        return end
+
+    def boundaries(self) -> Tuple[Timestamp, Timestamp]:
+        """Get a tuple with the TimeSeries first and last index
+
+        Returns:
+            a Tuple of Pandas Timestamps
+        """
+        start = self.series.index[0]
+        end = self.series.index[-1]
+        return start, end
+
+    def frequency(self) -> Optional[str]:
+        """Get the frequency of a TimeSeries
+
+        Returns:
+            str or None
+            str of the frequency according to the Pandas Offset Aliases
+            (https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
+            None if no discernible frequency
+        """
+        return self.series.index.inferred_freq
+
+    def resolution(self) -> 'TimeSeries':
+        """Compute the time difference between each timestamp of a TimeSeries
+
+        Returns:
+            TimeSeries
+        """
+        diff = self.series.index.to_series().diff().dt.total_seconds()
+        ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
+                        self.metadata)
+        ts.register_plotting_function(lambda x: status(x, cmap="prism"))
+        return ts
+
+    def duration(self) -> Timedelta:
+        """Get the duration of the TimeSeries
+
+        Returns:
+            a Pandas Timedelta
+        """
+        start, end = self.boundaries()
+        return end - start
 
     # ==========================================================================
     # IO
     # ==========================================================================
 
     def to_text(self, path: str) -> NoReturn:
-        """
+        """Export a TimeSeries to text format
 
         Args:
-            path: path, where the TimeSeries is saved.
-
-        Returns: NoReturn
-
+            path: str of the path where the TimeSeries will be saved
         """
         # Create the time series file
         file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME,
                                       TIME_SERIES_EXT)
         ensure_dir(file_path)
         self.__series_to_csv(self.series, file_path)
-        if self.metadata is None and self.label is not None:
-            self.metadata = Metadata(items={'label': self.label})
         # Create the metadata file
         if self.metadata is not None:
-            if self.label is not None:
-                self.metadata.add({'label': self.label})
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
 
-    def to_array(self) -> ndarray:
-        """
+    def to_array(self) -> np.ndarray:
+        """Convert a TimeSeries to Numpy Array
 
-        Converts a TimeSeries into a numpy.array
-
-        Returns: numpy.array with dimensions (1, n), where n is th length of the TimeSeries
-
+        Returns:
+            numpy.array with dimensions (1, n), where n is th length of the
+            TimeSeries
         """
 
         return self.series[TIME_SERIES_VALUES].to_numpy()
 
     def to_pickle(self, path: str) -> NoReturn:
+        """Export a TimeSeries to Pickle
+
+        Args:
+            path: str of the path where the TimeSeries will be saved
+        """
         to_pickle(self, path)
 
     def to_darts(self) -> DartsTimeSeries:
-        """ TimeAtlas TimeSeries to Darts TimeSeries
-        conversion method
+        """Convert a TimeSeries to Darts TimeSeries
 
-        Returns: Darts TimeSeries object
+        Returns:
+            Darts TimeSeries object
         """
         return DartsTimeSeries.from_series(self.series[TIME_SERIES_VALUES])
 
     def to_df(self) -> DataFrame:
-        """ TimeAtlas TimeSeries to Pandas DataFrame
-        conversion method
+        """Converts a TimeSeries to a Pandas DataFrame
 
-        Returns: Pandas DataFrame
+        Returns:
+            Pandas DataFrame
         """
         return self.series
 
     @staticmethod
-    def __series_to_csv(series: Union[Series, DataFrame], path: str):
-        """
-        Read a Pandas Series and put it into a CSV file
+    def __series_to_csv(series: Union[Series, DataFrame], path: str) \
+            -> NoReturn:
+        """Export a Pandas Series or DataFrame and put it into a CSV file
 
         Args:
-            series: The Series to write in CSV
-            path: The path where the Series will be saved
+            series: Pandas Series or Pandas DataFrame
+                The data to write in CSV
+            path: str
+                The path where the Series will be saved
         """
         series.to_csv(path, header=True, index_label="index")

@@ -87,10 +87,18 @@ class TestTimeSeries(TestCase):
         self.assertEqual(ts.series.index.inferred_freq,
                          ts_freq.series.index.inferred_freq)
 
-    def test__TimeSeries__split(self):
+    def test__TimeSeries__register_plotting_function(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__plot(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__split_at(self):
         # Create TimeSeries and split it
         ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
-        a, b = ts.split("02-01-2020 00:00")
+        a, b = ts.split_at("02-01-2020 00:00")
         # Get all the indexes
         ts_start = ts.series["values"].index[0]
         ts_end = ts.series["values"].index[-1]
@@ -103,6 +111,35 @@ class TestTimeSeries(TestCase):
         self.assertEqual(ts_end, b_end)
         # Test split point
         self.assertEqual(a_end, b_start)
+
+    def test__TimeSeries__split_in_chunks(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__fill(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__empty(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__trim(self):
+        # TODO
+        pass
+
+    def test__TimeSeries__merge(self):
+        # Prepare test
+        ts1 = TimeSeries.create("01-2020", "03-2020", "H")
+        ts2 = TimeSeries.create("02-2020", "04-2020", "H")
+        # Call function
+        ts = ts1.merge(ts2)
+        # Test if index is monotonic increasing
+        self.assertTrue(ts.series.index.is_monotonic_increasing)
+        # Test if all values are there
+        len1 = len(ts1) + len(ts2)
+        len2 = len(ts)
+        self.assertTrue(len1 == len2)
 
     def test__TimeSeries__to_darts__type_check(self):
         ts = TimeSeries.create("01-2020", "02-2020", "H")
