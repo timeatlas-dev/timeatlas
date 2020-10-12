@@ -577,8 +577,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                                       TIME_SERIES_EXT)
         ensure_dir(file_path)
         self.__series_to_csv(self.series, file_path)
+        if self.metadata is None and self.label is not None:
+            self.metadata = Metadata(items={'label': self.label})
         # Create the metadata file
         if self.metadata is not None:
+            if self.label is not None:
+                self.metadata.add({'label': self.label})
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)

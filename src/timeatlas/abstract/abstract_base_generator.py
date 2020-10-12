@@ -8,6 +8,11 @@ class AbstractBaseGenerator(ABC):
     """
 
     @abstractmethod
+    def __init__(self):
+        # Each generator should be called the super class and set a label_suffix
+        self.label_suffix = None
+
+    @abstractmethod
     def generate(self) -> NoReturn:
         """ Generate features """
         raise NotImplementedError

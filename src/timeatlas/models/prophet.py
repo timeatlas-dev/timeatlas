@@ -3,11 +3,7 @@ from pandas import DataFrame
 import fbprophet as fbp
 
 from timeatlas.abstract import AbstractBaseModel
-from timeatlas.config.constants import (
-    TIME_SERIES_VALUES,
-    TIME_SERIES_CI_UPPER,
-    TIME_SERIES_CI_LOWER
-)
+from timeatlas.config.constants import TIME_SERIES_VALUES
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
 
@@ -34,8 +30,7 @@ class Prophet(AbstractBaseModel):
 
         self.model.fit(df)
 
-    def predict(self, horizon: Union[str, TimeSeries], freq: str = None) \
-            -> TimeSeries:
+    def predict(self, horizon: Union[str, TimeSeries], freq: str = None) -> TimeSeries:
         super().predict(horizon)
 
         if isinstance(horizon, str):
@@ -47,12 +42,10 @@ class Prophet(AbstractBaseModel):
 
         forecast = self.model.predict(future)
         forecast.rename(columns={"yhat": TIME_SERIES_VALUES,
-                                 "yhat_lower": TIME_SERIES_CI_LOWER,
-                                 "yhat_upper": TIME_SERIES_CI_UPPER},
+                                 "yhat_lower": "ci_lower",
+                                 "yhat_upper": "ci_upper"},
                         inplace=True)
-        df = forecast[[TIME_SERIES_VALUES,
-                       TIME_SERIES_CI_LOWER,
-                       TIME_SERIES_CI_UPPER]]
+        df = forecast[[TIME_SERIES_VALUES, 'ci_lower', 'ci_upper']]
         df.index = forecast["ds"]
 
         # Register the prediction plot

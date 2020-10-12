@@ -1,10 +1,11 @@
 from typing import List, Any, NoReturn, Tuple, Union, Optional
+import random
+from warnings import warn
 
 import numpy as np
 from pandas import DataFrame, Timestamp, Timedelta, concat
 from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import DateOffset
-import random
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
@@ -36,6 +37,9 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             else:
                 raise ValueError(f'data has to be TimeSeries or List[TimeSeries], got {type(data)}')
 
+    def __getitem__(self, item: int) -> 'TimeSeries':
+        return self.data[item]
+
     def __len__(self):
         return len(self.data)
 
@@ -43,14 +47,10 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return (ts for ts in self.data)
 
     def __repr__(self):
-        # TODO
-        return "{}".format(len(self.data))
-
-    def __getitem__(self, item: int) -> 'TimeSeries':
-        return self.data[item]
+        return self.data.__repr__()
 
     # ==========================================================================
-    # Method
+    # Methods
     # ==========================================================================
 
     # TimeSeries
