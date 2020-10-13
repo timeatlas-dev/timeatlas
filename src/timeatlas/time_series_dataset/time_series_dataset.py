@@ -341,9 +341,11 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # setting the seed if None no seed will be set automatically
         random.seed(seed)
         n = round(len(self.data) * percent)
+
+        # Workaround: If percentage too small we select at least 1
         if n <= 0:
-            raise ValueError(f'set percentage to small resulting selection is '
-                             f'<= 0')
+            warn(f'set percentage to small resulting selection is <= 0\n Using n=1.')
+            n = 1
         if indices:
             return self.select_components_randomly(n=n, indices=indices)
         else:
@@ -654,6 +656,43 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             a List of Pandas Timedelta
         """
         return [ts.duration() for ts in self.data]
+
+    # =============================================
+    # Processing
+    # =============================================
+
+    def resample(self, by: str) -> Any:
+        """
+        https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        - upsampling
+        - downsampling
+        """
+        pass
+
+    def interpolate(self, method: str) -> Any:
+        """
+        "Intelligent" interpolation in function of the data unit etc.
+        """
+        pass
+
+    def normalize(self, method: str) -> Any:
+        """
+        Normalize a dataset
+        """
+        pass
+
+    def synchronize(self):
+        """
+        Synchronize the timestamps so that they are the same for all time
+        series in the TimeSeriesDataset
+        """
+        pass
+
+    def unify(self):
+        """
+        Put all time series in a matrix iff they all have the same length
+        """
+        pass
 
     # =============================================
     # IO

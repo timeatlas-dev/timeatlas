@@ -20,5 +20,3 @@ MODEL_TYPE_MULTIVARIATE = "multivariate"
 
 # Misc. IO
 PICKLE_EXT = "pkl"
-
-
