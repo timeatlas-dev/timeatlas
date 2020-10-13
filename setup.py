@@ -30,7 +30,7 @@ def get_commit_time(commit):
     try:
         return subprocess.check_output(
             ['git', 'show', '-s', '--format="%ct"', commit]) \
-            .decode('ascii').strip()
+            .decode('ascii').strip()[1:-1]
     except Exception:
         return 'unknown'
 
@@ -39,7 +39,8 @@ def create_version():
     version = open('version.txt', 'r').read().strip()
     branch = get_branch()
     if branch == "develop" or branch is None:
-        version += '.dev' + get_commit_time(get_commit())
+        commit_time = get_commit_time(get_commit())
+        version = "{}{}{}".format(version, '.dev', commit_time)
     elif branch == "master":
         version
     return version
