@@ -1,4 +1,5 @@
 import setuptools
+import subprocess
 from pathlib import Path
 
 with open("README.md", "r") as fh:
@@ -9,9 +10,36 @@ def read_requirements(path):
     return list(Path(path).read_text().splitlines())
 
 
+def get_branch():
+    try:
+        return subprocess.check_output(['git', 'branch', '--show-current'])\
+                .decode('ascii').strip()
+    except Exception:
+        return None
+
+
+def get_commit():
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])\
+            .decode('ascii').strip()
+    except Exception:
+        return 'unknown'
+
+
+def create_version():
+    version = open('version.txt', 'r').read().strip()
+    commit = get_commit()
+    branch = get_branch()
+    if branch == "develop" or branch is None:
+        version += '+' + commit
+    elif branch == "master":
+        version
+    return version
+
+
 setuptools.setup(
     name="timeatlas",
-    version="0.0.3",
+    version=create_version(),
     author="Frédéric Montet",
     author_email="frederic.montet@hefr.ch",
     description="A time series data manipulation tool for Python",
