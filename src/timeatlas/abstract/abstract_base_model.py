@@ -1,7 +1,12 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, NoReturn
+from typing import Any, NoReturn, TYPE_CHECKING, Union
 
-from pandas import Timedelta, date_range, infer_freq, DataFrame
+if TYPE_CHECKING:
+    from timeatlas.time_series import TimeSeries
+    from timeatlas.time_series_dataset import TimeSeriesDataset
+
+from pandas import Timedelta, date_range, infer_freq
 
 
 class AbstractBaseModel(ABC):
@@ -12,15 +17,18 @@ class AbstractBaseModel(ABC):
     def __init__(self):
         self._is_fitted = False
         self.X_train = None
+        self.type = None
 
     @abstractmethod
-    def fit(self, series) -> NoReturn:
+    def fit(self, series: Union["TimeSeries", "TimeSeriesDataset"]) \
+            -> NoReturn:
         """ Fit a model """
         self._is_fitted = True
         self.X_train = series
 
     @abstractmethod
-    def predict(self, horizon) -> Any:
+    def predict(self, horizon: Union[str, "TimeSeries", "TimeSeriesDataset"]) \
+            -> Any:
         """ Usage of the model to predict values """
         if self._is_fitted is False:
             raise Exception('fit() must be called before predict()')
@@ -35,7 +43,6 @@ class AbstractBaseModel(ABC):
 
         Returns:
             DatetimeIndex
-
         """
         start = self.X_train.series.index[-1]
         end = self.X_train.series.index[-1] + Timedelta(horizon)

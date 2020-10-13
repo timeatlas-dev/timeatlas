@@ -46,6 +46,10 @@ class AbstractBaseTimeSeries(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def pad(self, *args) -> Union['TimeSeries', 'TimeSeriesDataset']:
+        raise NotImplementedError
+
+    @abstractmethod
     def trim(self, side: str) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 

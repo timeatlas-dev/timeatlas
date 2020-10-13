@@ -1,8 +1,11 @@
 from typing import List, Any, NoReturn, Tuple, Union, Optional
+import random
+from warnings import warn
 
 import numpy as np
-from pandas import DataFrame, Timestamp, Timedelta
-import random
+from pandas import DataFrame, Timestamp, Timedelta, concat
+from pandas.tseries.frequencies import to_offset
+from pandas.tseries.offsets import DateOffset
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.utils import ensure_dir, to_pickle
@@ -24,6 +27,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
     """
 
     def __init__(self, data: List[TimeSeries] = None):
+        super().__init__()
+
         if data is None:
             self.data = []
         else:
@@ -41,14 +46,40 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return (ts for ts in self.data)
 
     def __repr__(self):
-        # TODO
-        return "{}".format(len(self.data))
+        description = self.describe()
+        return description.__repr__()
 
-    def __getitem__(self, item: int) -> 'TimeSeries':
-        return self.data[item]
+    def __getitem__(self, item) -> 'TimeSeriesDataset':
+        if isinstance(item, Tuple):
+            time = item[0]
+            components = item[1]
+        else:
+            time = item
+            components = slice(None)
+        return TimeSeriesDataset([ts[time] for ts in self.data][components])
+
+    def __setitem__(self, item, value) \
+            -> 'TimeSeriesDataset':
+        if isinstance(item, Tuple):
+            time = item[0]
+            components = item[1]
+        else:
+            time = item
+            components = slice(None)
+
+        if isinstance(value, TimeSeries):
+            self.data[components][time] = value[time]
+
+        elif isinstance(value, TimeSeriesDataset):
+            self.data[components][time] = value.data[components][time]
+
+        else:
+            #TODO add default set method maybe...
+            raise ValueError("value argument must be TimeSeries or "
+                             "TimeSeriesDataset")
 
     # ==========================================================================
-    # Method
+    # Methods
     # ==========================================================================
 
     # TimeSeries
@@ -149,6 +180,31 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return self.fill(np.nan)
 
+    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
+            value: Any = np.NaN):
+        """
+        Pad a TimeSeriesDataset until a given limit
+
+        Args:
+            limit: int, str or Pandas Timestamp
+                if int, it will pad the side given in the side arguments by n
+                elements.
+
+            side: Optional[str]
+                side to which the TimeSeries will be padded. This arg can have
+                two value: "before" and "after" depending where the padding is
+                needed.
+
+                This arg is needed only in case the limit is given in int.
+
+            value: Any values
+
+        Returns:
+            TimeSeries
+        """
+        return TimeSeriesDataset([ts.pad(limit=limit, side=side, value=value)
+                                  for ts in self.data])
+
     def trim(self, side: str = "both") -> 'TimeSeriesDataset':
         """Remove NaNs from a TimeSeries start, end or both
 
@@ -162,14 +218,14 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return TimeSeriesDataset([ts.trim(side) for ts in self.data])
 
-    def merge_by_index(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
+    def merge(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
         """Merge two TimeSeriesDataset by the index of the TimeSeries
 
         This methods merges the TimeSeries from the TimeSeriesDataset (TSD) in
         argument with self based on the indexes of each one of the TSDs.
 
         Args:
-            tsd: TimeSeriesDataset to merge with self
+            tsd: the TimeSeriesDataset to merge with self
 
         Returns:
             TimeSeriesDataset
@@ -219,15 +275,35 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
         Args:
             time_series: the TimeSeries object to add
+
+        Return:
+            TimeSeriesDataset
         """
         return TimeSeriesDataset(self.data.append(time_series))
 
-    def remove_component(self, index) -> 'TimeSeriesDataset':
+    def insert_component(self, index: int, time_series: TimeSeries,) \
+            -> 'TimeSeriesDataset':
+        """
+        Insert a time series to the time series dataset at a given position
+
+        Args:
+            time_series: the TimeSeries object to add
+            index: int of the position of the TimeSeries
+
+        Return:
+            TimeSeriesDataset
+        """
+        return TimeSeriesDataset(self.data.insert(index, time_series))
+
+    def remove_component(self, index: int) -> 'TimeSeriesDataset':
         """
         Remove a time series from the time series dataset by its index
 
         Args:
             index: int of the time series to remove
+
+        Return:
+            TimeSeriesDataset
         """
         del self.data[index]
         return TimeSeriesDataset(self.data)
@@ -242,7 +318,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-            indices: bool = False) -> Any:
+                                   indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -258,7 +334,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-            indices: bool = False) -> Any:
+                                   indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -280,7 +356,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-            indices: bool = False) -> Any:
+                                        indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -295,17 +371,34 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # setting the seed if None no seed will be set automatically
         random.seed(seed)
         n = round(len(self.data) * percent)
+
+        # Workaround: If percentage too small we select at least 1
         if n <= 0:
-            raise ValueError(f'set percentage to small resulting selection is '
-                             f'<= 0')
+            warn(f'set percentage to small resulting selection is <= 0\n Using n=1.')
+            n = 1
         if indices:
             return self.select_components_randomly(n=n, indices=indices)
         else:
             return self.select_components_randomly(n=n)
 
-    def merge(self, ts: Union['TimeSeries', 'TimeSeriesDataset']) -> Union['TimeSeries', 'TimeSeriesDataset']:
+    def shuffle(self, inplace: bool = False) -> 'TimeSeriesDataset':
+        """Randomizing the order of the TS in the TSD
 
-        raise NotImplementedError
+        Randomizing the order of the TS in TSDs and returning a new TSD.
+
+        Args:
+            inplace: randomizing inplace or creating new object. (Default: False)
+
+        Returns: if inplace = True shuffling self.data else return new TSD with randomized self.data
+
+        """
+
+        if inplace:
+            random.shuffle(self.data)
+        else:
+            new_data = self.data
+            random.shuffle(new_data)
+            return TimeSeriesDataset(data=new_data)
 
     # ==========================================================================
     # Processing
@@ -319,16 +412,25 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         # TODO (See GitHub issue 56)
         raise NotImplementedError
 
-    def resample(self, freq: str, method: Optional[str] = None) \
+    def resample(self, freq: Union[str, TimeSeries], method: Optional[str] = None) \
             -> 'TimeSeriesDataset':
         """Convert the TimeSeries in a TimeSeriesDataset to a specified
         frequency. Optionally provide filling method to pad/backfill missing
         values.
 
         Args:
-            freq: string
+            freq: str or TimeSeries.
                 The new time difference between two adjacent entries in the
-                returned TimeSeries. A DateOffset alias is expected.
+                returned TimeSeries.
+
+                If a TimeSeries is given, the freq in self will become
+                the same as in the given TimeSeries.
+
+                If a string is given, three options are available:
+                    * 'lowest' : to sync the TimeSeriesDataset to the lowest frequency
+                    * 'highest' : to sync the TimeSeriesDataset to the highest frequency
+                    * A DateOffset alias e.g.: 15min, H, etc.
+
 
             method: {'backfill'/'bfill', 'pad'/'ffill'}, default None
                 Method to use for filling holes in reindexed Series (note this
@@ -341,8 +443,51 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TimeSeriesDataset
         """
-        return \
-            TimeSeriesDataset([ts.resample(freq, method) for ts in self.data])
+        # Acting differently depending on freq arg type and value
+        if isinstance(freq, TimeSeries):
+            target_freq = freq.frequency()
+        elif freq == "lowest":
+            frequencies = [to_offset(ts.frequency()) for ts in self.data]
+            target_freq = max(frequencies)
+        elif freq == "highest":
+            frequencies = [to_offset(ts.frequency()) for ts in self.data]
+            target_freq = min(frequencies)
+        elif isinstance(to_offset(freq), DateOffset):
+            target_freq = freq
+        else:
+            raise ValueError("freq argument isn't valid")
+        # Resample and return
+        return TimeSeriesDataset(
+            [ts.resample(target_freq, method) for ts in self.data])
+
+    def group_by(self, freq: str, method: Optional[str] = "mean")\
+            -> 'TimeSeriesDataset':
+        """Groups values by a frequency for each TimeSeries in a
+        TimeSeriesDataset.
+
+        This method is quite similar to resample with the difference that it
+        gives the guaranty that the timestamps are full values.
+        e.g. 2019-01-01 08:00:00.
+
+        Resample could make values spaced by 1 min but
+        every x sec e.g. [2019-01-01 08:00:33, 2019-01-01 08:01:33],
+        which isn't convenient for further index merging operations.
+
+        The function has different aggregations methods taken from Pandas
+        groupby aggregations[1]. By default, it'll take the mean of the
+        defined freq bucket.
+
+        [1] https://pandas.pydata.org/pandas-docs/stable/user_guide/groupby.html#aggregation
+
+        Args:
+            freq: string offset alias of a frequency
+            method: string of the Pandas aggregation function.
+
+        Returns:
+            TimeSeriesDataset
+        """
+        return TimeSeriesDataset(
+            [ts.group_by(freq, method) for ts in self.data])
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeriesDataset':
         """Wrapper around the Pandas interpolate() method.
@@ -396,14 +541,46 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
     # TimeSeriesDataset
     # -----------------
+    def regularize(self, side: str = "[]", fill=np.nan):
+        """
+        Regularize a TimeSeriesDataset so that all starting and ending
+        timestamps are similar. This method keeps the frequency of every
+        TimeSeries the same.
 
-    def synchronize(self):
+        fill : user defined value, mean, median, etc.
+        method : ][, [[, ]], []
+
+        return
+            TSD
         """
-        Synchronize the timestamps so that they are the same for all time
-        series in the TimeSeriesDataset
-        """
-        # TODO
-        raise NotImplementedError
+        # 1. find the boundaries of all TSs
+        all_boundaries = self.boundaries()
+
+        # 2. find earliest/latest values
+        starts = np.array(all_boundaries).T[0]
+        earliest_start = min(starts)
+        latest_start = max(starts)
+        ends = np.array(all_boundaries).T[1]
+        earliest_end = min(ends)
+        latest_end = max(ends)
+
+        # 3. pad all TSs accordingly
+        if side == "[]":
+            tsd = self.pad(earliest_start).pad(latest_end)
+        elif side == "[[":
+            tsd = TimeSeriesDataset([ts[:earliest_end]
+                                     for ts in self.pad(earliest_start).data])
+        elif side == "]]":
+            tsd = TimeSeriesDataset([ts[latest_start:]
+                                     for ts in self.pad(latest_end).data])
+        elif side == "][":
+            tsd = TimeSeriesDataset([ts[latest_start:earliest_end]
+                                     for ts in self.data])
+        else:
+            raise ValueError("method argument is not recognized")
+
+        return tsd
+
 
     # ==========================================================================
     # Analysis
@@ -438,7 +615,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         Returns:
             TODO Define return type
         """
-        raise NotImplementedError
+        min = self.min()
+        max = self.max()
+        mean = self.mean()
+        median = self.median()
+        kurtosis = self.kurtosis()
+        skewness = self.skewness()
+
+        return DataFrame.from_dict({'minimum': min,
+                                    'maximum': max,
+                                    'mean': mean,
+                                    'median': median,
+                                    'kurtosis': kurtosis,
+                                    'skewness': skewness})
 
     # Time Series Statistics
     # ----------------------
@@ -499,6 +688,43 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return [ts.duration() for ts in self.data]
 
     # =============================================
+    # Processing
+    # =============================================
+
+    def resample(self, by: str) -> Any:
+        """
+        https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        - upsampling
+        - downsampling
+        """
+        pass
+
+    def interpolate(self, method: str) -> Any:
+        """
+        "Intelligent" interpolation in function of the data unit etc.
+        """
+        pass
+
+    def normalize(self, method: str) -> Any:
+        """
+        Normalize a dataset
+        """
+        pass
+
+    def synchronize(self):
+        """
+        Synchronize the timestamps so that they are the same for all time
+        series in the TimeSeriesDataset
+        """
+        pass
+
+    def unify(self):
+        """
+        Put all time series in a matrix iff they all have the same length
+        """
+        pass
+
+    # =============================================
     # IO
     # =============================================
 
@@ -528,9 +754,21 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         to_pickle(self, path)
 
-    def to_dataframe(self) -> DataFrame:
-        # TODO issue 56
-        raise NotImplementedError
+    def to_df(self) -> DataFrame:
+        """Converts a TimeSeriesDataset to a Pandas DataFrame
+
+        The indexes of all the TimeSeries in the TimeSeriesDataset will get
+        merged. That means that you are the only responsible if the merge
+        induces the addition of many NaNs in your data. Therefore, it's better
+        to use this method if you are sure that your TimeSeries share a common
+        frequency as well as start and end.
+
+        Returns:
+            DataFrame
+        """
+        df = concat([ts.series for ts in self], axis=1)
+        df.columns = list(range(len(self)))
+        return df
 
     def to_array(self) -> np.ndarray:
         """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset

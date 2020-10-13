@@ -66,11 +66,18 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             # Create the TimeSeries object with certainty that values
             # are sorted by the time index
             self.series = series.sort_index()
+
+            # Add the freq if regular
+            if len(series) >= 3:
+                infer_freq(self.series.index)
+
+            # Create instance variables
+            self.index = self.series.index  # index accessor
+            self.values = self.series[TIME_SERIES_VALUES]  # values accessor
         else:
             self.series = None
 
-        # The label of the timeseries (can be used for the classification)
-        self.label = label
+        self.label = label  # label of the TimeSeries (for classification)
 
         if metadata is not None:
             self.metadata = metadata
@@ -87,10 +94,16 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         return len(self.series)
 
     def __iter__(self):
-        return (v for v in self.series)
+        return (v for v in self.series[TIME_SERIES_VALUES])
 
     def __getitem__(self, item):
         return TimeSeries(self.series[item])
+
+    def __setitem__(self, item, value):
+        if isinstance(value, TimeSeries):
+            self.series[item] = value.series[item]
+        else:
+            self.series[item] = value[item]
 
     # ==========================================================================
     # Methods
@@ -199,6 +212,86 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """
         return self.fill(np.nan)
 
+    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
+            value: Any = np.NaN):
+        """
+        Pad a TimeSeries until a given limit
+
+        Args:
+            limit: int, str or Pandas Timestamp
+                if int, it will pad the side given in the side arguments by n
+                elements.
+
+            side: Optional[str]
+                side to which the TimeSeries will be padded. This arg can have
+                two value: "before" and "after" depending where the padding is
+                needed.
+
+                This arg is needed only in case the limit is given in int.
+
+            value: Any values
+
+        Returns:
+            TimeSeries
+        """
+        def create_pad(new_limit, ts, fill_val):
+            """
+            Local utility function to create padding time series from a Pandas
+            Timestamp for a given TimeSeries
+
+            Args:
+                new_limit: Pandas Timestamp of the new limit to pad from/to
+                ts: TimeSeries to pad
+                fill_val: value to fill the TimeSeries with
+
+            Returns:
+                TimeSeries
+            """
+            if new_limit < ts.start():
+                return ts.create(new_limit, ts.start(), freq=ts)\
+                           .fill(fill_val)[:-1]
+            elif new_limit > ts.end():
+                return ts.create(ts.end(), new_limit, freq=ts)\
+                           .fill(fill_val)[1:]
+            if new_limit == ts.start() or new_limit == ts.end():
+                return TimeSeries()
+            else:
+                raise ValueError("The given limit is included in the time "
+                           "series, padding is impossible")
+
+        # Create padding TimeSeries from a given number of elements to pad with
+        if isinstance(limit, int):
+            # Add 1 to make the interval is too small
+            target_limit = limit + 1
+
+            if side == "before":
+                index = date_range(end=self.start(), freq=self.frequency(),
+                                   periods=target_limit, closed="left")
+            elif side == "after":
+                index = date_range(start=self.end(), freq=self.frequency(),
+                                   periods=target_limit, closed="right")
+            else:
+                raise ValueError("side argument isn't valid")
+
+            values = [value] * len(index)
+            df = DataFrame(index=index, data=values)
+            pad = TimeSeries(df)
+
+        # Create padding TimeSeries from time stamp as str
+        if isinstance(limit, str):
+            target_limit = Timestamp(limit)
+            pad = create_pad(target_limit, self, value)
+
+        # Create padding TimeSeries from time stamp as Pandas Timestamp
+        elif isinstance(limit, Timestamp):
+            target_limit = limit
+            pad = create_pad(target_limit, self, value)
+
+        else:
+            ValueError("limit argument isn't valid")
+
+        return self.merge(pad)
+
     def trim(self, side: str = "both") -> 'TimeSeries':
         """Remove NaNs from a TimeSeries start, end or both
 
@@ -234,7 +327,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        return TimeSeries(self.series.append(ts.series), self.metadata)
+        # append and infer new freq
+        merged = self.series.append(ts.series)
+        infer_freq(merged.index)
+
+        # instanciate a TimeSeries to sort it
+        return TimeSeries(merged, self.metadata)
 
     # ==========================================================================
     # Processing
@@ -287,8 +385,66 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        new_series = self.series.asfreq(freq, method=method)
+        # avoid duplicated indexes
+        new_series = self.series[~self.series.index.duplicated()]
+        new_series = new_series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
+
+    def group_by(self, freq: str, method: Optional[str] = "mean")\
+            -> 'TimeSeries':
+        """Groups values by a frequency.
+
+        This method is quite similar to resample with the difference that it
+        gives the guaranty that the timestamps are full values.
+        e.g. 2019-01-01 08:00:00.
+
+        Resample could make values spaced by 1 min but
+        every x sec e.g. [2019-01-01 08:00:33, 2019-01-01 08:01:33],
+        which isn't convenient for further index merging operations.
+
+        The function has different aggregations methods taken from Pandas
+        groupby aggregations[1]. By default, it'll take the mean of the
+        defined freq bucket.
+
+        [1] https://pandas.pydata.org/pandas-docs/stable/user_guide/groupby.html#aggregation
+
+        Args:
+            freq: string offset alias of a frequency
+            method: string of the Pandas aggregation function.
+
+        Returns:
+            TimeSeries
+        """
+        # Group by freq
+        series = self.series.groupby(self.index.round(freq))
+
+        # Apply aggregation
+        if method == "mean":
+            series = series.mean()
+        elif method == "sum":
+            series = series.sum()
+        elif method == "size":
+            series = series.size()
+        elif method == "count":
+            series = series.count()
+        elif method == "std":
+            series = series.std()
+        elif method == "var":
+            series = series.var()
+        elif method == "sem":
+            series = series.sem()
+        elif method == "first":
+            series = series.first()
+        elif method == "last":
+            series = series.last()
+        elif method == "min":
+            series = series.min()
+        elif method == "max":
+            series = series.max()
+        else:
+            ValueError("method argument not recognized.")
+
+        return TimeSeries(series, self.metadata)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':
         """Wrapper around the Pandas interpolate() method.
@@ -357,7 +513,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.min()
+        return self.series['values'].min()
 
     def max(self) -> float:
         """Get the maximum value of a TimeSeries
@@ -365,7 +521,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.max()
+        return self.series['values'].max()
 
     def mean(self) -> float:
         """Get the mean value of a TimeSeries
@@ -373,7 +529,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returs:
             float
         """
-        return self.series.mean()
+        return self.series['values'].mean()
 
     def median(self) -> float:
         """Get the median value of a TimeSeries
@@ -381,7 +537,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.median()
+        return self.series['values'].median()
 
     def skewness(self) -> float:
         """Get the skewness of a TimeSeries
@@ -389,7 +545,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.skew()
+        return self.series['values'].skew()
 
     def kurtosis(self) -> float:
         """Get the kurtosis of a TimeSeries
@@ -397,7 +553,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series.kurtosis()
+        return self.series['values'].kurtosis()
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """Describe a TimeSeries with the describe function from Pandas
@@ -405,7 +561,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             Series
         """
-        return self.series.describe()
+        return self.series['values'].describe()
 
     # Time Series Statistics
     # ----------------------
@@ -485,8 +641,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                                       TIME_SERIES_EXT)
         ensure_dir(file_path)
         self.__series_to_csv(self.series, file_path)
+        if self.metadata is None and self.label is not None:
+            self.metadata = Metadata(items={'label': self.label})
         # Create the metadata file
         if self.metadata is not None:
+            if self.label is not None:
+                self.metadata.add({'label': self.label})
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
