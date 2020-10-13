@@ -31,7 +31,7 @@ def create_version():
     commit = get_commit()
     branch = get_branch()
     if branch == "develop" or branch is None:
-        version += '+' + commit
+        version += '.dev' + commit
     elif branch == "master":
         version
     return version
