@@ -302,11 +302,11 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
         TSD_labels = [ts.label for ts in merged_TSD]
 
-        # Second: Merge the TSD_labels, where TS has the same labels.
+        # Second: Get list of tuples (label, duplicate indices)
 
         duplicates = list_duplicates(seq=TSD_labels)
 
-        # Third: Merge other, where TS has same labels.
+        # Third: Merge TSD, where TS has same labels.
 
         merged_TSD = merge_duplicates(tsd=merged_TSD, duplicates=duplicates)
 
@@ -327,8 +327,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return TimeSeriesDataset(self.data.append(time_series))
 
-    def insert_component(self, index: int, time_series: TimeSeries, ) \
-            -> 'TimeSeriesDataset':
+    def insert_component(self, index: int, time_series: TimeSeries, ) -> 'TimeSeriesDataset':
         """
         Insert a time series to the time series dataset at a given position
 
