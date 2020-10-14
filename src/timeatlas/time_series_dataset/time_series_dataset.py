@@ -1,6 +1,7 @@
 from typing import List, Any, NoReturn, Tuple, Union, Optional
 import random
 from warnings import warn
+from collections import defaultdict
 
 import numpy as np
 from pandas import DataFrame, Timestamp, Timedelta, concat
@@ -49,17 +50,14 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         description = self.describe()
         return description.__repr__()
 
-    def __getitem__(self, item) -> 'TimeSeriesDataset':
-        if isinstance(item, Tuple):
-            time = item[0]
-            components = item[1]
+    def __getitem__(self, item) -> Any:
+        if isinstance(item, int):
+            return self.data[item]
         else:
-            time = item
-            components = slice(None)
-        return TimeSeriesDataset([ts[time] for ts in self.data][components])
+            arr = self.data[item]
+            return TimeSeriesDataset(arr)
 
-    def __setitem__(self, item, value) \
-            -> 'TimeSeriesDataset':
+    def __setitem__(self, item, value) -> NoReturn:
         if isinstance(item, Tuple):
             time = item[0]
             components = item[1]
@@ -74,7 +72,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             self.data[components][time] = value.data[components][time]
 
         else:
-            #TODO add default set method maybe...
+            # TODO add default set method maybe...
             raise ValueError("value argument must be TimeSeries or "
                              "TimeSeriesDataset")
 
@@ -248,23 +246,71 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset
         """
 
-        self_labels = [ts.label for ts in self]
-        other_labels = [ts.label for ts in tsd]
+        def list_duplicates(seq: list) -> list:
+            """Get label duplicates
 
-        assert len(self_labels) == len(
-            set(self_labels)), f"TSD contains duplicates in its labels. Will result in unwanted behaviour."
+            Getting a dict of with key=ts.label and value=index in TSD
 
-        arr = []
-        for i, label in enumerate(self_labels):
-            other_indices = [index for index, value in enumerate(other_labels) if value == label]
-            print(other_indices)
-            if not other_indices:
-                arr.append(self[i])
-            else:
-                for ind in other_indices:
-                    arr.append(self[i].merge(tsd[ind]))
+            Args:
+                seq: list of labels
 
-        return TimeSeriesDataset(arr)
+            Returns: dict of duplicate indices
+
+            """
+
+            tally = defaultdict(list)
+            for i, item in enumerate(seq):
+                tally[item].append(i)
+
+            duplicates = []
+            for dup in sorted(((key, locs) for key, locs in tally.items())):
+                duplicates.append(dup)
+
+            return duplicates
+
+        def merge_duplicates(tsd: TimeSeriesDataset, duplicates: list) -> TimeSeriesDataset:
+            """Merging based on duplicates
+
+            Merging the TimeSeriesDataset based on the duplicate list.
+
+            Args:
+                tsd: TimeSeriesDataset to be merged
+                duplicates: list of tuples with (label,duplicate indices)
+
+            Returns: merged TimeSeriesDataset
+
+            """
+            arr = []
+            for label, inds in duplicates:
+                # We merge everything into the first occurrence of the label -> tsd[inds[0]]
+                base_ts = tsd[inds[0]]
+                if len(inds) > 1:
+                    for ind in inds[1:]:
+                        base_ts = base_ts.merge(tsd[ind])
+                    arr.append(base_ts)
+                else:
+                    arr.append(base_ts)
+
+            return TimeSeriesDataset(arr)
+
+        # First: Create new TSD and add all elements
+
+        merged_TSD = TimeSeriesDataset(self.data)
+
+        for ts in tsd:
+            merged_TSD.data.append(ts)
+
+        TSD_labels = [ts.label for ts in merged_TSD]
+
+        # Second: Merge the TSD_labels, where TS has the same labels.
+
+        duplicates = list_duplicates(seq=TSD_labels)
+
+        # Third: Merge other, where TS has same labels.
+
+        merged_TSD = merge_duplicates(tsd=merged_TSD, duplicates=duplicates)
+
+        return merged_TSD
 
     # TimeSeriesDataset
     # -----------------
@@ -281,7 +327,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         """
         return TimeSeriesDataset(self.data.append(time_series))
 
-    def insert_component(self, index: int, time_series: TimeSeries,) \
+    def insert_component(self, index: int, time_series: TimeSeries, ) \
             -> 'TimeSeriesDataset':
         """
         Insert a time series to the time series dataset at a given position
@@ -318,7 +364,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return len(self.data)
 
     def select_components_by_index(self, selection: List[int],
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Select elements from the TimeSeriesDataset with a list of indices.
 
         Args:
@@ -334,7 +380,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset([self.data[i] for i in selection])
 
     def select_components_randomly(self, n: int, seed: int = None,
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -356,7 +402,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             TimeSeriesDataset(random.sample(population=self.data, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-                                        indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -460,7 +506,7 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
         return TimeSeriesDataset(
             [ts.resample(target_freq, method) for ts in self.data])
 
-    def group_by(self, freq: str, method: Optional[str] = "mean")\
+    def group_by(self, freq: str, method: Optional[str] = "mean") \
             -> 'TimeSeriesDataset':
         """Groups values by a frequency for each TimeSeries in a
         TimeSeriesDataset.
@@ -580,7 +626,6 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             raise ValueError("method argument is not recognized")
 
         return tsd
-
 
     # ==========================================================================
     # Analysis
