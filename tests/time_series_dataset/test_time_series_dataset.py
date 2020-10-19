@@ -234,3 +234,33 @@ class TestTimeSeriesDataset(TestCase):
         for ts in tsd_res:
             current_offset = to_offset(ts.frequency())
             self.assertEqual(current_offset, offset_str_arg)
+
+    def test__TimeSeriesDataset__merge_by_class_label(self):
+        # Create TSD
+        ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
+        ts_1.label = "Sensor1"
+
+        ts_2 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
+        ts_2.label = "Sensor2"
+
+        tsd1 = TimeSeriesDataset([ts_1, ts_2])
+
+        ts_3 = TimeSeries.create('2019-01-02', '2019-01-03', "1day")
+        ts_3.label = "Sensor2"
+
+        tsd2 = TimeSeriesDataset([ts_3])
+
+        tsd_merged = tsd1.merge(tsd2)
+
+        # Create Goal
+        ts_goal_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
+        ts_1.label = "Sensor1"
+
+        ts_goal_2 = TimeSeries.create('2019-01-01', '2019-01-03', "1day")
+        ts_goal_2.label = "Sensor2"
+
+        tsd_goal = TimeSeriesDataset([ts_goal_1, ts_goal_2])
+
+        self.assertTrue(len(tsd_merged) == len(tsd_goal))
+        self.assertEqual(tsd_merged, tsd_goal)
+        self.assertIsInstance(tsd_merged, TimeSeriesDataset)
