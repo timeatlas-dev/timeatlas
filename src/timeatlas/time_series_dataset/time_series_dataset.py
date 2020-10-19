@@ -234,10 +234,9 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             arr.append(merged_ts)
         return TimeSeriesDataset(arr)
 
-    def merge_by_class_labels(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
-        """
-
-        Merge two TimeSeriesDatasets by the class labels of the TimeSeries in the TSDs
+    def merge_by_label(self, tsd: 'TimeSeriesDataset') -> 'TimeSeriesDataset':
+        """Merge two TimeSeriesDatasets by the label of the TimeSeries
+        in the TimeSeriesDatasets
 
         Args:
             tsd: TimeSeriesDataset to be merged with self
@@ -257,18 +256,20 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             Returns: dict of duplicate indices
 
             """
-
             tally = defaultdict(list)
             for i, item in enumerate(seq):
                 tally[item].append(i)
 
+            duplicates_items = ((key, locs) for key, locs in tally.items())
+
             duplicates = []
-            for dup in sorted(((key, locs) for key, locs in tally.items())):
+            for dup in sorted(duplicates_items):
                 duplicates.append(dup)
 
             return duplicates
 
-        def merge_duplicates(tsd: TimeSeriesDataset, duplicates: list) -> TimeSeriesDataset:
+        def merge_duplicates(tsd: TimeSeriesDataset, duplicates: list) \
+                -> TimeSeriesDataset:
             """Merging based on duplicates
 
             Merging the TimeSeriesDataset based on the duplicate list.
@@ -282,7 +283,8 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             """
             arr = []
             for label, inds in duplicates:
-                # We merge everything into the first occurrence of the label -> tsd[inds[0]]
+                # We merge everything into the first occurrence of the label
+                # -> tsd[inds[0]]
                 base_ts = tsd[inds[0]]
                 if len(inds) > 1:
                     for ind in inds[1:]:
@@ -293,24 +295,19 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
 
             return TimeSeriesDataset(arr)
 
-        # First: Create new TSD and add all elements
-
-        merged_TSD = TimeSeriesDataset(self.data)
-
+        # First : Create new TSD and add all elements
+        merged_tsd = TimeSeriesDataset(self.data)
         for ts in tsd:
-            merged_TSD.data.append(ts)
+            merged_tsd.data.append(ts)
 
-        TSD_labels = [ts.label for ts in merged_TSD]
+        # Second : Get list of tuples (label, duplicate indices)
+        tsd_labels = [ts.label for ts in merged_tsd]
+        duplicates = list_duplicates(seq=tsd_labels)
 
-        # Second: Get list of tuples (label, duplicate indices)
+        # Third : Merge TSD, where TS has same labels.
+        merged_tsd = merge_duplicates(tsd=merged_tsd, duplicates=duplicates)
 
-        duplicates = list_duplicates(seq=TSD_labels)
-
-        # Third: Merge TSD, where TS has same labels.
-
-        merged_TSD = merge_duplicates(tsd=merged_TSD, duplicates=duplicates)
-
-        return merged_TSD
+        return merged_tsd
 
     # TimeSeriesDataset
     # -----------------
