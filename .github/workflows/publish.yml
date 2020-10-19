@@ -52,6 +52,13 @@ jobs:
       run: |
         twine upload dist/*
 
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: timeatlas-dist
+        path: |
+          dist
+
   publish-docs:
     name: Publish Documentation
     runs-on: ubuntu-latest
