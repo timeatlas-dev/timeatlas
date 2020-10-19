@@ -58,23 +58,10 @@ class TimeSeriesDataset(AbstractBaseTimeSeries,
             return TimeSeriesDataset(arr)
 
     def __setitem__(self, item, value) -> NoReturn:
-        if isinstance(item, Tuple):
-            time = item[0]
-            components = item[1]
-        else:
-            time = item
-            components = slice(None)
-
         if isinstance(value, TimeSeries):
-            self.data[components][time] = value[time]
-
-        elif isinstance(value, TimeSeriesDataset):
-            self.data[components][time] = value.data[components][time]
-
+            self.data[item] = value
         else:
-            # TODO add default set method maybe...
-            raise ValueError("value argument must be TimeSeries or "
-                             "TimeSeriesDataset")
+            raise ValueError("Value argument must be TimeSeries")
 
     # ==========================================================================
     # Methods
