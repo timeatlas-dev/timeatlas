@@ -72,6 +72,5 @@ setuptools.setup(
     install_requires=base_req,
     extra_require={'all': all_req,
                    'torch': torch_req,
-                   'prphet': prophet_req},
-    dependency_links=['https://pypi.python.org/simple']
+                   'prophet': prophet_req},
 )
