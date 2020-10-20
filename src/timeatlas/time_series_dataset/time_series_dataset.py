@@ -721,13 +721,19 @@ class TimeSeriesDataset(List,
         """
 
         # get the result ready
+        columns = []
         res = self[0].to_df()
+        for i, col in enumerate(res.columns):
+            columns.append(f"{col}_{i}")
         # merge the rest in the result
         rest = self[1:]
         for i, ts in enumerate(rest):
             res = res.merge(ts.series, how="outer",
                             left_index=True, right_index=True)
-        res.columns = list(range(len(self)))
+            cols = ts.series.columns
+            for col in cols:
+                columns.append(f"{col}_{i+1}")
+        res.columns = columns
         return res
 
     def to_array(self) -> np.ndarray:
