@@ -70,7 +70,7 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     install_requires=base_req,
-    extra_require={'all': all_req,
+    extras_require={'all': all_req,
                    'torch': torch_req,
                    'prophet': prophet_req
                    },
