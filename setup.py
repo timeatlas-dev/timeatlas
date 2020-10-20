@@ -47,9 +47,9 @@ def create_version():
 
 def get_extras():
     extras = {
-        'torch': ['torch'],
-        'prophet': ['fbprophet'],
-        'all': ['torch', 'fbprophet']
+        'torch': ['torch==1.6.*'],
+        'prophet': ['fbprophet==0.*'],
+        'all': ['torch==1.6.*', 'fbprophet==0.*']
     }
 
     return extras
@@ -72,5 +72,5 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     install_requires=read_requirements('requirements/src.txt'),
-    #extra_require=get_extras(),
+    extra_require=get_extras(),
 )
