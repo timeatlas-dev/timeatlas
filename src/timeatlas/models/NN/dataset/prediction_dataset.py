@@ -1,8 +1,6 @@
-from .base_dataset import BaseDataset
-
 from timeatlas.time_series_dataset import TimeSeriesDataset
 from timeatlas.models.NN.util import chunkify
-
+from .base_dataset import BaseDataset
 
 class TimeSeriesPredictionDataset(BaseDataset):
     """
