@@ -12,15 +12,15 @@ def read_requirements(path):
 
 def get_branch():
     try:
-        return subprocess.check_output(['git', 'branch', '--show-current'])\
-                .decode('ascii').strip()
+        return subprocess.check_output(['git', 'branch', '--show-current']) \
+            .decode('ascii').strip()
     except Exception:
         return None
 
 
 def get_commit():
     try:
-        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])\
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']) \
             .decode('ascii').strip()
     except Exception:
         return 'unknown'
@@ -30,7 +30,7 @@ def get_commit_time(commit):
     try:
         return subprocess.check_output(
             ['git', 'show', '-s', '--format="%ct"', commit]) \
-            .decode('ascii').strip()[1:-1]
+                   .decode('ascii').strip()[1:-1]
     except Exception:
         return 'unknown'
 
@@ -45,6 +45,7 @@ def create_version():
         version
     return version
 
+
 def get_extras():
     extras = {
         'torch': ['torch==1.6.*'],
@@ -53,6 +54,7 @@ def get_extras():
     }
 
     return extras
+
 
 setuptools.setup(
     name="timeatlas",
@@ -73,4 +75,5 @@ setuptools.setup(
     python_requires='>=3.7',
     install_requires=read_requirements('requirements/src.txt'),
     extra_require=get_extras(),
+    dependency_links=['https://pypi.python.org/simple']
 )
