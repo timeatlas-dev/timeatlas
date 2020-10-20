@@ -10,6 +10,12 @@ def read_requirements(path):
     return list(Path(path).read_text().splitlines())
 
 
+base_req = read_requirements('requirements/base_src.txt')
+torch_req = base_req + read_requirements('requirements/torch_src.txt')
+prophet_req = base_req + read_requirements('requirements/prophet_src.txt')
+all_req = base_req + prophet_req + torch_req
+
+
 def get_branch():
     try:
         return subprocess.check_output(['git', 'branch', '--show-current']) \
@@ -46,16 +52,6 @@ def create_version():
     return version
 
 
-def get_extras():
-    extras = {
-        'torch': ['torch==1.6.*'],
-        'prophet': ['fbprophet==0.*'],
-        'all': ['torch==1.6.*', 'fbprophet==0.*']
-    }
-
-    return extras
-
-
 setuptools.setup(
     name="timeatlas",
     version=create_version(),
@@ -73,7 +69,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    install_requires=read_requirements('requirements/src.txt'),
-    extra_require=get_extras(),
+    install_requires=base_req,
+    extra_require={'all': all_req,
+                   'torch': torch_req,
+                   'prphet': prophet_req},
     dependency_links=['https://pypi.python.org/simple']
 )
