@@ -58,7 +58,7 @@ class TimeSeriesDataset(List,
 
     @staticmethod
     def create(length: int, start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeriesDataset':
         """
         Create an empty TimeSeriesDataset object with a defined index and period
@@ -82,6 +82,22 @@ class TimeSeriesDataset(List,
         for i in range(length):
             data.append(ts)
         return TimeSeriesDataset(data)
+
+    def append(self, item: TimeSeries) -> None:
+        """Append a TimeSeries to TimeSeriesDataset
+
+        Appending an item to the TimeSeriesDataset, if item is of type TimeSeries.
+
+        Args:
+            item: item to append
+
+        Returns: None
+
+        """
+        if not isinstance(item, TimeSeries):
+            raise ValueError(f"Only items of type TimeSeries can be appended to TimeSeriesDataset; got {type(item)}")
+        else:
+            super().append(item)
 
     def plot(self, *args, **kwargs) -> Any:
         # TODO
@@ -304,7 +320,7 @@ class TimeSeriesDataset(List,
     # -----------------
 
     def select_components_randomly(self, n: int, seed: int = None,
-                                   indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -326,7 +342,7 @@ class TimeSeriesDataset(List,
             TimeSeriesDataset(random.sample(population=self, k=n))
 
     def select_components_by_percentage(self, percent: float, seed: int = None,
-                                        indices: bool = False) -> Any:
+            indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen
         percentage elements without replacement.
 
@@ -384,7 +400,7 @@ class TimeSeriesDataset(List,
         raise NotImplementedError
 
     def resample(self, freq: Union[str, TimeSeries],
-                 method: Optional[str] = None) \
+            method: Optional[str] = None) \
             -> 'TimeSeriesDataset':
         """Convert the TimeSeries in a TimeSeriesDataset to a specified
         frequency. Optionally provide filling method to pad/backfill missing
