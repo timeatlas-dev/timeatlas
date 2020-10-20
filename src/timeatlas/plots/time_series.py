@@ -8,21 +8,28 @@ from matplotlib import (
     dates as mdates
 )
 from pandas.plotting import register_matplotlib_converters
+import plotly.graph_objects as go
+import plotly.io as pio
 
-if TYPE_CHECKING:
-    from timeatlas.time_series import TimeSeries
+
+from timeatlas.config.colors import colors
+from ._utils import add_metadata_to_plot
 from timeatlas.config.constants import (
     TIME_SERIES_VALUES,
     TIME_SERIES_CI_LOWER,
     TIME_SERIES_CI_UPPER,
 )
 
-from timeatlas.config.colors import colors
+if TYPE_CHECKING:
+    from timeatlas.time_series import TimeSeries
 
-from ._utils import add_metadata_to_plot
+pio.templates.default = "plotly_white"
+sns.set_style("whitegrid")
+sns.set_context("notebook")
 
 
-def line(ts: 'TimeSeries', *args, **kwargs) -> Any:
+def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs)\
+        -> Any:
     """
     Plot a TimeSeries
 
@@ -31,37 +38,51 @@ def line(ts: 'TimeSeries', *args, **kwargs) -> Any:
 
     Args:
         ts: the TimeSeries to plot
+        context: str defining on which medium the plot will be displayed
         *args: positional arguments for Pandas plot() method
         **kwargs: keyword arguments fot Pandas plot() method
 
     Returns:
         matplotlib.axes._subplots.AxesSubplot
     """
-    register_matplotlib_converters()
+    if context == "paper":
+        register_matplotlib_converters()
 
-    if 'figsize' not in kwargs:
-        kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
+        if 'figsize' not in kwargs:
+            kwargs['figsize'] = (18, 2)  # Default TimeSeries plot format
 
-    if 'color' not in kwargs:
-        kwargs['color'] = colors.blue_dark
+        if 'color' not in kwargs:
+            kwargs['color'] = colors.blue_dark
 
-    ax = ts.series.plot(*args, **kwargs)
-    ax.set_xlabel("Date")
-    ax.grid(True, c=colors.grey, ls='-', lw=1, alpha=0.2)
+        ax = ts.series.plot(*args, **kwargs)
+        ax.set_xlabel("Date")
+        ax.grid(True, c=colors.grey, ls='-', lw=1, alpha=0.2)
 
-    # Add legend from metadata if existing
-    if ts.metadata is not None:
-        if "unit" in ts.metadata:
-            unit = ts.metadata["unit"]
-            ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
-        if "sensor" in ts.metadata:
-            sensor = ts.metadata["sensor"]
-            ax.set_title("{}—{}".format(sensor.id, sensor.name))
+        # Add legend from metadata if existing
+        if ts.metadata is not None:
+            if "unit" in ts.metadata:
+                unit = ts.metadata["unit"]
+                ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
+            if "sensor" in ts.metadata:
+                sensor = ts.metadata["sensor"]
+                ax.set_title("{}—{}".format(sensor.id, sensor.name))
 
-    return ax
+        return ax
+    elif context == "notebook":
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=ts.index,
+            y=ts.values,
+            name=ts.series[TIME_SERIES_VALUES].name
+        ))
+        fig.update_layout(showlegend=True)
+        fig.show()
+        return fig
+    else:
+        raise ValueError("Context doesn't exit")
 
 
-def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
+def prediction_plot(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
     """
     Make a plot to display a time series with forecasted values and its
     confidence interval. If given, the observation time series can be added as
@@ -118,7 +139,7 @@ def prediction(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
     return ax
 
 
-def status(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
+def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     """
     Plot a uni-dimensional imshow to mimic status plots like on
     https://githubstatus.com
@@ -161,7 +182,7 @@ def status(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     return ax
 
 
-def kde(ts: 'TimeSeries') -> np.ndarray:
+def kde_plot(ts: 'TimeSeries') -> np.ndarray:
     """
     Display a KDE plot through time with a line plot underneath
 
