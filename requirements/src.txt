@@ -1,8 +1,0 @@
-# Main requirements
-configobj
-matplotlib
-pandas
-seaborn
-plotly == 4.*
-scipy
-u8darts

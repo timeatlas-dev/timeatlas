@@ -4,3 +4,4 @@ pandas==1.*
 seaborn==0.*
 scipy==1.*
 u8darts==0.*
+plotly==4.*

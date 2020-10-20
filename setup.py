@@ -9,10 +9,9 @@ with open("README.md", "r") as fh:
 def read_requirements(path):
     return list(Path(path).read_text().splitlines())
 
-
-base_req = read_requirements('requirements/base_src.txt')
-torch_req = read_requirements('requirements/torch_src.txt')
-prophet_req = read_requirements('requirements/prophet_src.txt')
+base_req = read_requirements('requirements/src_base.txt')
+torch_req = read_requirements('requirements/src_torch.txt')
+prophet_req = read_requirements('requirements/src_prophet.txt')
 all_req = base_req + prophet_req + torch_req
 
 
