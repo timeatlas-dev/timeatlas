@@ -32,7 +32,7 @@ def csv_to_dataframe(path: str) -> Series:
     df = pd.read_csv(path)
     df = df.set_index(pd.to_datetime(df["index"]))
     df = df.drop(columns=["index"])
-    return df["values"].to_frame()
+    return df
 
 
 def json_to_metadata(path: str) -> Metadata:
