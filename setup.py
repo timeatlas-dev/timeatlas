@@ -72,5 +72,5 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     install_requires=read_requirements('requirements/src.txt'),
-    extra_require=get_extras(),
+    #extra_require=get_extras(),
 )
