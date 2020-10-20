@@ -58,6 +58,32 @@ class TestTimeSeriesDataset(TestCase):
             # if equal, all ts in tsd have an hourly frequency
             self.assertEqual(ts.frequency(), freq.frequency())
 
+    def test__TimeSeriesDataset__copy__shallow(self):
+        # params
+        ts_1 = TimeSeries.create("01-2020", "03-2020", "H")
+        ts_2 = TimeSeries.create("02-2020", "04-2020", "min")
+        my_arr = [ts_1, ts_2]
+        # object creation
+        tsd = TimeSeriesDataset(my_arr)
+        # test
+        copy = tsd.copy(deep=False)
+        self.assertNotEqual(id(tsd), id(copy))
+        for i in range(len(copy)):
+            self.assertEqual(id(tsd[i]), id(copy[i]))
+
+    def test__TimeSeriesDataset__copy__deep(self):
+        # params
+        ts_1 = TimeSeries.create("01-2020", "03-2020", "H")
+        ts_2 = TimeSeries.create("02-2020", "04-2020", "min")
+        my_arr = [ts_1, ts_2]
+        # object creation
+        tsd = TimeSeriesDataset(my_arr)
+        # test
+        copy = tsd.copy()  # defaults to deep copy
+        self.assertNotEqual(id(tsd), id(copy))
+        for i in range(len(copy)):
+            self.assertNotEqual(id(tsd[i]), id(copy[i]))
+
     def test__TimeSeriesDataset__split_at(self):
         # params
         length = 3
