@@ -15,6 +15,7 @@ from timeatlas.abstract import (
     AbstractOutputPickle
 )
 from timeatlas.time_series import TimeSeries
+from timeatlas.plots.time_series_dataset import line
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -99,9 +100,13 @@ class TimeSeriesDataset(List,
         else:
             super().append(item)
 
-    def plot(self, *args, **kwargs) -> Any:
-        # TODO
-        raise NotImplementedError
+    def plot(self) -> Any:
+        """Plot a TimeSeriesDataset
+
+        Returns:
+            plotly.graph_objects.Figure
+        """
+        return line(self)
 
     def copy(self, deep=True) -> 'TimeSeriesDataset':
         """Copy a list
