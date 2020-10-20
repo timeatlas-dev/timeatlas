@@ -45,6 +45,14 @@ def create_version():
         version
     return version
 
+def get_extras():
+    extras = {
+        'torch': ['torch'],
+        'prophet': ['fbprophet'],
+        'all': ['torch', 'fbprophet']
+    }
+
+    return extras
 
 setuptools.setup(
     name="timeatlas",
@@ -64,4 +72,5 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     install_requires=read_requirements('requirements/src.txt'),
+    extra_require=get_extras(),
 )
