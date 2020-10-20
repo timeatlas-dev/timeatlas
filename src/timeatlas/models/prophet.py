@@ -16,7 +16,6 @@ from timeatlas.config.constants import (
 )
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
-from timeatlas.plots.time_series import prediction
 
 
 class Prophet(AbstractBaseModel):
@@ -106,8 +105,6 @@ class Prophet(AbstractBaseModel):
 
         # Register the prediction plot
         ts = TimeSeries(df, metadata)
-        ts.register_plotting_function(lambda x: prediction(x))
-
         return ts
 
     @staticmethod

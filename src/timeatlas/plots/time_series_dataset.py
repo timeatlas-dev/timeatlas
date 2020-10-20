@@ -1,11 +1,15 @@
 from typing import TYPE_CHECKING, Any
+
 import plotly.graph_objects as go
+import plotly.io as pio
 
 if TYPE_CHECKING:
     from timeatlas.time_series_dataset import TimeSeriesDataset
 
+pio.templates.default = "plotly_white"
 
-def line(tsd: 'TimeSeriesDataset') -> Any:
+
+def line_plot(tsd: 'TimeSeriesDataset') -> Any:
     """Plot a TimeSeriesDataset with Plotly
 
     Args:

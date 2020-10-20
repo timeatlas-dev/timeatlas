@@ -19,7 +19,7 @@ from timeatlas.config.constants import (
 )
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
-from timeatlas.plots.time_series import line, status
+from timeatlas.plots.time_series import line_plot, status_plot
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -84,9 +84,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         else:
             self.metadata = None
 
-        # Define default plotting function
-        self.plotting_function = line
-
     def __repr__(self):
         return self.series.__repr__()
 
@@ -133,27 +130,13 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
-    def register_plotting_function(self, plotting_function: Callable) \
-            -> NoReturn:
-        """Register a specific plotting function for this TimeSeries
+    def plot(self) -> Any:
+        """Plot a TimeSeriesDataset
 
-        Args:
-            plotting_function: Callable (like a function) that takes at least
-                a TimeSeries as first argument
+        Returns:
+            plotly.graph_objects.Figure
         """
-        self.plotting_function = plotting_function
-
-    def plot(self, *args, **kwargs) -> Any:
-        """Plot the TimeSeries with the registered plotting function
-        (in self.plotting_function)
-
-        Args:
-            *args: Arguments to give to the plotting function
-            **kwargs: Keyword arguments to give to the plotting function
-        """
-        assert self.plotting_function is not None, \
-            "No plotting function registered"
-        self.plotting_function(self, *args, **kwargs)
+        return line_plot(self)
 
     def split_at(self, timestamp: Union[str, Timestamp]) \
             -> Tuple['TimeSeries', 'TimeSeries']:
@@ -614,7 +597,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         diff = self.series.index.to_series().diff().dt.total_seconds()
         ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
                         self.metadata)
-        ts.register_plotting_function(lambda x: status(x, cmap="prism"))
         return ts
 
     def duration(self) -> Timedelta:
