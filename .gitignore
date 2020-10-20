@@ -3,6 +3,7 @@ README.rst
 data/
 docs/api_reference/timeatlas.*
 */**/__pycache__/
+notebooks/scrapbook-*
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
