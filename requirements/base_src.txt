@@ -1,4 +1,3 @@
-# Main requirements
 configobj==5.*
 matplotlib==3.*
 pandas==1.*

@@ -1,2 +1,1 @@
-# Torch requirements
 fbprophet==0.*

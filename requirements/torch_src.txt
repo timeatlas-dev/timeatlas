@@ -1,2 +1,1 @@
-# Torch requirements
 torch==1.6.*
