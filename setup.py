@@ -11,8 +11,8 @@ def read_requirements(path):
 
 
 base_req = read_requirements('requirements/base_src.txt')
-torch_req = base_req + read_requirements('requirements/torch_src.txt')
-prophet_req = base_req + read_requirements('requirements/prophet_src.txt')
+torch_req = read_requirements('requirements/torch_src.txt')
+prophet_req = read_requirements('requirements/prophet_src.txt')
 all_req = base_req + prophet_req + torch_req
 
 
@@ -72,5 +72,6 @@ setuptools.setup(
     install_requires=base_req,
     extra_require={'all': all_req,
                    'torch': torch_req,
-                   'prophet': prophet_req},
+                   'prophet': prophet_req
+                   },
 )
