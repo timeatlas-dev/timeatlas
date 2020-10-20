@@ -5,7 +5,6 @@ from timeatlas import detectors
 from timeatlas import generators
 from timeatlas.metadata import Metadata
 from timeatlas import metrics
-from timeatlas import models
 from timeatlas import plots
 from timeatlas import processors
 from timeatlas.read_write import (

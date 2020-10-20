@@ -1,4 +1,7 @@
-from torch.utils.data import DataLoader, random_split
+try:
+    from torch.utils.data import DataLoader, random_split
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Pytorch not found. Install with pip install torch")
 
 
 class BaseDataLoader(DataLoader):

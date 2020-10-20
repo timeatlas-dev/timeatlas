@@ -10,17 +10,23 @@ def read_requirements(path):
     return list(Path(path).read_text().splitlines())
 
 
+base_req = read_requirements('requirements/base_src.txt')
+torch_req = read_requirements('requirements/torch_src.txt')
+prophet_req = read_requirements('requirements/prophet_src.txt')
+all_req = base_req + prophet_req + torch_req
+
+
 def get_branch():
     try:
-        return subprocess.check_output(['git', 'branch', '--show-current'])\
-                .decode('ascii').strip()
+        return subprocess.check_output(['git', 'branch', '--show-current']) \
+            .decode('ascii').strip()
     except Exception:
         return None
 
 
 def get_commit():
     try:
-        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])\
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']) \
             .decode('ascii').strip()
     except Exception:
         return 'unknown'
@@ -30,7 +36,7 @@ def get_commit_time(commit):
     try:
         return subprocess.check_output(
             ['git', 'show', '-s', '--format="%ct"', commit]) \
-            .decode('ascii').strip()[1:-1]
+                   .decode('ascii').strip()[1:-1]
     except Exception:
         return 'unknown'
 
@@ -63,5 +69,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    install_requires=read_requirements('requirements/src.txt'),
+    install_requires=base_req,
+    extras_require={'all': all_req,
+                   'torch': torch_req,
+                   'prophet': prophet_req
+                   },
 )

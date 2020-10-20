@@ -1,6 +1,7 @@
+import numpy as np
+
 from .base_dataset import BaseDataset
 from timeatlas.time_series_dataset import TimeSeriesDataset
-import numpy as np
 
 
 class TimeSeriesClassificationDataset(BaseDataset):

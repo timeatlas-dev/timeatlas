@@ -1,0 +1,6 @@
+configobj==5.*
+matplotlib==3.*
+pandas==1.*
+seaborn==0.*
+scipy==1.*
+u8darts==0.*
