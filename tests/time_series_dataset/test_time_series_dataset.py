@@ -17,7 +17,7 @@ class TestTimeSeriesDataset(TestCase):
         ts1 = TimeSeries.create("01-01-2020", "01-02-2020", "H").fill(0)
         ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
         my_time_series_dataset = TimeSeriesDataset([ts1, ts2])
-        self.assertTrue(my_time_series_dataset.len() == 2)
+        self.assertTrue(len(my_time_series_dataset) == 2)
         self.assertIsInstance(my_time_series_dataset, TimeSeriesDataset)
 
     def test__TimeSeriesDataset__create(self):
@@ -41,7 +41,7 @@ class TestTimeSeriesDataset(TestCase):
         # object creation
         tsd = TimeSeriesDataset.create(length, start, end, freq)
         # test
-        for ts in tsd.data:
+        for ts in tsd:
             # if equal, all ts in tsd have an hourly frequency
             self.assertEqual(ts.frequency(), "H")
 
@@ -54,7 +54,7 @@ class TestTimeSeriesDataset(TestCase):
         # object creation
         tsd = TimeSeriesDataset.create(length, start, end, freq)
         # test
-        for ts in tsd.data:
+        for ts in tsd:
             # if equal, all ts in tsd have an hourly frequency
             self.assertEqual(ts.frequency(), freq.frequency())
 
@@ -96,7 +96,7 @@ class TestTimeSeriesDataset(TestCase):
             # test if each item is a TimeSeriesDataset
             self.assertIsInstance(tsd, TimeSeriesDataset)
             # test if each item in a TimeSeriesDataset is a TS
-            for ts in tsd.data:
+            for ts in tsd:
                 self.assertIsInstance(ts, TimeSeries)
 
     def test__TimeSeriesDataset__fill(self):
@@ -172,30 +172,30 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(ts2.start() == tsd[1].start())
         self.assertTrue(ts4.end() == tsd[1].end())
 
-    def test__TimeSeriesDataset__add_component(self):
+    def test__TimeSeriesDataset__append(self):
         # Create series
         tsd = TimeSeriesDataset()
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
         ts_2 = TimeSeries.create("01-2020", "03-2020", "H")
         # Test
-        self.assertTrue(tsd.len() == 0)
-        tsd.add_component(ts_1)
-        self.assertTrue(tsd.len() == 1)
-        tsd.add_component(ts_2)
-        self.assertTrue(tsd.len() == 2)
+        self.assertTrue(len(tsd) == 0)
+        tsd.append(ts_1)
+        self.assertTrue(len(tsd) == 1)
+        tsd.append(ts_2)
+        self.assertTrue(len(tsd) == 2)
 
-    def test__TimeSeriesDataset__remove_component(self):
+    def test__TimeSeriesDataset__del(self):
         # Create series
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
         ts_2 = TimeSeries.create("01-2020", "03-2020", "H")
         my_arr = [ts_1, ts_2]
         tsd = TimeSeriesDataset(my_arr)
         # Test
-        self.assertTrue(tsd.len() == 2)
-        tsd.remove_component(-1)
-        self.assertTrue(tsd.len() == 1)
-        tsd.remove_component(-1)
-        self.assertTrue(tsd.len() == 0)
+        self.assertTrue(len(tsd) == 2)
+        del tsd[-1]
+        self.assertTrue(len(tsd) == 1)
+        del tsd[-1]
+        self.assertTrue(len(tsd) == 0)
 
     def test__TimeSeriesDataset__resample(self):
         # Create series
@@ -218,7 +218,7 @@ class TestTimeSeriesDataset(TestCase):
         tsd_res = tsd.resample(freq="highest")
         for ts in tsd_res:
             current_offset = to_offset(ts.frequency())
-            self.assertEqual(current_offset, lowest_freq)
+            self.assertEqual(current_offset, highest_freq)
 
         # Test Dateoffset str
         offest_str = "15min"
@@ -235,32 +235,34 @@ class TestTimeSeriesDataset(TestCase):
             current_offset = to_offset(ts.frequency())
             self.assertEqual(current_offset, offset_str_arg)
 
-    def test__TimeSeriesDataset__merge_by_class_label(self):
+    def test__TimeSeriesDataset__merge_by_label(self):
         # Create TSD
-        ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
+        ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1D")
         ts_1.label = "Sensor1"
 
-        ts_2 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
-        ts_2.label = "Sensor2"
+        ts_2 = TimeSeries.create('2019-01-02', '2019-01-03', "1D")
+        ts_2.label = "Sensor1"
 
         tsd1 = TimeSeriesDataset([ts_1, ts_2])
 
-        ts_3 = TimeSeries.create('2019-01-02', '2019-01-03', "1day")
+        ts_3 = TimeSeries.create('2019-01-02', '2019-01-03', "1D")
         ts_3.label = "Sensor2"
 
         tsd2 = TimeSeriesDataset([ts_3])
 
-        tsd_merged = tsd1.merge(tsd2)
+        tsd_merged = tsd1.merge_by_label(tsd2)
 
         # Create Goal
-        ts_goal_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1day")
+        ts_goal_1 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
         ts_1.label = "Sensor1"
 
-        ts_goal_2 = TimeSeries.create('2019-01-01', '2019-01-03', "1day")
+        ts_goal_2 = TimeSeries.create('2019-01-02', '2019-01-03', "1D")
         ts_goal_2.label = "Sensor2"
 
         tsd_goal = TimeSeriesDataset([ts_goal_1, ts_goal_2])
 
-        self.assertTrue(len(tsd_merged) == len(tsd_goal))
+        print(tsd_goal.boundaries())
+        print(tsd_merged.boundaries())
+
         self.assertEqual(tsd_merged, tsd_goal)
         self.assertIsInstance(tsd_merged, TimeSeriesDataset)
