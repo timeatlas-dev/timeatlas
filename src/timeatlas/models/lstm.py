@@ -1,9 +1,12 @@
 from typing import List
 
-from torch.utils.data import DataLoader
-import torch
-import torch.nn as nn
-from torch.optim.optimizer import Optimizer
+try:
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+    from torch.optim.optimizer import Optimizer
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Pytorch not found. Install with pip install torch")
 
 from timeatlas.abstract import AbstractBaseModel
 

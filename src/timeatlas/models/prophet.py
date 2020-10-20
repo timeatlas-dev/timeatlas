@@ -1,6 +1,10 @@
 from typing import NoReturn, Union, Optional
+
 from pandas import DataFrame
-import fbprophet as fbp
+try:
+    import fbprophet as fbp
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Could not find fbprophet. Install with: pip install fbprophet")
 
 from timeatlas.abstract import AbstractBaseModel
 from timeatlas.config.constants import (
@@ -12,7 +16,6 @@ from timeatlas.config.constants import (
 )
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
-
 from timeatlas.plots.time_series import prediction
 
 
@@ -67,7 +70,7 @@ class Prophet(AbstractBaseModel):
         self.model.fit(df)
 
     def predict(self, horizon: Union[str, TimeSeries, TimeSeriesDataset],
-                freq: str = None) \
+            freq: str = None) \
             -> TimeSeries:
         super().predict(horizon)
 
@@ -107,7 +110,6 @@ class Prophet(AbstractBaseModel):
 
         return ts
 
-
     @staticmethod
     def __prepare_time_series_for_prophet(ts: TimeSeries):
         df = ts.to_df().copy()
@@ -119,7 +121,7 @@ class Prophet(AbstractBaseModel):
 
     @staticmethod
     def __prepare_time_series_dataset_for_prophet(tsd: TimeSeriesDataset,
-                                                  y: int):
+            y: int):
         df = tsd.to_df().copy()
         df["ds"] = df.index
         df = df.reset_index(drop=True)

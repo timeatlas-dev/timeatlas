@@ -1,4 +1,8 @@
-from torch.utils.data import Subset
+try:
+    from torch.utils.data import Subset
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Pytorch not found. Install with pip install torch")
+
 from .base_dataloader import BaseDataLoader
 
 
@@ -7,7 +11,9 @@ class PredictionDataLoader(BaseDataLoader):
         super(PredictionDataLoader, self).__init__(dataset=dataset, *args, **kwargs)
 
     def split(self, train: float, test: float or None = None, validation: float or None = None):
-        """
+        """Split Dataset into train, test and validation
+
+        Splitting a dataset into train, test and validation by percentages.
 
         Args:
             train: percentage of train split
