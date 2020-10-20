@@ -714,9 +714,16 @@ class TimeSeriesDataset(List,
         Returns:
             DataFrame
         """
-        df = concat([ts.series for ts in self], axis=1)
-        df.columns = list(range(len(self)))
-        return df
+
+        # get the result ready
+        res = self[0].to_df()
+        # merge the rest in the result
+        rest = self[1:]
+        for i, ts in enumerate(rest):
+            res = res.merge(ts.series, how="outer",
+                            left_index=True, right_index=True)
+        res.columns = list(range(len(self)))
+        return res
 
     def to_array(self) -> np.ndarray:
         """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
