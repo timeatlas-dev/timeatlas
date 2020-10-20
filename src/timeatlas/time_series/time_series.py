@@ -513,7 +513,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series['values'].min()
+        return self.series[TIME_SERIES_VALUES].min()
 
     def max(self) -> float:
         """Get the maximum value of a TimeSeries
@@ -521,7 +521,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series['values'].max()
+        return self.series[TIME_SERIES_VALUES].max()
 
     def mean(self) -> float:
         """Get the mean value of a TimeSeries
@@ -529,7 +529,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returs:
             float
         """
-        return self.series['values'].mean()
+        return self.series[TIME_SERIES_VALUES].mean()
 
     def median(self) -> float:
         """Get the median value of a TimeSeries
@@ -537,7 +537,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series['values'].median()
+        return self.series[TIME_SERIES_VALUES].median()
 
     def skewness(self) -> float:
         """Get the skewness of a TimeSeries
@@ -545,7 +545,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series['values'].skew()
+        return self.series[TIME_SERIES_VALUES].skew()
 
     def kurtosis(self) -> float:
         """Get the kurtosis of a TimeSeries
@@ -553,7 +553,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             float
         """
-        return self.series['values'].kurtosis()
+        return self.series[TIME_SERIES_VALUES].kurtosis()
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """Describe a TimeSeries with the describe function from Pandas
@@ -561,7 +561,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             Series
         """
-        return self.series['values'].describe()
+        return self.series[TIME_SERIES_VALUES].describe()
 
     # Time Series Statistics
     # ----------------------
