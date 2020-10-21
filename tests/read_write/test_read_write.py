@@ -5,6 +5,7 @@ from pandas import DataFrame
 
 import timeatlas as ta
 from timeatlas import TimeSeries, Metadata, TimeSeriesDataset
+from timeatlas.utils import ensure_dir
 from timeatlas.config.constants import TIME_SERIES_VALUES
 
 
@@ -74,6 +75,7 @@ class TestReadWrite(TestCase):
 
     def test__ReadWrite__csv_to_tsd(self):
         w = "{}/{}".format(self.target_dir, "csv-to-tsd")
+        ensure_dir(w)
         # setup data
         ts_w = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
         ts_w.series[TIME_SERIES_VALUES] = [0, 1, 2]
