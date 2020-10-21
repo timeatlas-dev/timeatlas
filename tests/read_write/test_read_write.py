@@ -1,13 +1,16 @@
 from unittest import TestCase
+
 from pandas import DataFrame
+
 import timeatlas as ta
 from timeatlas import TimeSeries, Metadata, TimeSeriesDataset
+from timeatlas.config.constants import TIME_SERIES_VALUES
 
 
 class TestReadWrite(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "./test/data/test-import"
+        self.target_dir = "./tests/data/test-import"
 
     def test__ReadWrite__read_text_without_metadata(self):
         wo = "{}/{}".format(self.target_dir, "to_text_without_metadata")
@@ -28,7 +31,7 @@ class TestReadWrite(TestCase):
 
         # setup data
         ts_wo = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
-        ts_wo.series["values"] = [0, 1, 2]
+        ts_wo.series[TIME_SERIES_VALUES] = [0, 1, 2]
         tsd_wo = TimeSeriesDataset([ts_wo, ts_wo, ts_wo])
         tsd_wo.to_text(wo)
 
@@ -49,7 +52,7 @@ class TestReadWrite(TestCase):
 
         # setup data
         ts_w = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
-        ts_w.series["values"] = [0, 1, 2]
+        ts_w.series[TIME_SERIES_VALUES] = [0, 1, 2]
         ts_w.series["label_test"] = [0, None, 2]
         tsd_w = TimeSeriesDataset([ts_w, ts_w, ts_w])
         tsd_w.to_text(w)
@@ -71,7 +74,7 @@ class TestReadWrite(TestCase):
         w = "{}/{}".format(self.target_dir, "csv-to-tsd")
         # setup data
         ts_w = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
-        ts_w.series["values"] = [0, 1, 2]
+        ts_w.series[TIME_SERIES_VALUES] = [0, 1, 2]
         ts_w.series["label_test"] = [0, None, 2]
         tsd_w = TimeSeriesDataset([ts_w, ts_w, ts_w])
         df_tsd = tsd_w.to_df()

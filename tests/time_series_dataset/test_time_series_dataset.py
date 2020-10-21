@@ -13,6 +13,9 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 
 class TestTimeSeriesDataset(TestCase):
 
+    def setUp(self) -> None:
+        self.outdir = './test/data/test-import/tsd_to_text/'
+
     def test__is_instance(self):
         my_time_series_dataset = TimeSeriesDataset()
         self.assertIsInstance(my_time_series_dataset, TimeSeriesDataset)
@@ -458,7 +461,6 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd]))
 
     def test__to_text(self):
-        out_dir = './test/data/test-import/tsd_to_text/'
 
         ts = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
 
@@ -469,13 +471,13 @@ class TestTimeSeriesDataset(TestCase):
         ts.label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
-        tsd.to_text(out_dir)
+        tsd.to_text(self.outdir)
 
         # preparte test variables
         goal_length = len(tsd)
 
         # check that it created the three folder
-        folders = glob(f"{out_dir}/[0-9]")
+        folders = glob(f"{self.outdir}/[0-9]")
         self.assertEqual(len(folders), goal_length)
 
         # check that all folders have a data.csv and a metadata.json
@@ -486,12 +488,11 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(check)
 
         # clean up
-        shutil.rmtree(out_dir)
+        shutil.rmtree(self.outdir)
         # check if cleaned
-        self.assertFalse(os.path.isdir(out_dir))
+        self.assertFalse(os.path.isdir(self.outdir))
 
     def test__to_pickle(self):
-        out_dir = '../data/test-import/tsd_to_pickle/'
 
         ts = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
 
@@ -502,14 +503,14 @@ class TestTimeSeriesDataset(TestCase):
         ts.label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
-        tsd.to_pickle(f"{out_dir}/tsd.pkl")
+        tsd.to_pickle(f"{self.outdir}/tsd.pkl")
 
-        self.assertTrue(os.path.isfile(f"{out_dir}/tsd.pkl"))
+        self.assertTrue(os.path.isfile(f"{self.outdir}/tsd.pkl"))
 
         # clean up
-        shutil.rmtree(out_dir)
+        shutil.rmtree(self.outdir)
         # check if cleaned
-        self.assertFalse(os.path.isdir(out_dir))
+        self.assertFalse(os.path.isdir(self.outdir))
 
     def test__to_df(self):
         # goal_df
