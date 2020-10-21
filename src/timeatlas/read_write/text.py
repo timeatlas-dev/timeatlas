@@ -91,7 +91,7 @@ def read_tsd(path: str) -> TimeSeriesDataset:
 
 
 def csv_to_tsd(path: str) -> 'TimeSeriesDataset':
-    """
+    """Load csv-file as TimeSeresDataset
 
     Create a TimeSeriesDataset from a csv
 
@@ -104,7 +104,13 @@ def csv_to_tsd(path: str) -> 'TimeSeriesDataset':
     tsd = []
     df = pd.read_csv(path, index_col=0)
     df.index = pd.to_datetime(df.index)
-    for i, d in df.iteritems():
-        tsd.append(TimeSeries(d))
+
+    last_column_name = df.columns[-1]
+    number_of_timeseries = int(last_column_name[0])
+
+    for i in range(number_of_timeseries + 1):
+        tmp = df.filter(regex=f'^{i}_')
+        tmp.columns = [col.split(f"{i}_")[-1] for col in tmp.columns]
+        tsd.append(TimeSeries(tmp))
 
     return TimeSeriesDataset(data=tsd)
