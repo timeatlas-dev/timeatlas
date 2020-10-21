@@ -10,7 +10,7 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 class TestReadWrite(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "./tests/data/test-import"
+        self.target_dir = "./timeatlas/tests/data/test-import"
 
     def test__ReadWrite__read_text_without_metadata(self):
         wo = "{}/{}".format(self.target_dir, "to_text_without_metadata")
