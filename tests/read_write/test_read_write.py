@@ -7,7 +7,7 @@ from timeatlas import TimeSeries, Metadata, TimeSeriesDataset
 class TestReadWrite(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "../data/test-import"
+        self.target_dir = "./test/data/test-import"
 
     def test__ReadWrite__read_text_without_metadata(self):
         wo = "{}/{}".format(self.target_dir, "to_text_without_metadata")
