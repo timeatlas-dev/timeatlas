@@ -148,7 +148,7 @@ class AbstractBaseTimeSeries(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def resolution(self) -> Union['TimeSeries', 'TimeSeriesDataset']:
+    def time_detlas(self) -> Union['TimeSeries', 'TimeSeriesDataset']:
         raise NotImplementedError
 
     @abstractmethod
