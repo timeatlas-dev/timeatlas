@@ -46,7 +46,7 @@ class TimeSeriesDataset(List,
 
     def __setitem__(self, item, value) -> NoReturn:
         if isinstance(value, TimeSeries):
-            self[item] = value
+            super().__setitem__(item, value)
         else:
             raise ValueError("Value argument must be TimeSeries")
 
@@ -298,9 +298,11 @@ class TimeSeriesDataset(List,
                 # We merge everything into the first occurrence of the label
                 # -> tsd[inds[0]]
                 base_ts = tsd[inds[0]]
+                base_label = base_ts.label
                 if len(inds) > 1:
                     for ind in inds[1:]:
                         base_ts = base_ts.merge(tsd[ind])
+                    base_ts.label = base_label
                     arr.append(base_ts)
                 else:
                     arr.append(base_ts)
@@ -388,7 +390,7 @@ class TimeSeriesDataset(List,
         if inplace:
             random.shuffle(self)
         else:
-            new_tsd = self.copy()
+            new_tsd = self.copy(deep=True)
             random.shuffle(new_tsd)
             return new_tsd
 
@@ -399,14 +401,11 @@ class TimeSeriesDataset(List,
     # TimeSeries
     # ----------
 
-    def apply(self, func, tsd: 'TimeSeriesDataset' = None) \
-            -> 'TimeSeriesDataset':
+    def apply(self, func, tsd: 'TimeSeriesDataset' = None) -> 'TimeSeriesDataset':
         # TODO (See GitHub issue 56)
         raise NotImplementedError
 
-    def resample(self, freq: Union[str, TimeSeries],
-            method: Optional[str] = None) \
-            -> 'TimeSeriesDataset':
+    def resample(self, freq: Union[str, TimeSeries], method: Optional[str] = None) -> 'TimeSeriesDataset':
         """Convert the TimeSeries in a TimeSeriesDataset to a specified
         frequency. Optionally provide filling method to pad/backfill missing
         values.
@@ -744,12 +743,3 @@ class TimeSeriesDataset(List,
         Returns: numpy.array of shape (n x len(tsd))
         """
         return np.array([ts.to_array() for ts in self], dtype=object)
-
-    def to_darts(self):
-        """Convert a TimeSeriesDataset to Darts TimeSeries
-
-        Returns:
-            Darts TimeSeries object
-        """
-        # TODO issue 56
-        raise NotImplementedError
