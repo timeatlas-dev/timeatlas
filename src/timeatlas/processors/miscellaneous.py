@@ -1,5 +1,7 @@
-from typing import List
-from timeatlas import TimeSeries
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from timeatlas.time_series import TimeSeries
 
 
 def ceil(ts: 'TimeSeries', thresholds: List) -> 'TimeSeries':
