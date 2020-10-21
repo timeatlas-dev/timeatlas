@@ -19,7 +19,7 @@ from timeatlas.config.constants import (
 )
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
-from timeatlas.plots.time_series import line_plot, status_plot
+from timeatlas.plots.time_series import line_plot
 from timeatlas.utils import ensure_dir, to_pickle
 
 
@@ -69,7 +69,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
             # Add the freq if regular
             if len(series) >= 3:
-                infer_freq(self.series.index)
+                self.series.index.freq = infer_freq(self.series.index)
 
             # Create instance variables
             self.index = self.series.index  # index accessor
@@ -131,7 +131,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         return TimeSeries(series, metadata)
 
     def plot(self) -> Any:
-        """Plot a TimeSeriesDataset
+        """Plot a TimeSeries
 
         Returns:
             plotly.graph_objects.Figure
@@ -161,6 +161,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
     def split_in_chunks(self, n: int) -> List['TimeSeries']:
         """Split a TimeSeries into chunks of length n
+
+        When the number of element in the TimeSeries is not a multiple of n, the
+        last chunk will have a length smaller than n.
 
         Args:
             n: length of the chunks
@@ -337,6 +340,10 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
             TimeSeries
         """
         if ts is not None:
+
+            assert len(self) == len(ts), "The length of the TimeSeries given " \
+                                         "as argument should be equal to self."
+
             s1 = self.series[TIME_SERIES_VALUES]
             s2 = ts.series[TIME_SERIES_VALUES]
             df = DataFrame(data={"s1": s1, "s2": s2})
@@ -368,7 +375,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
-        # avoid duplicated indexes
+        # select all element in series that are not duplicates
         new_series = self.series[~self.series.index.duplicated()]
         new_series = new_series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
@@ -464,8 +471,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Args:
             decimals: number of digits after the comma
         """
-        return TimeSeries(self.series.astype(float).round(decimals=decimals),
-                          metadata=self.metadata)
+        new_series = self.series.astype(float).round(decimals=decimals)
+        return TimeSeries(new_series, self.metadata)
 
     def sort(self, *args, **kwargs):
         """Sort a TimeSeries by time stamps
@@ -588,14 +595,15 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """
         return self.series.index.inferred_freq
 
-    def resolution(self) -> 'TimeSeries':
-        """Compute the time difference between each timestamp of a TimeSeries
+    def time_detlas(self) -> 'TimeSeries':
+        """Compute the time difference in seconds between each timestamp
+        of a TimeSeries
 
         Returns:
             TimeSeries
         """
-        diff = self.series.index.to_series().diff().dt.total_seconds()
-        ts = TimeSeries(DataFrame(diff, columns=[TIME_SERIES_VALUES]),
+        deltas = self.series.index.to_series().diff().dt.total_seconds()
+        ts = TimeSeries(DataFrame(deltas, columns=[TIME_SERIES_VALUES]),
                         self.metadata)
         return ts
 

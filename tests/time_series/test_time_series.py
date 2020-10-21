@@ -1,18 +1,52 @@
 from unittest import TestCase
-from pandas import DatetimeIndex, DataFrame, Series, Timedelta
+from os import path as os_path
+import shutil
+
+from pandas import DatetimeIndex, DataFrame, Series, Timedelta, infer_freq, \
+    Timestamp
 import numpy as np
+from plotly.graph_objects import Figure
+
 from timeatlas import TimeSeries, Metadata
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import *
 
 
 class TestTimeSeries(TestCase):
 
-    def test__TimeSeries__is_instance(self):
+    def setUp(self) -> None:
+
+        # Create a time indexed series
+        index = DatetimeIndex(['2019-01-01', '2019-01-02',
+                               '2019-01-03', '2019-01-04'])
+        self.my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
+
+        # Create metadata
+        my_unit = {
+            "name": "power",
+            "symbol": "W",
+            "data_type": "float"
+        }
+        my_coordinates = {
+            "lat": 46.796611,
+            "lon": 7.147563
+        }
+        my_dict = {
+            "unit": my_unit,
+            "coordinates": my_coordinates
+        }
+        self.my_metadata = Metadata(my_dict)
+
+        self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
+
+        # Define a target directory
+        self.target_dir = "data/test-export"
+
+    def test__init__is_instance(self):
         self.my_time_series = TimeSeries()
         self.assertIsInstance(self.my_time_series, TimeSeries,
                               "The TimeSeries hasn't the right type")
 
-    def test__TimeSeries__has_right_types(self):
+    def test__init__has_right_types(self):
         # Add some data
         index = DatetimeIndex(['2019-01-01', '2019-01-02',
                                '2019-01-03', '2019-01-04'])
@@ -25,19 +59,36 @@ class TestTimeSeries(TestCase):
         self.assertIsInstance(my_ts.metadata, Metadata,
                               "The TimeSeries Metadata hasn't got the right type")
 
-    def test__TimeSeries__wrong_index_type(self):
+    def test__init__contains_metadata(self):
+        # Add some data
+        index = DatetimeIndex(['2019-01-01', '2019-01-02',
+                               '2019-01-03', '2019-01-04'])
+        my_series = DataFrame([0.4, 1.0, 0.7, 0.6], index=index)
+        my_metadata = Metadata()
+        my_ts = TimeSeries(my_series, my_metadata)
+        # Check types
+        self.assertNotEqual(my_ts.metadata, None,
+                            "The TimeSeries Metadata is probably None")
+
+    def test__init__has_values_as_column_name(self):
+        index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
+        my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
+        ts = TimeSeries(my_series)
+        self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
+
+    def test__init__wrong_index_type(self):
         values = Series([0.4, 1.0, 0.7, 0.6])
         with self.assertRaises(AssertionError):
             TimeSeries(values)
 
-    def test__TimeSeries__with_Series_input(self):
+    def test__init__with_Series_input(self):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         ts = TimeSeries(my_series)
         self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
         self.assertIsInstance(ts, TimeSeries)
 
-    def test__TimeSeries__with_DataFrame_input_single_column(self):
+    def test__init__with_DataFrame_input_single_column(self):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         df = DataFrame(data=my_series)
@@ -45,21 +96,27 @@ class TestTimeSeries(TestCase):
         self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
         self.assertIsInstance(ts, TimeSeries)
 
-    def test__TimeSeries__with_DataFrame_input_many_columns__without_values(self):
+    def test__init__with_DataFrame_input_many_columns__without_values(self):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         df = DataFrame({"one": my_series, "two": my_series})
         with self.assertRaises(AssertionError):
             ts = TimeSeries(df)
 
-    def test__TimeSeries__with_DataFrame_input_many_columns__with_values(self):
+    def test__init__with_DataFrame_input_many_columns__with_values(self):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         df = DataFrame({TIME_SERIES_VALUES: my_series, "two": my_series})
         ts = TimeSeries(df)
         self.assertIsInstance(ts, TimeSeries)
 
-    def test__TimeSeries__create(self):
+    def test__init__freq_is_infered(self):
+        index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
+        my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
+        ts = TimeSeries(my_series)
+        self.assertEqual(infer_freq(index), ts.series.index.freq)
+
+    def test__create(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
         self.assertIsInstance(ts, TimeSeries)
         # Test if all elements are NaNs
@@ -67,14 +124,14 @@ class TestTimeSeries(TestCase):
         # Test if frequency is daily
         self.assertEqual(ts.series.index.inferred_freq, 'D')
 
-    def test__TimeSeries__create_is_regular(self):
+    def test__create__is_regular(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
         no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
             Timedelta(0)
         is_regular = no_duration_diff.eq(True).all()
         self.assertTrue(is_regular)
 
-    def test__TimeSeries__create_with_freq_as_str(self):
+    def test__create__with_freq_as_str(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         self.assertIsInstance(ts, TimeSeries)
         # Test if all elements are NaNs
@@ -82,7 +139,7 @@ class TestTimeSeries(TestCase):
         # Test if frequency is daily
         self.assertEqual(ts.series.index.inferred_freq, 'H')
 
-    def test__TimeSeries__create_with_freq_as_time_series(self):
+    def test__create__with_freq_as_time_series(self):
         ts_freq = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         ts = TimeSeries.create("01-01-2020", "02-01-2020", ts_freq)
         self.assertIsInstance(ts, TimeSeries)
@@ -92,44 +149,57 @@ class TestTimeSeries(TestCase):
         self.assertEqual(ts.series.index.inferred_freq,
                          ts_freq.series.index.inferred_freq)
 
-    def test__TimeSeries__register_plotting_function(self):
-        # TODO
-        pass
+    def test__plot__returns_graph_object(self):
+        ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
+        my_fig = ts.plot()
+        self.assertIsInstance(my_fig, Figure)
 
-    def test__TimeSeries__plot(self):
-        # TODO
-        pass
-
-    def test__TimeSeries__split_at(self):
+    def test__split_at(self):
         # Create TimeSeries and split it
         ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
         a, b = ts.split_at("02-01-2020 00:00")
         # Get all the indexes
-        ts_start = ts.series["values"].index[0]
-        ts_end = ts.series["values"].index[-1]
-        a_start = a.series["values"].index[0]
-        a_end = a.series["values"].index[-1]
-        b_start = b.series["values"].index[0]
-        b_end = b.series["values"].index[-1]
+        ts_start = ts.series[TIME_SERIES_VALUES].index[0]
+        ts_end = ts.series[TIME_SERIES_VALUES].index[-1]
+        a_start = a.series[TIME_SERIES_VALUES].index[0]
+        a_end = a.series[TIME_SERIES_VALUES].index[-1]
+        b_start = b.series[TIME_SERIES_VALUES].index[0]
+        b_end = b.series[TIME_SERIES_VALUES].index[-1]
         # Test boundaries
         self.assertEqual(ts_start, a_start)
         self.assertEqual(ts_end, b_end)
         # Test split point
         self.assertEqual(a_end, b_start)
 
-    def test__TimeSeries__split_in_chunks(self):
-        # TODO
-        pass
+    def test__split_in_chunks(self):
+        ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
+        chunk_len = 5
+        # method at test
+        chunks = ts.split_in_chunks(chunk_len)
+        # test all element but last
+        for ts_chunk in chunks[:-1]:
+            self.assertEqual(len(ts_chunk), chunk_len)
+        # test last element
+        self.assertLessEqual(len(chunks[-1]), chunk_len)
 
-    def test__TimeSeries__fill(self):
-        # TODO
-        pass
+    def test__fill(self):
+        ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
+        val = 42
+        # method at test
+        ts = ts.fill(val)
+        # test
+        for i in ts:
+            self.assertEqual(val, i)
 
-    def test__TimeSeries__empty(self):
-        # TODO
-        pass
+    def test__empty(self):
+        ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
+        # method at test
+        ts = ts.empty()
+        # test
+        for i in ts:
+            self.assertTrue(np.isnan(i))
 
-    def test__TimeSeries__pad(self):
+    def test__pad(self):
 
         def is_regular(ts):
             # test if double timestamps in ts
@@ -164,11 +234,62 @@ class TestTimeSeries(TestCase):
         with self.assertRaises(ValueError):
             ts_1.pad("2020-04-15")
 
-    def test__TimeSeries__trim(self):
-        # TODO
-        pass
+    def test__trim__both_side_by_default(self):
+        # Prepare TimeSeries with int as values
+        start = Timestamp("01-01-2020")
+        end = Timestamp("03-01-2020")
+        ts_initial = TimeSeries.create(start, end, "H")
+        ts_initial = ts_initial.fill(42)
+        # Pad the TimeSeries with np.nans
+        ts_pad = ts_initial.pad("01-12-2019").pad("05-01-2020")
+        # Method at test
+        ts_trimmed = ts_pad.trim()
+        # test if no NaNs
+        self.assertFalse(ts_trimmed.series.isna().values.any())
+        # test boundaries
+        new_start, new_end = ts_trimmed.boundaries()
+        self.assertEqual(start, new_start)
+        self.assertEqual(end, new_end)
 
-    def test__TimeSeries__merge(self):
+    def test__trim__only_start(self):
+        # Prepare TimeSeries with int as values
+        start = Timestamp("01-01-2020")
+        end = Timestamp("03-01-2020")
+        ts_initial = TimeSeries.create(start, end, "H")
+        ts_initial = ts_initial.fill(42)
+        # Pad the TimeSeries with np.nans
+        pad_start = Timestamp("01-12-2019")
+        pad_end = Timestamp("05-01-2020")
+        ts_pad = ts_initial.pad(pad_start).pad(pad_end)
+        # Method at test
+        ts_trimmed = ts_pad.trim(side="start")
+        # test if NaNs
+        self.assertTrue(ts_trimmed.series.isna().values.any())
+        # test boundaries
+        new_start, new_end = ts_trimmed.boundaries()
+        self.assertEqual(start, new_start)
+        self.assertEqual(pad_end, new_end)
+
+    def test__trim__only_end(self):
+        # Prepare TimeSeries with int as values
+        start = Timestamp("01-01-2020")
+        end = Timestamp("03-01-2020")
+        ts_initial = TimeSeries.create(start, end, "H")
+        ts_initial = ts_initial.fill(42)
+        # Pad the TimeSeries with np.nans
+        pad_start = Timestamp("01-12-2019")
+        pad_end = Timestamp("05-01-2020")
+        ts_pad = ts_initial.pad(pad_start).pad(pad_end)
+        # Method at test
+        ts_trimmed = ts_pad.trim(side="end")
+        # test if NaNs
+        self.assertTrue(ts_trimmed.series.isna().values.any())
+        # test boundaries
+        new_start, new_end = ts_trimmed.boundaries()
+        self.assertEqual(pad_start, new_start)
+        self.assertEqual(end, new_end)
+
+    def test__merge(self):
         # Prepare test
         ts1 = TimeSeries.create("01-2020", "03-2020", "H")
         ts2 = TimeSeries.create("02-2020", "04-2020", "H")
@@ -181,18 +302,96 @@ class TestTimeSeries(TestCase):
         len2 = len(ts)
         self.assertTrue(len1 == len2)
 
-    def test__TimeSeries__to_darts__type_check(self):
+    def test__apply__on_self(self):
+        # Prepare test
+        val = 21
+        ts = TimeSeries.create("01-2020", "02-2020", "H").fill(val)
+        # Method at test
+        ts = ts.apply(lambda x: x*2)
+        # Test
+        for i in ts:
+            self.assertEqual(i, val*2)
+
+    def test__apply__on_other_time_series(self):
+        # Prepare test
+        val_1 = 21
+        val_2 = 3
+        ts_1 = TimeSeries.create("01-2020", "02-2020", "H").fill(val_1)
+        ts_2 = TimeSeries.create("01-2020", "02-2020", "H").fill(val_2)
+        # Method at test
+        ts = ts_1.apply(lambda x, y: x*y, ts_2)
+        # Test
+        for i in ts:
+            self.assertEqual(i, val_1 * val_2)
+
+    def test__apply__on_other_time_series_with_different_length(self):
+        # Prepare test
+        val_1 = 21
+        val_2 = 3
+        ts_1 = TimeSeries.create("01-2020", "02-2020", "H").fill(val_1)
+        ts_2 = TimeSeries.create("01-2020", "04-2020", "H").fill(val_2)
+        # Method at test
+        with self.assertRaises(AssertionError):
+            ts = ts_1.apply(lambda x, y: x*y, ts_2)
+
+    def test__time_deltas(self):
+        ts = TimeSeries.create("01-2020", "03-2020", "H")
+        deltas = ts.time_detlas()
+        for i in deltas[1:]:
+            self.assertEqual(i, 3600.0)
+            self.assertIs(type(i), float)
+
+    def test__to_text__without_metadata(self):
+        path = self.target_dir + "/to_text_without_metadata"
+        my_time_series = TimeSeries(self.my_series)
+        my_time_series.to_text(path)
+
+        data_csv_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        does_data_csv_exist = os_path.exists(data_csv_path)
+        self.assertTrue(does_data_csv_exist)
+
+        meta_json_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
+        does_meta_json_exist = os_path.exists(meta_json_path)
+        self.assertFalse(does_meta_json_exist)
+
+    def test__to_text__with_metadata(self):
+        path = self.target_dir + "/to_text_with_metadata"
+        self.my_time_series.to_text(path)
+
+        data_csv_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME, TIME_SERIES_EXT)
+        does_data_csv_exist = os_path.exists(data_csv_path)
+        self.assertTrue(does_data_csv_exist)
+
+        meta_json_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
+        does_meta_json_exist = os_path.exists(meta_json_path)
+        self.assertTrue(does_meta_json_exist)
+
+    def test__to_pickle(self):
+        pickle_path = "{}/{}.{}".format(self.target_dir, DEFAULT_EXPORT_FILENAME, PICKLE_EXT)
+        self.my_time_series.to_pickle(pickle_path)
+        does_pickle_exist = os_path.exists(pickle_path)
+        self.assertTrue(does_pickle_exist)
+
+    def test__to_df(self):
+        df = self.my_time_series.to_df()
+        self.assertTrue(df['values'].equals(self.my_series))
+        self.assertIsInstance(df, DataFrame)
+
+    def test__to_darts__type_check(self):
         ts = TimeSeries.create("01-2020", "02-2020", "H")
-        ts = ts.fill(np.random.randint(0,1000,len(ts)))
+        ts = ts.fill(np.random.randint(0, 1000, len(ts)))
         self.assertIsInstance(ts, TimeSeries)
         dts = ts.to_darts()
         from darts import TimeSeries as DartsTimeSeries
         self.assertIsInstance(dts, DartsTimeSeries)
 
-    def test__TimeSeries__to_darts__series_equality(self):
+    def test__to_darts__series_equality(self):
         ts = TimeSeries.create("01-2020", "02-2020", "H")
-        ts = ts.fill(np.random.randint(0,1000,len(ts)))
+        ts = ts.fill(np.random.randint(0, 1000, len(ts)))
         dts = ts.to_darts()
         is_equal = ts.series[TIME_SERIES_VALUES].equals(dts.pd_series())
         self.assertTrue(is_equal)
 
+    def tearDown(self) -> None:
+        del self.my_time_series
+        shutil.rmtree(self.target_dir, ignore_errors=True)

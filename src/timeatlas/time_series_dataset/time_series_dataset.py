@@ -659,15 +659,14 @@ class TimeSeriesDataset(List,
         """
         return [ts.frequency() for ts in self]
 
-    def resolution(self) -> 'TimeSeriesDataset':
+    def time_detlas(self) -> 'TimeSeriesDataset':
         """Compute the time difference between each timestamp for all TimeSeries
         in a TimeSeriesDataset
 
        Returns:
            TimeSeriesDataset
        """
-        return TimeSeriesDataset(
-            [ts.resolution() for ts in self])
+        return TimeSeriesDataset([ts.time_detlas() for ts in self])
 
     def duration(self) -> List[Timedelta]:
         """Get the duration for all TimeSeries in a TimeSeriesDataset
