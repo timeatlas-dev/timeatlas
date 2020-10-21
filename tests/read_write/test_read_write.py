@@ -1,4 +1,5 @@
 from unittest import TestCase
+import os
 
 from pandas import DataFrame
 
@@ -10,7 +11,8 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 class TestReadWrite(TestCase):
 
     def setUp(self) -> None:
-        self.target_dir = "./timeatlas/tests/data/test-import"
+        self.root = os.path.dirname(os.path.abspath(__file__))
+        self.target_dir = self.root + "/../data/test-import"
 
     def test__ReadWrite__read_text_without_metadata(self):
         wo = "{}/{}".format(self.target_dir, "to_text_without_metadata")

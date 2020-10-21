@@ -14,7 +14,8 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 class TestTimeSeriesDataset(TestCase):
 
     def setUp(self) -> None:
-        self.outdir = './test/data/test-import/tsd_to_text/'
+        self.root = os.path.dirname(os.path.abspath(__file__))
+        self.outdir = self.root + './test/data/test-import/tsd_to_text/'
 
     def test__is_instance(self):
         my_time_series_dataset = TimeSeriesDataset()
