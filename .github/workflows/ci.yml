@@ -8,7 +8,7 @@ on:
   push:
     branches: [ develop, master, git_actions ]
   pull_request:
-    branches: [ develop, master, git_actions ]
+    branches: [ develop, master ]
 
 jobs:
   lint:
