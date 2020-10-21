@@ -2,6 +2,7 @@ from unittest import TestCase
 from glob import glob
 import os
 import shutil
+from copy import deepcopy
 
 from pandas import Timestamp, DataFrame
 from pandas.tseries.frequencies import to_offset
@@ -15,7 +16,7 @@ class TestTimeSeriesDataset(TestCase):
 
     def setUp(self) -> None:
         self.root = os.path.dirname(os.path.abspath(__file__))
-        self.outdir = self.root + './test/data/test-import/tsd_to_text/'
+        self.outdir = self.root + '/../data/test-import/tsd_to_text/'
 
     def test__is_instance(self):
         my_time_series_dataset = TimeSeriesDataset()
@@ -303,20 +304,16 @@ class TestTimeSeriesDataset(TestCase):
 
     def test__shuffle(self):
         # Create TSD
-        ts_1 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts_1.series[TIME_SERIES_VALUES] = [2]
-        ts_1.label = "Sensor1"
-        ts_2 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts_2.series[TIME_SERIES_VALUES] = [2]
-        ts_2.label = "Sensor2"
-        ts_3 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts_3.series[TIME_SERIES_VALUES] = [2]
-        ts_3.label = "Sensor3"
-        ts_4 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts_4.series[TIME_SERIES_VALUES] = [2]
-        ts_4.label = "Sensor4"
+        ts = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
+        ts.series[TIME_SERIES_VALUES] = [2]
 
-        tsd = TimeSeriesDataset([ts_1, ts_2, ts_3, ts_4])
+        tss = []
+        for i in range(100):
+            tmp_ts = deepcopy(ts)
+            tmp_ts.label = f'Sensor{i}'
+            tss.append(tmp_ts)
+
+        tsd = TimeSeriesDataset(tss)
 
         tsd_shuffled = tsd.shuffle(inplace=False)
 

@@ -74,7 +74,7 @@ class TestReadWrite(TestCase):
         self.assertIsInstance(tsd, TimeSeriesDataset)
 
     def test__ReadWrite__csv_to_tsd(self):
-        w = "{}/{}".format(self.target_dir, "csv-to-tsd")
+        w = "{}/{}/".format(self.target_dir, "csv-to-tsd")
         ensure_dir(w)
         # setup data
         ts_w = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
@@ -83,10 +83,10 @@ class TestReadWrite(TestCase):
         tsd_w = TimeSeriesDataset([ts_w, ts_w, ts_w])
         df_tsd = tsd_w.to_df()
         # save tsd as csv
-        df_tsd.to_csv(f'{w}/tsd.csv')
+        df_tsd.to_csv(f'{w}tsd.csv')
 
         # load data
-        tsd = ta.csv_to_tsd(f'{w}/tsd.csv')
+        tsd = ta.csv_to_tsd(f'{w}tsd.csv')
         self.assertIsInstance(tsd, TimeSeriesDataset)
 
         check = True
