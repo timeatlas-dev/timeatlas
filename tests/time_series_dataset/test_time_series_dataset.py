@@ -13,18 +13,18 @@ from timeatlas.config.constants import TIME_SERIES_VALUES
 
 class TestTimeSeriesDataset(TestCase):
 
-    def test__TimeSeriesDataset__is_instance(self):
+    def test__is_instance(self):
         my_time_series_dataset = TimeSeriesDataset()
         self.assertIsInstance(my_time_series_dataset, TimeSeriesDataset)
 
-    def test__TimeSeriesDataset__construct(self):
+    def test__construct(self):
         ts1 = TimeSeries.create("01-01-2020", "01-02-2020", "H").fill(0)
         ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
         my_time_series_dataset = TimeSeriesDataset([ts1, ts2])
         self.assertTrue(len(my_time_series_dataset) == 2)
         self.assertIsInstance(my_time_series_dataset, TimeSeriesDataset)
 
-    def test__TimeSeriesDataset__create(self):
+    def test__create(self):
         # params
         length = 2
         start = "01-01-2020"
@@ -36,7 +36,7 @@ class TestTimeSeriesDataset(TestCase):
         # Test if length is the same as planned
         self.assertEqual(len(tsd), length)
 
-    def test__TimeSeriesDataset__create_with_freq_as_str(self):
+    def test__create_with_freq_as_str(self):
         # params
         length = 3
         start = "01-01-2020"
@@ -49,7 +49,7 @@ class TestTimeSeriesDataset(TestCase):
             # if equal, all ts in tsd have an hourly frequency
             self.assertEqual(ts.frequency(), "H")
 
-    def test__TimeSeriesDataset__create_with_freq_as_time_series(self):
+    def test__create_with_freq_as_time_series(self):
         # params
         length = 3
         start = "01-01-2020"
@@ -62,7 +62,7 @@ class TestTimeSeriesDataset(TestCase):
             # if equal, all ts in tsd have an hourly frequency
             self.assertEqual(ts.frequency(), freq.frequency())
 
-    def test__TimeSeriesDataset__append(self):
+    def test__append(self):
         # Create series
         tsd = TimeSeriesDataset()
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
@@ -74,7 +74,7 @@ class TestTimeSeriesDataset(TestCase):
         tsd.append(ts_2)
         self.assertTrue(len(tsd) == 2)
 
-    def test__TimeSeriesDataset__del(self):
+    def test__del(self):
         # Create series
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
         ts_2 = TimeSeries.create("01-2020", "03-2020", "H")
@@ -87,7 +87,7 @@ class TestTimeSeriesDataset(TestCase):
         del tsd[-1]
         self.assertTrue(len(tsd) == 0)
 
-    def test__TimeSeriesDataset__copy__shallow(self):
+    def test__copy__shallow(self):
         # params
         ts_1 = TimeSeries.create("01-2020", "03-2020", "H")
         ts_2 = TimeSeries.create("02-2020", "04-2020", "min")
@@ -100,7 +100,7 @@ class TestTimeSeriesDataset(TestCase):
         for i in range(len(copy)):
             self.assertEqual(id(tsd[i]), id(copy[i]))
 
-    def test__TimeSeriesDataset__copy__deep(self):
+    def test__copy__deep(self):
         # params
         ts_1 = TimeSeries.create("01-2020", "03-2020", "H")
         ts_2 = TimeSeries.create("02-2020", "04-2020", "min")
@@ -113,7 +113,7 @@ class TestTimeSeriesDataset(TestCase):
         for i in range(len(copy)):
             self.assertNotEqual(id(tsd[i]), id(copy[i]))
 
-    def test__TimeSeriesDataset__split_at(self):
+    def test__split_at(self):
         # params
         length = 3
         start = "01-01-2020 00:00"
@@ -135,7 +135,7 @@ class TestTimeSeriesDataset(TestCase):
             self.assertEqual(ts.start(), Timestamp(splitting_point))
             self.assertEqual(ts.end(), Timestamp(end))
 
-    def test__TimeSeriesDataset__split_in_chunks(self):
+    def test__split_in_chunks(self):
         # params
         n_chunks = 12
         length = 3
@@ -154,7 +154,7 @@ class TestTimeSeriesDataset(TestCase):
             for ts in tsd:
                 self.assertIsInstance(ts, TimeSeries)
 
-    def test__TimeSeriesDataset__fill(self):
+    def test__fill(self):
         # params
         length = 3
         start = "01-01-2020"
@@ -173,7 +173,7 @@ class TestTimeSeriesDataset(TestCase):
             for i in ts.series[TIME_SERIES_VALUES]:
                 self.assertIs(i, 0)
 
-    def test__TimeSeriesDataset__empty(self):
+    def test__empty(self):
         # params
         length = 3
         start = "01-01-2020"
@@ -193,7 +193,7 @@ class TestTimeSeriesDataset(TestCase):
             for i in ts.series[TIME_SERIES_VALUES]:
                 self.assertTrue(np.isnan(i))
 
-    def test__TimeSeriesDataset__pad_right(self):
+    def test__pad_right(self):
         goal_left = "2020-01-01 00:00:00"
 
         # Create series
@@ -210,7 +210,7 @@ class TestTimeSeriesDataset(TestCase):
 
         self.assertTrue(all([str(ts.boundaries()[0]) == goal_left for ts in tsd_padded]))
 
-    def test__TimeSeriesDataset__pad_left(self):
+    def test__pad_left(self):
         goal_right = "2020-01-10 00:00:00"
 
         # Create series
@@ -224,7 +224,7 @@ class TestTimeSeriesDataset(TestCase):
         # check if all have the same left boundary
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd_padded]))
 
-    def test__TimeSeriesDataset__trim(self):
+    def test__trim(self):
         # Create series
         ts1 = TimeSeries.create("02-01-2020", "06-01-2020", "H").fill(0)
         ts2 = TimeSeries.create("01-01-2020", "04-01-2020", "H").fill(0)
@@ -242,7 +242,7 @@ class TestTimeSeriesDataset(TestCase):
             for i in ts.series[TIME_SERIES_VALUES]:
                 self.assertFalse(np.isnan(i))
 
-    def test__TimeSeriesDataset__merge(self):
+    def test__merge(self):
         # Create the time series
         ts1 = TimeSeries.create("01-01-2020", "01-02-2020", "H").fill(0)
         ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
@@ -258,7 +258,7 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(ts2.start() == tsd[1].start())
         self.assertTrue(ts4.end() == tsd[1].end())
 
-    def test__TimeSeriesDataset__merge_by_label(self):
+    def test__merge_by_label(self):
         # Create TSD
         ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1D")
         ts_1.series[TIME_SERIES_VALUES] = [0, 1]
@@ -297,7 +297,7 @@ class TestTimeSeriesDataset(TestCase):
 
         self.assertTrue(check)
 
-    def test__TimeSeriesDataset__shuffle(self):
+    def test__shuffle(self):
         # Create TSD
         ts_1 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
         ts_1.series[TIME_SERIES_VALUES] = [2]
@@ -323,11 +323,11 @@ class TestTimeSeriesDataset(TestCase):
 
         self.assertFalse(check)
 
-    def test__TimeSeriesDataset__apply(self):
+    def test__apply(self):
         # TODO: Not implemented
         pass
 
-    def test__TimeSeriesDataset__resample(self):
+    def test__resample(self):
         # Create series
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H")
         ts_2 = TimeSeries.create("01-2020", "03-2020", "min")
@@ -365,7 +365,7 @@ class TestTimeSeriesDataset(TestCase):
             current_offset = to_offset(ts.frequency())
             self.assertEqual(current_offset, offset_str_arg)
 
-    def test__TimeSeriesDataset__regularize_intersect(self):
+    def test__regularize_intersect(self):
         # The goal of the right boundary
         goal_left = "2019-01-05 00:00:00"
         goal_right = "2019-01-05 00:00:00"
@@ -389,7 +389,7 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(all([str(ts.boundaries()[0]) == goal_left for ts in tsd]))
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd]))
 
-    def test__TimeSeriesDataset__regularize_left(self):
+    def test__regularize_left(self):
         # The goal of the right boundary
         goal_right = "2019-01-01 00:00:00"
 
@@ -411,7 +411,7 @@ class TestTimeSeriesDataset(TestCase):
         # assert that all TS in TSD end in right_goal
         self.assertTrue(all([str(ts.boundaries()[0]) == goal_right for ts in tsd]))
 
-    def test__TimeSeriesDataset__regularize_right(self):
+    def test__regularize_right(self):
         # The goal of the right boundary
         goal_right = "2019-01-10 00:00:00"
 
@@ -433,7 +433,7 @@ class TestTimeSeriesDataset(TestCase):
         # assert that all TS in TSD end in right_goal
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd]))
 
-    def test__TimeSeriesDataset__regularize_union(self):
+    def test__regularize_union(self):
         # The goal of the right boundary
         goal_left = "2019-01-01 00:00:00"
         goal_right = "2019-01-10 00:00:00"
@@ -457,7 +457,7 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(all([str(ts.boundaries()[0]) == goal_left for ts in tsd]))
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd]))
 
-    def test__TimeSeriesDataset__to_text(self):
+    def test__to_text(self):
         out_dir = '../data/test-import/tsd_to_text/'
 
         ts = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
@@ -490,7 +490,7 @@ class TestTimeSeriesDataset(TestCase):
         # check if cleaned
         self.assertFalse(os.path.isdir(out_dir))
 
-    def test__TimeSeriesDataset__to_pickle(self):
+    def test__to_pickle(self):
         out_dir = '../data/test-import/tsd_to_pickle/'
 
         ts = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
@@ -511,7 +511,7 @@ class TestTimeSeriesDataset(TestCase):
         # check if cleaned
         self.assertFalse(os.path.isdir(out_dir))
 
-    def test__TimeSeriesDataset__to_df(self):
+    def test__to_df(self):
         # goal_df
         df_goal = DataFrame([[0, 0, 0, 0], [1, None, 1, None]],
                             columns=['0_values', '0_label_test', '1_values', '1_label_test'],
