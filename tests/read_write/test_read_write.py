@@ -83,10 +83,10 @@ class TestReadWrite(TestCase):
         tsd_w = TimeSeriesDataset([ts_w, ts_w, ts_w])
         df_tsd = tsd_w.to_df()
         # save tsd as csv
-        df_tsd.to_csv(f'{w}tsd.csv')
+        df_tsd.to_csv(f'{w}/tsd.csv')
 
         # load data
-        tsd = ta.csv_to_tsd(f'{w}tsd.csv')
+        tsd = ta.csv_to_tsd(f'{w}/tsd.csv')
         self.assertIsInstance(tsd, TimeSeriesDataset)
 
         check = True
