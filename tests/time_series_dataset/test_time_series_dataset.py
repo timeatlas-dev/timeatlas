@@ -192,7 +192,7 @@ class TestTimeSeriesDataset(TestCase):
             for i in ts.series["values"]:
                 self.assertTrue(np.isnan(i))
 
-    def test__TimeSeriesDataset_pad_right(self):
+    def test__TimeSeriesDataset__pad_right(self):
         goal_left = "2020-01-01 00:00:00"
 
         # Create series
@@ -209,7 +209,7 @@ class TestTimeSeriesDataset(TestCase):
 
         self.assertTrue(all([str(ts.boundaries()[0]) == goal_left for ts in tsd_padded]))
 
-    def test__TimeSeriesDataset_pad_left(self):
+    def test__TimeSeriesDataset__pad_left(self):
         goal_right = "2020-01-10 00:00:00"
 
         # Create series
