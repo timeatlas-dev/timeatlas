@@ -401,14 +401,11 @@ class TimeSeriesDataset(List,
     # TimeSeries
     # ----------
 
-    def apply(self, func, tsd: 'TimeSeriesDataset' = None) \
-            -> 'TimeSeriesDataset':
+    def apply(self, func, tsd: 'TimeSeriesDataset' = None) -> 'TimeSeriesDataset':
         # TODO (See GitHub issue 56)
         raise NotImplementedError
 
-    def resample(self, freq: Union[str, TimeSeries],
-            method: Optional[str] = None) \
-            -> 'TimeSeriesDataset':
+    def resample(self, freq: Union[str, TimeSeries], method: Optional[str] = None) -> 'TimeSeriesDataset':
         """Convert the TimeSeries in a TimeSeriesDataset to a specified
         frequency. Optionally provide filling method to pad/backfill missing
         values.
@@ -747,12 +744,3 @@ class TimeSeriesDataset(List,
         Returns: numpy.array of shape (n x len(tsd))
         """
         return np.array([ts.to_array() for ts in self], dtype=object)
-
-    def to_darts(self):
-        """Convert a TimeSeriesDataset to Darts TimeSeries
-
-        Returns:
-            Darts TimeSeries object
-        """
-        # TODO issue 56
-        raise NotImplementedError
