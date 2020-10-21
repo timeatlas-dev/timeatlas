@@ -46,7 +46,7 @@ class TimeSeriesDataset(List,
 
     def __setitem__(self, item, value) -> NoReturn:
         if isinstance(value, TimeSeries):
-            self[item] = value
+            super().__setitem__(item, value)
         else:
             raise ValueError("Value argument must be TimeSeries")
 
@@ -298,9 +298,11 @@ class TimeSeriesDataset(List,
                 # We merge everything into the first occurrence of the label
                 # -> tsd[inds[0]]
                 base_ts = tsd[inds[0]]
+                base_label = base_ts.label
                 if len(inds) > 1:
                     for ind in inds[1:]:
                         base_ts = base_ts.merge(tsd[ind])
+                    base_ts.label = base_label
                     arr.append(base_ts)
                 else:
                     arr.append(base_ts)
@@ -388,7 +390,7 @@ class TimeSeriesDataset(List,
         if inplace:
             random.shuffle(self)
         else:
-            new_tsd = self.copy()
+            new_tsd = self.copy(deep=True)
             random.shuffle(new_tsd)
             return new_tsd
 
