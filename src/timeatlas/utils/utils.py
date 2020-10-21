@@ -4,8 +4,7 @@ import pickle
 
 
 def ensure_dir(file_path: str) -> NoReturn:
-    """
-    Make sure that a path to a directory exists, or creates its directory leafs
+    """Make sure that a path to a directory exists, or creates its directory leafs
 
     Args:
         file_path: the path to the file/directory
@@ -16,8 +15,7 @@ def ensure_dir(file_path: str) -> NoReturn:
 
 
 def to_pickle(obj: Any, path: str) -> NoReturn:
-    """
-    Export a object in Pickle on your file system
+    """Export a object in Pickle on your file system
 
     Args:
         obj: Object to serialize
