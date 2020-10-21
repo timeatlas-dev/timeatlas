@@ -1,7 +1,8 @@
 from typing import List
+from timeatlas import TimeSeries
 
 
-def ceil(ts: 'TimeSeries', thresholds: List) -> 'TimeSeries':
+def ceil(ts: TimeSeries, thresholds: List) -> TimeSeries:
     """
     Ceil (TODO change name. proposal: stepper, threshold_overtaking, ...) is a
     function providing a time series informing the user if a threshold has been
@@ -15,12 +16,13 @@ def ceil(ts: 'TimeSeries', thresholds: List) -> 'TimeSeries':
     :param thresholds: List of threshold
     :return: TimeSeries of threshold trespassing
     """
+
     def threshold(value: float, levels: List):
         for k, v in enumerate(levels):
             if value > v:
-                if k+1 == len(levels):
+                if k + 1 == len(levels):
                     # meaning there's no other levels...
-                    return k+1
+                    return k + 1
                 else:
                     continue
             else:
