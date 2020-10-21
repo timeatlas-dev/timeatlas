@@ -6,9 +6,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ develop, master ]
+    branches: [ develop, master, git_actions ]
   pull_request:
-    branches: [ develop, master ]
+    branches: [ develop, master, git_actions ]
 
 jobs:
   lint:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
       - name: Checkout
