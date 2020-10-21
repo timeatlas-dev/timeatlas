@@ -458,7 +458,7 @@ class TestTimeSeriesDataset(TestCase):
         self.assertTrue(all([str(ts.boundaries()[1]) == goal_right for ts in tsd]))
 
     def test__to_text(self):
-        out_dir = '../data/test-import/tsd_to_text/'
+        out_dir = './test/data/test-import/tsd_to_text/'
 
         ts = TimeSeries.create("01-01-1990", "01-03-1990", "1D")
 
