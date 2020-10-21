@@ -2,7 +2,7 @@ from typing import List
 from timeatlas import TimeSeries
 
 
-def ceil(ts: TimeSeries, thresholds: List) -> TimeSeries:
+def ceil(ts: 'TimeSeries', thresholds: List) -> 'TimeSeries':
     """
     Ceil (TODO change name. proposal: stepper, threshold_overtaking, ...) is a
     function providing a time series informing the user if a threshold has been
