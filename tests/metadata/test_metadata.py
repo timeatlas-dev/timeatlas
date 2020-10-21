@@ -43,11 +43,15 @@ class TestMetadata(TestCase):
         }
 
     def test__Metadata__construct(self):
+        # method call
         my_metadata = Metadata()
+        # test
         self.assertIsInstance(my_metadata, Metadata)
 
     def test__Metadata__construct_with_dict(self):
+        # method call
         my_metadata = Metadata(self.my_dict)
+        # test
         self.assertIsInstance(my_metadata, Metadata)
 
     def test__Metadata__add__known_type_dict(self):
@@ -55,7 +59,9 @@ class TestMetadata(TestCase):
         my_known_dict = {
             "unit": self.my_unit
         }
+        # method call
         my_metadata.add(my_known_dict)
+        # test
         self.assertTrue("unit" in list(my_metadata.keys()),
                         "'unit' has not been added to the metadata")
         self.assertIsInstance(my_metadata["unit"], Unit)
@@ -65,7 +71,9 @@ class TestMetadata(TestCase):
         my_known_obj = {
             "sensor": self.my_sensor
         }
+        # method call
         my_metadata.add(my_known_obj)
+        # test
         self.assertTrue("sensor" in list(my_metadata.keys()),
                         "'sensor' has not been added to the metadata")
         self.assertIsInstance(my_metadata["sensor"], Sensor)
@@ -75,7 +83,9 @@ class TestMetadata(TestCase):
         my_dict = {
             "coordinates": self.my_coordinates
         }
+        # method call
         my_metadata.add(my_dict)
+        # test
         self.assertTrue("coordinates" in list(my_metadata.keys()),
                         "'coordinates' has not been added to the metadata")
 
@@ -84,21 +94,24 @@ class TestMetadata(TestCase):
         my_dict = {
             "coordinates": self.my_coordinates
         }
+        # method call
         my_metadata.add(my_dict)
         json = my_metadata.to_json(pretty_print=True)
+        # test
         self.assertIsInstance(json, str)
-        print(json)
 
     def test__Metadata__to_json__with_file_path(self):
         my_metadata = Metadata()
         my_dict = {
             "coordinates": self.my_coordinates
         }
+        # method call
         my_metadata.add(my_dict)
         file_path = self.target_dir + "/metadata.json"
         before = os.path.exists(file_path)
         my_metadata.to_json(pretty_print=True, path=file_path)
         after = os.path.exists(file_path)
+        # test
         self.assertTrue(before is not after)
 
     def tearDown(self) -> None:

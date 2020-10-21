@@ -13,13 +13,33 @@ class Metadata(dict):
             self.add(items)
 
     def add(self, items: Dict[str, Any]):
+        """ Add an item to the metadata object
+
+        If the type is recognized in TimeAtlas (see types module), this
+        method creates a instance of this type and adds in the Metadata.
+
+        Args:
+            items: dict with the items to add
+
+        Returns:
+            Metadata (self)
+        """
         for k, v in items.items():
             if k == 'sensor':
-                self[k] = v if isinstance(v, Sensor) else Sensor(v['sensor_id'], v['name'])
+                self[k] = v if isinstance(v, Sensor) \
+                    else Sensor(v['sensor_id'], v['name'])
+
             elif k == 'unit':
-                self[k] = v if isinstance(v, Unit) else Unit(v['name'], v['symbol'], v['data_type'])
+                self[k] = v if isinstance(v, Unit) \
+                    else Unit(v['name'], v['symbol'], v['data_type'])
+
+            elif k == 'coords':
+                self[k] = v if isinstance(v, Coords) \
+                    else Coords(v['lat'], v['long'])
+
             else:
                 self[k] = v
+        return self
 
     def to_json(self, pretty_print=False, path: str = None):
         """ Convert the current Metadata object into a JSON string
