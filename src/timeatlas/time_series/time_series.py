@@ -498,13 +498,13 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         if method == "minmax":
-            scaled_series = Scaler.minmax(self.series)
+            scaled_series = Scaler.minmax(self)
         elif method == "zscore":
-            scaled_series = Scaler.zscore(self.series)
+            scaled_series = Scaler.zscore(self)
         else:
             raise ValueError("{} isn't recognized as a normalization method"
                              .format(method))
-        return TimeSeries(scaled_series, self.metadata)
+        return scaled_series
 
     def round(self, decimals: int) -> 'TimeSeries':
         """Round the values in the series.values

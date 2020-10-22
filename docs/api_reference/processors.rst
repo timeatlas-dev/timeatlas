@@ -1,11 +1,16 @@
+.. _processors:
+
 ==========
 Processors
 ==========
 
-.. currentmodule:: timeatlas.processors
+Scalers
+-------
+
+.. currentmodule:: timeatlas.processors.Scaler
 
 .. autosummary::
     :toctree:
 
-    ceil
-    Scaler
+    minmax
+    zscore
