@@ -2,11 +2,14 @@ from typing import List, Callable, Tuple, Union
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.abstract import AbstractBaseDetector, AbstractBaseModel
-from timeatlas.processors import scaler, miscellaneous
+from timeatlas.processors import Scaler, miscellaneous
 from timeatlas.config.constants import TIME_SERIES_VALUES
 
 
 class Surprise(AbstractBaseDetector):
+    """
+    A detector that checks on unexpected data signals
+    """
 
     def __init__(self, model: AbstractBaseModel, error: Callable):
         super().__init__()
@@ -26,19 +29,49 @@ class Surprise(AbstractBaseDetector):
         # Object state
         self._is_fitted = False
 
-    def normalize(self, method: str):
+    def normalize(self, method: str) -> 'Surprise':
+        """Normalizing Data
+
+        Set the normalizer for the data
+
+        Args:
+            method: string that sets the normalizing type
+
+        Returns:
+
+        """
         if method == "minmax":
-            self.normalizer = scaler.minmax
+            self.normalizer = Scaler.minmax
         elif method == "zscore":
-            self.normalizer = scaler.zscore
+            self.normalizer = Scaler.zscore
         return self
 
-    def alerts(self, method: str = "quantile", thresholds: Union[float, List] = [0.85, 0.95]):
+    def alerts(self, method: str = "quantile", thresholds: Union[float, List] = [0.85, 0.95]) -> 'Surprise':
+        """Set alerts
+
+        Threshold alerts given,
+
+        Args:
+            method: string that sets the method
+            thresholds: threshold of given alert
+
+        Returns:
+            Surprise
+
+        """
         self._compute_thresholds_params = (method, thresholds)
         return self
 
-    def fit(self, ts: TimeSeries):
+    def fit(self, ts: TimeSeries) -> 'Surprise':
+        """Fit the Surprise Detector
 
+        Args:
+            ts: time-series to check for surprises
+
+        Returns:
+            Surprise
+
+        """
         # Set the default alerts if not custom
         if self._compute_thresholds_params is None:
             self.alerts()
@@ -65,6 +98,15 @@ class Surprise(AbstractBaseDetector):
         return self
 
     def detect(self, ts: TimeSeries) -> TimeSeries:
+        """Detect Surprises
+
+        Args:
+            ts: time-series to find surprises in
+
+        Returns:
+            TimeSeries
+
+        """
         prediction, surprise = self.__compute_surprise(self.model, ts,
                                                        self.error)
 
@@ -76,7 +118,7 @@ class Surprise(AbstractBaseDetector):
 
     @staticmethod
     def __compute_surprise(m: AbstractBaseModel, ts: TimeSeries,
-                           error_func: Callable) \
+            error_func: Callable) \
             -> Tuple['TimeSeries', 'TimeSeries']:
         prediction = m.predict(ts)
         surprise = ts.apply(error_func, prediction)
@@ -84,7 +126,7 @@ class Surprise(AbstractBaseDetector):
 
     @staticmethod
     def __compute_thresholds(method: str, thresholds: List,
-                             ts: TimeSeries = None):
+            ts: TimeSeries = None):
         res = []
         if method == "quantile":
             for k, v in enumerate(thresholds):
@@ -94,4 +136,3 @@ class Surprise(AbstractBaseDetector):
         else:
             raise Exception("method {} isn't implemented".format(method))
         return res
-

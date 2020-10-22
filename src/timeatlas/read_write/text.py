@@ -16,7 +16,8 @@ from ._utils import (
 
 
 def read_text(path: str) -> Any:
-    """
+    """Reading a singe TimeSeries from to_text()
+
     Create a TimeSeries object from a text file
 
     Args:
@@ -49,7 +50,7 @@ def read_text(path: str) -> Any:
 
 
 def read_tsd(path: str) -> TimeSeriesDataset:
-    """
+    """Read a to_text() to TSD
 
     Loading the data from the individual data "csv"-files. These files should be in the format created by
     the "to_text"-function, either by TimeSeries.to_text() or TimeSeriesDataset.to_text().

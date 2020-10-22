@@ -3,7 +3,8 @@ from typing import Any
 
 
 def read_pickle(path: str) -> Any:
-    """
+    """Load pickle
+
     Load an object from a pickle file
 
     Args:

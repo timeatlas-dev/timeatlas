@@ -1,4 +1,4 @@
-from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable
+from typing import NoReturn, Tuple, Any, Union, Optional, List
 
 from darts import TimeSeries as DartsTimeSeries
 import numpy as np
@@ -17,6 +17,8 @@ from timeatlas.config.constants import (
     METADATA_FILENAME,
     METADATA_EXT
 )
+
+from timeatlas import TimeSeriesDataset
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
 from timeatlas.plots.time_series import line_plot
@@ -25,6 +27,9 @@ from timeatlas.utils import ensure_dir, to_pickle
 
 class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                  AbstractOutputPickle):
+    """
+     A TimeSeries object is a series of time indexed values.
+    """
     """Defines a time series
 
     A TimeSeries object is a series of time indexed values.
@@ -35,8 +40,16 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
     """
 
     def __init__(self, series: Union[Series, DataFrame] = None,
-                 metadata: Metadata = None, label: str or None = None):
+            metadata: Metadata = None, class_label: str or None = None):
+        """Defines a time series
 
+        A TimeSeries object is a series of time indexed values.
+
+        Args:
+            series: Series or DataFrame containing the values and labels
+            metadata: Metadata-object
+            class_label: class label
+        """
         if series is not None:
             # Check if values have a DatetimeIndex
             assert isinstance(series.index, DatetimeIndex), \
@@ -60,8 +73,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
                 # Otherwise, one column should be called "values"
                 assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}"\
-                    .format(TIME_SERIES_VALUES)
+                    "DataFrame as input series must contain a column called {}" \
+                        .format(TIME_SERIES_VALUES)
 
             # Create the TimeSeries object with certainty that values
             # are sorted by the time index
@@ -77,7 +90,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         else:
             self.series = None
 
-        self.class_label = label  # label of the TimeSeries (for classification)
+        self.class_label = class_label  # label of the TimeSeries (for classification)
 
         if metadata is not None:
             self.metadata = metadata
@@ -108,7 +121,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-               metadata: Metadata = None) \
+            metadata: Metadata = None) \
             -> 'TimeSeries':
         """Creates an empty TimeSeries object with the period as index
 
@@ -159,7 +172,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         after = TimeSeries(second_split, self.metadata)
         return before, after
 
-    def split_in_chunks(self, n: int) -> List['TimeSeries']:
+    def split_in_chunks(self, n: int) -> TimeSeriesDataset:
         """Split a TimeSeries into chunks of length n
 
         When the number of element in the TimeSeries is not a multiple of n, the
@@ -171,13 +184,15 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             List of TimeSeries
         """
-        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
-                     self.series.groupby(np.arange(len(self.series)) // n)]
+        ts_chunks = TimeSeriesDataset([TimeSeries(series=v, metadata=self.metadata) for n, v in
+                                       self.series.groupby(np.arange(len(self.series)) // n)])
         return ts_chunks
 
     def fill(self, value: Any) -> 'TimeSeries':
-        """Fill a TimeSeries with a value. If given a unique value, all values
-        will be broadcasted. If given an array of the length of the TimeSeries,
+        """Fill a TimeSeries with values
+
+        Fill a TimeSeries with a value. If given a unique value, all values
+        will be broadcast. If given an array of the length of the TimeSeries,
         it will replace all values.
 
         Args:
@@ -193,6 +208,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
     def empty(self) -> 'TimeSeries':
         """Empty the TimeSeries (fill all values with NaNs)
 
+        Replace all values of a TimeSeries with NaNs
+
         Returns:
             TimeSeries
         """
@@ -200,8 +217,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
     def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
             value: Any = np.NaN):
-        """
-        Pad a TimeSeries until a given limit
+        """Pad a TimeSeries until a given limit
+
+        Padding a TimeSeries on left or right sides.
 
         Args:
             limit: int, str or Pandas Timestamp
@@ -220,8 +238,10 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             TimeSeries
         """
+
         def create_pad(new_limit, ts, fill_val):
             """
+
             Local utility function to create padding time series from a Pandas
             Timestamp for a given TimeSeries
 
@@ -234,16 +254,16 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                 TimeSeries
             """
             if new_limit < ts.start():
-                return ts.create(new_limit, ts.start(), freq=ts)\
+                return ts.create(new_limit, ts.start(), freq=ts) \
                            .fill(fill_val)[:-1]
             elif new_limit > ts.end():
-                return ts.create(ts.end(), new_limit, freq=ts)\
+                return ts.create(ts.end(), new_limit, freq=ts) \
                            .fill(fill_val)[1:]
             if new_limit == ts.start() or new_limit == ts.end():
                 return TimeSeries()
             else:
                 raise ValueError("The given limit is included in the time "
-                           "series, padding is impossible")
+                                 "series, padding is impossible")
 
         # Create padding TimeSeries from a given number of elements to pad with
         if isinstance(limit, int):
@@ -380,7 +400,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         new_series = new_series.asfreq(freq, method=method)
         return TimeSeries(new_series, self.metadata)
 
-    def group_by(self, freq: str, method: Optional[str] = "mean")\
+    def group_by(self, freq: str, method: Optional[str] = "mean") \
             -> 'TimeSeries':
         """Groups values by a frequency.
 
@@ -441,12 +461,20 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
         See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.interpolate.html
         for reference
+
+        Args:
+            *args: check pandas documentation
+            **kwargs: check pandas documentation
+
+        Returns:
+            TimeSeries
+
         """
         new_series = self.series.interpolate(*args, **kwargs)
         return TimeSeries(new_series, self.metadata)
 
     def normalize(self, method: str) -> 'TimeSeries':
-        """Normalize a Time Series with a given method
+        """Normalize a TimeSeries with a given method
 
         Args:
             method: str
@@ -470,6 +498,10 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
         Args:
             decimals: number of digits after the comma
+
+        Returns:
+            TimeSeries
+
         """
         new_series = self.series.astype(float).round(decimals=decimals)
         return TimeSeries(new_series, self.metadata)
@@ -611,7 +643,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """Get the duration of the TimeSeries
 
         Returns:
-            a Pandas Timedelta
+            Pandas Timedelta
         """
         start, end = self.boundaries()
         return end - start
@@ -625,6 +657,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
 
         Args:
             path: str of the path where the TimeSeries will be saved
+
+        Returns:
+            None
         """
         # Create the time series file
         file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME,
