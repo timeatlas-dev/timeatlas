@@ -2,17 +2,17 @@
 API Reference
 =============
 
+This page gives an overview of all public TimeAtlas objects, functions and
+methods. All classes and functions exposed in timeatlas.* namespace are public.
+
 .. currentmodule:: timeatlas
 
 .. toctree::
     :maxdepth: 2
 
     abstract
-    detectors
-    generators
     metadata
     metrics
-    models
     plots
     processors
     read_write

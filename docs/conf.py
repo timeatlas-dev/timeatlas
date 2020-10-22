@@ -29,6 +29,7 @@ author = 'Frédéric Montet, Lorenz Rychener'
 # ones.
 extensions = [
     'nbsphinx',
+    'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
