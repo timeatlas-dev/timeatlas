@@ -1,7 +1,7 @@
 Contributing
 ============
 
-As always in open source projects, contributions are welcome. Here are a few
+As always in open source projects, contributions are very welcome. Here are a few
 ways to do it:
 
 Work on existing issues
