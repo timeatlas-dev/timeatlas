@@ -1,4 +1,7 @@
-class Coords:
+from timeatlas.abstract import AbstractBaseMetadataType
+
+
+class Coords(AbstractBaseMetadataType):
     """ Defines geographic coordinates
 
     The format to use is decimal degrees (DD). For instance:

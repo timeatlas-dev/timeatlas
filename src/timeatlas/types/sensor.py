@@ -1,5 +1,7 @@
+from timeatlas.abstract import AbstractBaseMetadataType
 
-class Sensor:
+
+class Sensor(AbstractBaseMetadataType):
     """ Defines a sensor """
 
     def __init__(self, id: int, name: str):
