@@ -260,7 +260,7 @@ class TimeSeriesDataset(List,
         def list_duplicates(seq: list) -> list:
             """Get label duplicates
 
-            Getting a dict of with key=ts.label and value=index in TSD
+            Getting a dict of with key=ts.class_label and value=index in TSD
 
             Args:
                 seq: list of labels
@@ -298,11 +298,11 @@ class TimeSeriesDataset(List,
                 # We merge everything into the first occurrence of the label
                 # -> tsd[inds[0]]
                 base_ts = tsd[inds[0]]
-                base_label = base_ts.label
+                base_label = base_ts.class_label
                 if len(inds) > 1:
                     for ind in inds[1:]:
                         base_ts = base_ts.merge(tsd[ind])
-                    base_ts.label = base_label
+                    base_ts.class_label = base_label
                     arr.append(base_ts)
                 else:
                     arr.append(base_ts)
