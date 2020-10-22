@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/timeatlas'))
+sys.path.insert(0, os.path.abspath('../docs'))
 print(sys.path[0])
 
 # -- Project information -----------------------------------------------------
@@ -77,5 +77,4 @@ html_theme_options = {
     ],
     "show_prev_next": True
 }
-
 
