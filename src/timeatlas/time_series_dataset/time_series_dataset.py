@@ -5,7 +5,7 @@ from typing import List, Any, NoReturn, Tuple, Union, Optional
 from warnings import warn
 
 import numpy as np
-from pandas import DataFrame, Timestamp, Timedelta, concat
+from pandas import DataFrame, Timestamp, Timedelta
 from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import DateOffset
 
@@ -109,7 +109,7 @@ class TimeSeriesDataset(List,
         return line_plot(self)
 
     def copy(self, deep=True) -> 'TimeSeriesDataset':
-        """Copy a list
+        """Copy a TimeSeriesDataset
 
         Copy the TSD to either a deep or shallow copy of itself
 
@@ -192,8 +192,7 @@ class TimeSeriesDataset(List,
 
     def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
             value: Any = np.NaN) -> 'TimeSeriesDataset':
-        """
-        Pad a TimeSeriesDataset until a given limit
+        """Pad a TimeSeriesDataset until a given limit
 
         Args:
             limit: int, str or Pandas Timestamp
@@ -280,8 +279,7 @@ class TimeSeriesDataset(List,
 
             return duplicates
 
-        def merge_duplicates(tsd: TimeSeriesDataset, duplicates: list) \
-                -> TimeSeriesDataset:
+        def merge_duplicates(tsd: TimeSeriesDataset, duplicates: list) -> TimeSeriesDataset:
             """Merging based on duplicates
 
             Merging the TimeSeriesDataset based on the duplicate list.
@@ -326,8 +324,7 @@ class TimeSeriesDataset(List,
     # TimeSeriesDataset
     # -----------------
 
-    def select_components_randomly(self, n: int, seed: int = None,
-            indices: bool = False) -> Any:
+    def select_components_randomly(self, n: int, seed: int = None, indices: bool = False) -> Any:
         """Returns a subset of the TimeSeriesDataset with randomly chosen n
         elements without replacement.
 
@@ -579,21 +576,57 @@ class TimeSeriesDataset(List,
     # ----------------
 
     def min(self) -> List[Any]:
+        """Minimum of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of minimums
+
+        """
         return [ts.min() for ts in self]
 
     def max(self) -> List[Any]:
+        """Maximum of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of maximums
+
+        """
         return [ts.max() for ts in self]
 
     def mean(self) -> List[Any]:
+        """Means of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of means
+
+        """
         return [ts.mean() for ts in self]
 
     def median(self) -> List[Any]:
+        """Median of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of medians
+
+        """
         return [ts.median() for ts in self]
 
     def kurtosis(self) -> List[Any]:
+        """Kurtosis of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of kurtoses
+
+        """
         return [ts.kurtosis() for ts in self]
 
     def skewness(self) -> List[Any]:
+        """Skewness of all TimeSeries in TimeSeriesDataset
+
+        Returns:
+            List of skewnesses
+
+        """
         return [ts.skewness() for ts in self]
 
     def describe(self) -> DataFrame:
