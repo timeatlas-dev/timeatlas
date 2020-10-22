@@ -1,3 +1,5 @@
+.. _metrics:
+
 =======
 Metrics
 =======
@@ -8,6 +10,8 @@ performance metrics and pairwise metrics and distance computations.
 .. warning::
     At the moment it only includes pairwise scores.
 
+Pairwise
+--------
 .. currentmodule:: timeatlas.metrics.pairwise
 
 .. autosummary::

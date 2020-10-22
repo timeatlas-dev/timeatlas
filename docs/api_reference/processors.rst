@@ -1,9 +1,11 @@
+.. _processors:
+
 ==========
 Processors
 ==========
 
 Scalers
-~~~~~~~
+-------
 
 .. currentmodule:: timeatlas.processors.Scaler
 
