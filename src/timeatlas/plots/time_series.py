@@ -27,8 +27,7 @@ sns.set_style("whitegrid")
 sns.set_context("notebook")
 
 
-def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs) \
-        -> Any:
+def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs) -> Any:
     """Plot a TimeSeries
 
     This is a wrapper around Pandas.Series.plot() augmented if the
@@ -74,7 +73,7 @@ def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs) \
             name=ts.series[TIME_SERIES_VALUES].name
         ))
         fig.update_layout(showlegend=True)
-        fig.show()
+
         return fig
     else:
         raise ValueError("Context doesn't exit")
@@ -160,7 +159,7 @@ def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     x_lims = mdates.date2num(x_lims)
 
     # Set y limits (for the sake of having something...)
-    y_lims = [ts.min().values[0], ts.max().values[0]]
+    y_lims = [ts.min(), ts.max()]
 
     date_format = mdates.DateFormatter('%d/%m/%y %H:%M:%S')
     ax.xaxis.set_major_formatter(date_format)
