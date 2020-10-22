@@ -1,5 +1,0 @@
-================
-Package Overview
-================
-
-Lorem Ipsum

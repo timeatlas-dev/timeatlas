@@ -1,3 +1,5 @@
+.. _user_guide:
+
 User Guide
 ==========
 
@@ -12,4 +14,3 @@ is to showcase concrete ues cases where TimeAtlas.
     0_available_data_structures
     1_io_operations
     2_essential_functions
-    3_model-a-time-series

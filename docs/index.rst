@@ -4,7 +4,7 @@
 .. toctree::
    :hidden:
 
-   getting_started/index
+   getting_started
    user_guide/index
    api_reference/index
    contributing/index
