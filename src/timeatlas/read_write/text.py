@@ -41,7 +41,7 @@ def read_text(path: str) -> Any:
         metadata = json_to_metadata(meta)
         ts = TimeSeries(series, metadata)
         if METADATA_CLASS_LABEL in ts.metadata:
-            ts.label = ts.metadata[METADATA_CLASS_LABEL]
+            ts.class_label = ts.metadata[METADATA_CLASS_LABEL]
         return ts
 
     elif dir_type is None:

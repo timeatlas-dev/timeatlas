@@ -1,5 +1,7 @@
+from timeatlas.abstract import AbstractBaseMetadataType
 
-class Coords:
+
+class Coords(AbstractBaseMetadataType):
     """ Defines geographic coordinates
 
     The format to use is decimal degrees (DD). For instance:
@@ -14,4 +16,7 @@ class Coords:
         self.long = long
 
     def __repr__(self):
-        return "{}, {}".format(self.lat, self.long)
+        return f"{self.lat}°N, {self.long}°E"
+
+    def items(self):
+        return [("coords", self)]

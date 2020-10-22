@@ -67,7 +67,7 @@ class TestReadWrite(TestCase):
         check = True
         for i, ts in enumerate(tsd):
             check &= ts.series.equals(tsd_w[i].series)
-            check &= (ts.label == tsd_w[i].label)
+            check &= (ts.class_label == tsd_w[i].class_label)
 
         # assertions
         self.assertTrue(check)
@@ -92,6 +92,6 @@ class TestReadWrite(TestCase):
         check = True
         for i, ts in enumerate(tsd):
             check &= ts.series.equals(tsd_w[i].series)
-            check &= (ts.label == tsd_w[i].label)
+            check &= (ts.class_label == tsd_w[i].class_label)
 
         self.assertTrue(check)

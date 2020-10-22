@@ -77,7 +77,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         else:
             self.series = None
 
-        self.label = label  # label of the TimeSeries (for classification)
+        self.class_label = label  # label of the TimeSeries (for classification)
 
         if metadata is not None:
             self.metadata = metadata
@@ -631,12 +631,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
                                       TIME_SERIES_EXT)
         ensure_dir(file_path)
         self.__series_to_csv(self.series, file_path)
-        if self.metadata is None and self.label is not None:
-            self.metadata = Metadata(items={'label': self.label})
+        if self.metadata is None and self.class_label is not None:
+            self.metadata = Metadata(items={'label': self.class_label})
         # Create the metadata file
         if self.metadata is not None:
-            if self.label is not None:
-                self.metadata.add({'label': self.label})
+            if self.class_label is not None:
+                self.metadata.add({'label': self.class_label})
             file_path = "{}/{}.{}".format(path, METADATA_FILENAME, METADATA_EXT)
             ensure_dir(file_path)
             self.metadata.to_json(pretty_print=True, path=file_path)
