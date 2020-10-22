@@ -6,7 +6,7 @@ Metadata
 
 The :code:`Metadata` class extends the Python :code:`Dict` and allows for the
 storage of any kind of metadata. The difference with a default :code:`Dict` is
-that the current class recognizes the types (see :ref:`Types`).
+that the current class recognizes the types (see :ref:`types`).
 
 Constructor
 -----------
