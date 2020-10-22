@@ -7,4 +7,7 @@ class Sensor:
         self.name = name
 
     def __repr__(self):
-        return "Sensor ID {}".format(self.id)
+        return f"Sensor ID: {self.id}; Name: {self.name}"
+
+    def items(self):
+        return [("sensor", self)]

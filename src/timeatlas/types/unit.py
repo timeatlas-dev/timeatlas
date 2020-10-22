@@ -1,4 +1,3 @@
-
 class Unit:
     """ Defines a physical unit of measurement, like Celsius."""
 
@@ -6,3 +5,6 @@ class Unit:
         self.name = name
         self.symbol = symbol
         self.data_type = data_type
+
+    def items(self):
+        return [("unit", self)]

@@ -315,7 +315,7 @@ class TimeSeriesDataset(List,
             merged_tsd.append(ts)
 
         # Second : Get list of tuples (label, duplicate indices)
-        tsd_labels = [ts.label for ts in merged_tsd]
+        tsd_labels = [ts.class_label for ts in merged_tsd]
         duplicates = list_duplicates(seq=tsd_labels)
 
         # Third : Merge TSD, where TS has same labels.

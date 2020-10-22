@@ -1,4 +1,3 @@
-
 class Coords:
     """ Defines geographic coordinates
 
@@ -14,4 +13,7 @@ class Coords:
         self.long = long
 
     def __repr__(self):
-        return "{}, {}".format(self.lat, self.long)
+        return f"{self.lat}°N, {self.long}°E"
+
+    def items(self):
+        return [("coords", self)]

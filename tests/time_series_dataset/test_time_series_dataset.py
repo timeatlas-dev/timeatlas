@@ -267,17 +267,17 @@ class TestTimeSeriesDataset(TestCase):
         # Create TSD
         ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1D")
         ts_1.series[TIME_SERIES_VALUES] = [0, 1]
-        ts_1.label = "Sensor1"
+        ts_1.class_label = "Sensor1"
 
         ts_2 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
         ts_2.series[TIME_SERIES_VALUES] = [2]
-        ts_2.label = "Sensor1"
+        ts_2.class_label = "Sensor1"
 
         tsd1 = TimeSeriesDataset([ts_1, ts_2])
 
         ts_3 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
         ts_3.series[TIME_SERIES_VALUES] = [0, 1, 2]
-        ts_3.label = "Sensor2"
+        ts_3.class_label = "Sensor2"
 
         tsd2 = TimeSeriesDataset([ts_3])
 
@@ -287,18 +287,18 @@ class TestTimeSeriesDataset(TestCase):
         # Create Goal
         ts_goal_1 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
         ts_goal_1.series[TIME_SERIES_VALUES] = [0, 1, 2]
-        ts_goal_1.label = "Sensor1"
+        ts_goal_1.class_label = "Sensor1"
 
         ts_goal_2 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
         ts_goal_2.series[TIME_SERIES_VALUES] = [0, 1, 2]
-        ts_goal_2.label = "Sensor2"
+        ts_goal_2.class_label = "Sensor2"
 
         tsd_goal = TimeSeriesDataset([ts_goal_1, ts_goal_2])
 
         check = True
         for i, ts in enumerate(tsd_goal):
             check &= ts.series.equals(tsd_merged[i].series)
-            check &= (ts.label == tsd_merged[i].label)
+            check &= (ts.class_label == tsd_merged[i].class_label)
 
         self.assertTrue(check)
 
@@ -310,7 +310,7 @@ class TestTimeSeriesDataset(TestCase):
         tss = []
         for i in range(100):
             tmp_ts = deepcopy(ts)
-            tmp_ts.label = f'Sensor{i}'
+            tmp_ts.class_label = f'Sensor{i}'
             tss.append(tmp_ts)
 
         tsd = TimeSeriesDataset(tss)
@@ -320,7 +320,7 @@ class TestTimeSeriesDataset(TestCase):
         # check if the label is the same -> can fail with a low probability
         check = True
         for i, ts in enumerate(tsd):
-            check &= (ts.label == tsd_shuffled[i].label)
+            check &= (ts.class_label == tsd_shuffled[i].class_label)
 
         self.assertFalse(check)
 
@@ -466,7 +466,7 @@ class TestTimeSeriesDataset(TestCase):
 
         ts.series[TIME_SERIES_VALUES] = [0, 1, 2]
         ts.series["label_test"] = [0, None, 2]
-        ts.label = "Test"
+        ts.class_label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
         tsd.to_text(self.outdir)
@@ -498,7 +498,7 @@ class TestTimeSeriesDataset(TestCase):
 
         ts.series[TIME_SERIES_VALUES] = [0, 1, 2]
         ts.series["label_test"] = [0, None, 2]
-        ts.label = "Test"
+        ts.class_label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
         tsd.to_pickle(f"{self.outdir}/tsd.pkl")
@@ -522,7 +522,7 @@ class TestTimeSeriesDataset(TestCase):
 
         ts.series[TIME_SERIES_VALUES] = [0, 1]
         ts.series["label_test"] = [0, None]
-        ts.label = "Test"
+        ts.class_label = "Test"
         tsd = TimeSeriesDataset([ts, ts])
 
         df = tsd.to_df()
