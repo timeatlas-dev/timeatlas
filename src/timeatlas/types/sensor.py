@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from timeatlas.abstract import AbstractBaseMetadataType
 
 
@@ -11,5 +13,15 @@ class Sensor(AbstractBaseMetadataType):
     def __repr__(self):
         return f"Sensor ID: {self.id}; Name: {self.name}"
 
-    def items(self):
+    def items(self) -> List[Tuple]:
+        """Creating dict.iterable
+
+        Imitating the dict iterable
+
+        for k, v in dict.items()
+
+        Returns:
+            List[Tuple]
+
+        """
         return [("sensor", self)]

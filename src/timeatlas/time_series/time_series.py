@@ -1,4 +1,5 @@
 from typing import NoReturn, Tuple, Any, Union, Optional, List
+from copy import deepcopy, copy
 
 from darts import TimeSeries as DartsTimeSeries
 import numpy as np
@@ -18,15 +19,13 @@ from timeatlas.config.constants import (
     METADATA_EXT
 )
 
-from timeatlas import TimeSeriesDataset
 from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
 from timeatlas.plots.time_series import line_plot
 from timeatlas.utils import ensure_dir, to_pickle
 
 
-class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
-                 AbstractOutputPickle):
+class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickle):
     """
      A TimeSeries object is a series of time indexed values.
     """
@@ -151,6 +150,19 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """
         return line_plot(self)
 
+    def copy(self, deep=False) -> 'TimeSeries':
+        """Copy a TimeSeries
+
+        Copy the TSD to either a deep or shallow copy of itself
+
+        Args:
+            deep: if True, creates a deep copy else a shallow one
+
+        Returns: (deep) copy of TimeSeries
+
+        """
+        return deepcopy(self) if deep else copy(self)
+
     def split_at(self, timestamp: Union[str, Timestamp]) \
             -> Tuple['TimeSeries', 'TimeSeries']:
         """Split a TimeSeries at a defined point and include the splitting point
@@ -172,7 +184,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         after = TimeSeries(second_split, self.metadata)
         return before, after
 
-    def split_in_chunks(self, n: int) -> TimeSeriesDataset:
+    def split_in_chunks(self, n: int) -> List['TimeSeries']:
         """Split a TimeSeries into chunks of length n
 
         When the number of element in the TimeSeries is not a multiple of n, the
@@ -184,8 +196,10 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         Returns:
             List of TimeSeries
         """
-        ts_chunks = TimeSeriesDataset([TimeSeries(series=v, metadata=self.metadata) for n, v in
-                                       self.series.groupby(np.arange(len(self.series)) // n)])
+        from timeatlas import TimeSeriesDataset
+
+        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
+                     self.series.groupby(np.arange(len(self.series)) // n)]
         return ts_chunks
 
     def fill(self, value: Any) -> 'TimeSeries':
@@ -215,8 +229,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         """
         return self.fill(np.nan)
 
-    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None,
-            value: Any = np.NaN):
+    def pad(self, limit: Union[int, str, Timestamp], side: Optional[str] = None, value: Any = np.NaN) -> 'TimeSeries':
         """Pad a TimeSeries until a given limit
 
         Padding a TimeSeries on left or right sides.
@@ -710,8 +723,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText,
         return self.series
 
     @staticmethod
-    def __series_to_csv(series: Union[Series, DataFrame], path: str) \
-            -> NoReturn:
+    def __series_to_csv(series: Union[Series, DataFrame], path: str) -> NoReturn:
         """Export a Pandas Series or DataFrame and put it into a CSV file
 
         Args:

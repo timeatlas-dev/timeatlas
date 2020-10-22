@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from timeatlas.abstract import AbstractBaseMetadataType
 
 
@@ -18,5 +20,15 @@ class Coords(AbstractBaseMetadataType):
     def __repr__(self):
         return f"{self.lat}°N, {self.long}°E"
 
-    def items(self):
+    def items(self) -> List[Tuple]:
+        """Creating dict.iterable
+
+        Imitating the dict iterable
+
+        for k, v in dict.items()
+
+        Returns:
+            List[Tuple]
+
+        """
         return [("coords", self)]

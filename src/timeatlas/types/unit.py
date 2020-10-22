@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 from timeatlas.abstract import AbstractBaseMetadataType
 
 
@@ -9,5 +11,15 @@ class Unit(AbstractBaseMetadataType):
         self.symbol = symbol
         self.data_type = data_type
 
-    def items(self):
+    def items(self) -> List[Tuple]:
+        """Creating dict.iterable
+
+        Imitating the dict iterable
+
+        for k, v in dict.items()
+
+        Returns:
+            List[Tuple]
+
+        """
         return [("unit", self)]
