@@ -5,6 +5,9 @@ from timeatlas.utils import ensure_dir
 
 
 class Metadata(dict):
+    """
+    Metadata of a TimeSeries-object
+    """
 
     def __init__(self, items: Dict[str, Any] = None):
         super().__init__()

@@ -127,7 +127,7 @@ class TestTimeSeries(TestCase):
     def test__create__is_regular(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
         no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
-            Timedelta(0)
+                           Timedelta(0)
         is_regular = no_duration_diff.eq(True).all()
         self.assertTrue(is_regular)
 
@@ -153,6 +153,18 @@ class TestTimeSeries(TestCase):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         my_fig = ts.plot()
         self.assertIsInstance(my_fig, Figure)
+
+    def test__copy__shallow(self):
+        # object creation
+        ts = TimeSeries.create("01-2020", "03-2020", "H")
+        copy = ts.copy(deep=False)
+        self.assertNotEqual(id(ts), id(copy))
+
+    def test__copy__deep(self):
+        # object creation
+        ts = TimeSeries.create("01-2020", "03-2020", "H")
+        copy = ts.copy(deep=True)
+        self.assertNotEqual(id(ts), id(copy))
 
     def test__split_at(self):
         # Create TimeSeries and split it
@@ -307,10 +319,10 @@ class TestTimeSeries(TestCase):
         val = 21
         ts = TimeSeries.create("01-2020", "02-2020", "H").fill(val)
         # Method at test
-        ts = ts.apply(lambda x: x*2)
+        ts = ts.apply(lambda x: x * 2)
         # Test
         for i in ts:
-            self.assertEqual(i, val*2)
+            self.assertEqual(i, val * 2)
 
     def test__apply__on_other_time_series(self):
         # Prepare test
@@ -319,7 +331,7 @@ class TestTimeSeries(TestCase):
         ts_1 = TimeSeries.create("01-2020", "02-2020", "H").fill(val_1)
         ts_2 = TimeSeries.create("01-2020", "02-2020", "H").fill(val_2)
         # Method at test
-        ts = ts_1.apply(lambda x, y: x*y, ts_2)
+        ts = ts_1.apply(lambda x, y: x * y, ts_2)
         # Test
         for i in ts:
             self.assertEqual(i, val_1 * val_2)
@@ -332,7 +344,7 @@ class TestTimeSeries(TestCase):
         ts_2 = TimeSeries.create("01-2020", "04-2020", "H").fill(val_2)
         # Method at test
         with self.assertRaises(AssertionError):
-            ts = ts_1.apply(lambda x, y: x*y, ts_2)
+            ts = ts_1.apply(lambda x, y: x * y, ts_2)
 
     def test__time_deltas(self):
         ts = TimeSeries.create("01-2020", "03-2020", "H")

@@ -11,7 +11,6 @@ from pandas.plotting import register_matplotlib_converters
 import plotly.graph_objects as go
 import plotly.io as pio
 
-
 from timeatlas.config.colors import colors
 from ._utils import add_metadata_to_plot
 from timeatlas.config.constants import (
@@ -28,10 +27,8 @@ sns.set_style("whitegrid")
 sns.set_context("notebook")
 
 
-def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs)\
-        -> Any:
-    """
-    Plot a TimeSeries
+def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs) -> Any:
+    """Plot a TimeSeries
 
     This is a wrapper around Pandas.Series.plot() augmented if the
     TimeSeries to plot has associated Metadata.
@@ -76,14 +73,15 @@ def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs)\
             name=ts.series[TIME_SERIES_VALUES].name
         ))
         fig.update_layout(showlegend=True)
-        fig.show()
+
         return fig
     else:
         raise ValueError("Context doesn't exit")
 
 
 def prediction_plot(forecast: 'TimeSeries', observation: 'TimeSeries' = None) -> Any:
-    """
+    """Plotting the prediction of a forecast
+
     Make a plot to display a time series with forecasted values and its
     confidence interval. If given, the observation time series can be added as
     an optional argument.
@@ -122,7 +120,7 @@ def prediction_plot(forecast: 'TimeSeries', observation: 'TimeSeries' = None) ->
 
     # If present, add confidence interval
     if TIME_SERIES_CI_LOWER in forecast.series.columns and \
-       TIME_SERIES_CI_UPPER in forecast.series.columns:
+            TIME_SERIES_CI_UPPER in forecast.series.columns:
         ax.fill_between(forecast.series.index,
                         forecast.series[TIME_SERIES_CI_LOWER].values,
                         forecast.series[TIME_SERIES_CI_UPPER].values,
@@ -140,7 +138,8 @@ def prediction_plot(forecast: 'TimeSeries', observation: 'TimeSeries' = None) ->
 
 
 def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
-    """
+    """plotting the status of a TimeSeries
+
     Plot a uni-dimensional imshow to mimic status plots like on
     https://githubstatus.com
 
@@ -153,14 +152,14 @@ def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     """
     register_matplotlib_converters()
 
-    fig, ax = plt.subplots(figsize=(18,1))
+    fig, ax = plt.subplots(figsize=(18, 1))
 
     # Set x limits
-    x_lims = [ts.boundaries()[0].to_pydatetime(),ts.boundaries()[1].to_pydatetime()]
+    x_lims = [ts.boundaries()[0].to_pydatetime(), ts.boundaries()[1].to_pydatetime()]
     x_lims = mdates.date2num(x_lims)
 
     # Set y limits (for the sake of having something...)
-    y_lims = [ts.min().values[0], ts.max().values[0]]
+    y_lims = [ts.min(), ts.max()]
 
     date_format = mdates.DateFormatter('%d/%m/%y %H:%M:%S')
     ax.xaxis.set_major_formatter(date_format)
@@ -169,9 +168,9 @@ def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     ax.xaxis_date()
 
     m = ax.imshow([ts.series],
-              extent=[x_lims[0], x_lims[1],  y_lims[0], y_lims[1]],
-              aspect='auto',
-              cmap=cmap)
+                  extent=[x_lims[0], x_lims[1], y_lims[0], y_lims[1]],
+                  aspect='auto',
+                  cmap=cmap)
 
     ax = add_metadata_to_plot(ts.metadata, ax)
 
@@ -183,7 +182,8 @@ def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
 
 
 def kde_plot(ts: 'TimeSeries') -> np.ndarray:
-    """
+    """KDE plot
+
     Display a KDE plot through time with a line plot underneath
 
     Args:
