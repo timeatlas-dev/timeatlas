@@ -29,7 +29,6 @@ author = 'Frédéric Montet, Lorenz Rychener'
 # ones.
 extensions = [
     'nbsphinx',
-    'pydata_sphinx_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',

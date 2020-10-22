@@ -7,8 +7,15 @@ name = "pypi"
 python_version = "3.7"
 
 [packages]
-timeatlas = {editable = true,path = "."}
+timeatlas = {editable = true, path = "."}
 
 [dev-packages]
 jupyter = "*"
 pycycle = "*"
+sphinx = "*"
+nbsphinx = "*"
+pylint = "*"
+jupyter_client = "*"
+pydata-sphinx-theme = "*"
+recommonmark = "*"
+m2r = "*"
