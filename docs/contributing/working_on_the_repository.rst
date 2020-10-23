@@ -1,8 +1,5 @@
-Contributing
-============
-
-As always in open source projects, contributions are very welcome. Here are a few
-ways to do it:
+Working on the Repository
+=========================
 
 Work on existing issues
 -----------------------
