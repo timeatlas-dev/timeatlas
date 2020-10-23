@@ -15,8 +15,8 @@
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <div class="card text-center intro-card shadow">
+                    <h3 class="card-title">Getting started</h3>
                     <div class="card-body flex-fill">
-                        <h5 class="card-title">Getting started</h5>
                         <p class="card-text">
                             Start to use TimeAtlas to handle your time series.
                             This guide provides you with an installation guide
@@ -33,8 +33,8 @@
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <div class="card text-center intro-card shadow">
+                    <h3 class="card-title">User Guide</h3>
                     <div class="card-body flex-fill">
-                        <h5 class="card-title">User Guide</h5>
                         <p class="card-text">
                             The pages in this section provide detailed tutorials
                             so that you can make great use of TimeAtlas'
@@ -53,8 +53,8 @@
         <div class="row mt-4 mb-4">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <div class="card text-center intro-card shadow">
+                    <h3 class="card-title">API Reference</h3>
                     <div class="card-body flex-fill">
-                        <h5 class="card-title">API Reference</h5>
                         <p class="card-text">
                             This reference is the classical developer's
                             documentation. It explains the classes, methods and
@@ -70,8 +70,8 @@
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <div class="card text-center intro-card shadow">
+                    <h3 class="card-title">Contribution Guide</h3>
                     <div class="card-body flex-fill">
-                        <h5 class="card-title">Contribution Guide</h5>
                         <p class="card-text">
                             Finally, if you are a developer and you want to
                             involve yourself in TimeAtlas' quest, the following
