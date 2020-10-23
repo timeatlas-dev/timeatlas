@@ -1,4 +1,5 @@
- Coding Style Guide
+==================
+Coding Style Guide
 ==================
 
 To write code in a consistently clean manner, we follow the
