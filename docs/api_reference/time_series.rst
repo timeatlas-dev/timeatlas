@@ -29,6 +29,7 @@ Methods
 
     create
     plot
+    copy
     split_at
     split_in_chunks
     fill
