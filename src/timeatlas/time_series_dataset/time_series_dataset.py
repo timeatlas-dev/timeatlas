@@ -398,8 +398,28 @@ class TimeSeriesDataset(List,
     # TimeSeries
     # ----------
 
-    def apply(self, func, tsd: 'TimeSeriesDataset' = None) -> 'TimeSeriesDataset':
-        # TODO (See GitHub issue 56)
+    def apply(self, func, tsd: 'TimeSeriesDataset' = None) \
+            -> 'TimeSeriesDataset':
+        """Apply function specialized for TimeSeriesDataset
+
+        Check the Pandas apply function to get an idea about the role of this
+        method.
+
+        .. warning::
+            This method isn't yet implemented
+
+        Args:
+            func: function
+                Python function or NumPy ufunc to apply. If ts is given as
+                param, func must have two params in the form of f(x,y)
+
+            tsd: TimeSeriesDataset
+                The second TimeSeriesDataset if you want to make an operation on
+                two time series
+
+        Returns:
+            TimeSeriesDataset
+        """
         raise NotImplementedError
 
     def resample(self, freq: Union[str, TimeSeries], method: Optional[str] = None) -> 'TimeSeriesDataset':
@@ -769,10 +789,12 @@ class TimeSeriesDataset(List,
         return res
 
     def to_array(self) -> np.ndarray:
-        """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of TimeSeries in dataset
-        # TODO Should output a warning if the ts have different length
-            (issue 56)
+        """TimeSeriesData to NumpyArray [n x len(tsd)], where n is number of
+            TimeSeries in dataset
 
-        Returns: numpy.array of shape (n x len(tsd))
+        # TODO Should output a warning if the ts have different length (issue 56)
+
+        Returns:
+            numpy.array of shape (n x len(tsd))
         """
         return np.array([ts.to_array() for ts in self], dtype=object)

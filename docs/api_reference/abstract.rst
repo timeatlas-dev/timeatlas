@@ -13,6 +13,7 @@ consistent among its different classes.
     :toctree:
 
     AbstractBaseTimeSeries
+    AbstractBaseMetadataType
     AbstractInput
     AbstractOutputJson
     AbstractOutputPickle
