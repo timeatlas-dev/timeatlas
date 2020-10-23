@@ -100,13 +100,13 @@ class TimeSeriesDataset(List,
         else:
             super().append(item)
 
-    def plot(self) -> Any:
+    def plot(self, *args, **kwargs) -> Any:
         """Plot a TimeSeriesDataset
 
         Returns:
             plotly.graph_objects.Figure
         """
-        return line_plot(self)
+        return line_plot(self, *args, **kwargs)
 
     def copy(self, deep=True) -> 'TimeSeriesDataset':
         """Copy a TimeSeriesDataset

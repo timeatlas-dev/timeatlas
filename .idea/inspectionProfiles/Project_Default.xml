@@ -4,7 +4,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="112">
+          <list size="139">
             <item index="0" class="java.lang.String" itemvalue="jupyter-console" />
             <item index="1" class="java.lang.String" itemvalue="more-itertools" />
             <item index="2" class="java.lang.String" itemvalue="jupyter-client" />
@@ -117,6 +117,33 @@
             <item index="109" class="java.lang.String" itemvalue="grpcio" />
             <item index="110" class="java.lang.String" itemvalue="pmdarima" />
             <item index="111" class="java.lang.String" itemvalue="google-auth" />
+            <item index="112" class="java.lang.String" itemvalue="sphinxcontrib-applehelp" />
+            <item index="113" class="java.lang.String" itemvalue="nbclient" />
+            <item index="114" class="java.lang.String" itemvalue="astroid" />
+            <item index="115" class="java.lang.String" itemvalue="snowballstemmer" />
+            <item index="116" class="java.lang.String" itemvalue="sphinxcontrib-devhelp" />
+            <item index="117" class="java.lang.String" itemvalue="recommonmark" />
+            <item index="118" class="java.lang.String" itemvalue="alabaster" />
+            <item index="119" class="java.lang.String" itemvalue="mccabe" />
+            <item index="120" class="java.lang.String" itemvalue="nest-asyncio" />
+            <item index="121" class="java.lang.String" itemvalue="pydata-sphinx-theme" />
+            <item index="122" class="java.lang.String" itemvalue="sphinxcontrib-qthelp" />
+            <item index="123" class="java.lang.String" itemvalue="docutils" />
+            <item index="124" class="java.lang.String" itemvalue="commonmark" />
+            <item index="125" class="java.lang.String" itemvalue="nbsphinx" />
+            <item index="126" class="java.lang.String" itemvalue="sphinxcontrib-serializinghtml" />
+            <item index="127" class="java.lang.String" itemvalue="wrapt" />
+            <item index="128" class="java.lang.String" itemvalue="imagesize" />
+            <item index="129" class="java.lang.String" itemvalue="sphinxcontrib-htmlhelp" />
+            <item index="130" class="java.lang.String" itemvalue="jupyterlab-pygments" />
+            <item index="131" class="java.lang.String" itemvalue="m2r" />
+            <item index="132" class="java.lang.String" itemvalue="sphinx" />
+            <item index="133" class="java.lang.String" itemvalue="lazy-object-proxy" />
+            <item index="134" class="java.lang.String" itemvalue="pylint" />
+            <item index="135" class="java.lang.String" itemvalue="sphinxcontrib-jsmath" />
+            <item index="136" class="java.lang.String" itemvalue="babel" />
+            <item index="137" class="java.lang.String" itemvalue="isort" />
+            <item index="138" class="java.lang.String" itemvalue="async-generator" />
           </list>
         </value>
       </option>

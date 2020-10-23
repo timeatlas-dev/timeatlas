@@ -142,13 +142,13 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                            index=date_range(start, end, freq=freq))
         return TimeSeries(series, metadata)
 
-    def plot(self) -> Any:
+    def plot(self, *args, **kwargs) -> Any:
         """Plot a TimeSeries
 
         Returns:
             plotly.graph_objects.Figure
         """
-        return line_plot(self)
+        return line_plot(self, *args, **kwargs)
 
     def copy(self, deep=False) -> 'TimeSeries':
         """Copy a TimeSeries

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 pio.templates.default = "plotly_white"
 
 
-def line_plot(tsd: 'TimeSeriesDataset') -> Any:
+def line_plot(tsd: 'TimeSeriesDataset', *args, **kwargs) -> Any:
     """Plot a TimeSeriesDataset with Plotly
 
     Args:
