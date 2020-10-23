@@ -6,6 +6,7 @@ from pandas import DatetimeIndex, DataFrame, Series, Timedelta, infer_freq, \
     Timestamp
 import numpy as np
 from plotly.graph_objects import Figure
+from matplotlib.axes import Axes
 
 from timeatlas import TimeSeries, Metadata
 from timeatlas.config.constants import *
@@ -149,9 +150,14 @@ class TestTimeSeries(TestCase):
         self.assertEqual(ts.series.index.inferred_freq,
                          ts_freq.series.index.inferred_freq)
 
-    def test__plot__returns_graph_object(self):
+    def test__plot__returns_graph_object_axes(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         my_fig = ts.plot()
+        self.assertIsInstance(my_fig, Axes)
+
+    def test__plot__returns_graph_object_plotly(self):
+        ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
+        my_fig = ts.plot(context="notebook")
         self.assertIsInstance(my_fig, Figure)
 
     def test__copy__shallow(self):
