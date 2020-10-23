@@ -27,7 +27,7 @@ sns.set_style("whitegrid")
 sns.set_context("notebook")
 
 
-def line_plot(ts: 'TimeSeries', context: str = "notebook", *args, **kwargs) -> Any:
+def line_plot(ts: 'TimeSeries', context: str = "paper", *args, **kwargs) -> Any:
     """Plot a TimeSeries
 
     This is a wrapper around Pandas.Series.plot() augmented if the
