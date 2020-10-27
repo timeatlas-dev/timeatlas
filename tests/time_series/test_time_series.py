@@ -55,7 +55,7 @@ class TestTimeSeries(TestCase):
         my_metadata = Metadata()
         my_ts = TimeSeries(my_series, my_metadata)
         # Check types
-        self.assertIsInstance(my_ts.series, DataFrame,
+        self.assertIsInstance(my_ts.data, DataFrame,
                               "The TimeSeries series is not a Pandas DataFrame")
         self.assertIsInstance(my_ts.metadata, Metadata,
                               "The TimeSeries Metadata hasn't got the right type")
@@ -75,7 +75,7 @@ class TestTimeSeries(TestCase):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         ts = TimeSeries(my_series)
-        self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
+        self.assertTrue(TIME_SERIES_VALUES in ts.data.columns)
 
     def test__init__wrong_index_type(self):
         values = Series([0.4, 1.0, 0.7, 0.6])
@@ -86,7 +86,7 @@ class TestTimeSeries(TestCase):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         ts = TimeSeries(my_series)
-        self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
+        self.assertTrue(TIME_SERIES_VALUES in ts.data.columns)
         self.assertIsInstance(ts, TimeSeries)
 
     def test__init__with_DataFrame_input_single_column(self):
@@ -94,7 +94,7 @@ class TestTimeSeries(TestCase):
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         df = DataFrame(data=my_series)
         ts = TimeSeries(df)
-        self.assertTrue(TIME_SERIES_VALUES in ts.series.columns)
+        self.assertTrue(TIME_SERIES_VALUES in ts.data.columns)
         self.assertIsInstance(ts, TimeSeries)
 
     def test__init__with_DataFrame_input_many_columns__without_values(self):
@@ -115,15 +115,15 @@ class TestTimeSeries(TestCase):
         index = DatetimeIndex(['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04'])
         my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
         ts = TimeSeries(my_series)
-        self.assertEqual(infer_freq(index), ts.series.index.freq)
+        self.assertEqual(infer_freq(index), ts.data.index.freq)
 
     def test__create(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
         self.assertIsInstance(ts, TimeSeries)
         # Test if all elements are NaNs
-        self.assertTrue(ts.series.isna().all().values[0])
+        self.assertTrue(ts.data.isna().all().values[0])
         # Test if frequency is daily
-        self.assertEqual(ts.series.index.inferred_freq, 'D')
+        self.assertEqual(ts.data.index.inferred_freq, 'D')
 
     def test__create__is_regular(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
@@ -136,19 +136,19 @@ class TestTimeSeries(TestCase):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         self.assertIsInstance(ts, TimeSeries)
         # Test if all elements are NaNs
-        self.assertTrue(ts.series.isna().all().values[0])
+        self.assertTrue(ts.data.isna().all().values[0])
         # Test if frequency is daily
-        self.assertEqual(ts.series.index.inferred_freq, 'H')
+        self.assertEqual(ts.data.index.inferred_freq, 'H')
 
     def test__create__with_freq_as_time_series(self):
         ts_freq = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         ts = TimeSeries.create("01-01-2020", "02-01-2020", ts_freq)
         self.assertIsInstance(ts, TimeSeries)
         # Test if all elements are NaNs
-        self.assertTrue(ts.series.isna().all().values[0])
+        self.assertTrue(ts.data.isna().all().values[0])
         # Test if frequency is daily
-        self.assertEqual(ts.series.index.inferred_freq,
-                         ts_freq.series.index.inferred_freq)
+        self.assertEqual(ts.data.index.inferred_freq,
+                         ts_freq.data.index.inferred_freq)
 
     def test__plot__returns_graph_object_axes(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
@@ -177,12 +177,12 @@ class TestTimeSeries(TestCase):
         ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
         a, b = ts.split_at("02-01-2020 00:00")
         # Get all the indexes
-        ts_start = ts.series[TIME_SERIES_VALUES].index[0]
-        ts_end = ts.series[TIME_SERIES_VALUES].index[-1]
-        a_start = a.series[TIME_SERIES_VALUES].index[0]
-        a_end = a.series[TIME_SERIES_VALUES].index[-1]
-        b_start = b.series[TIME_SERIES_VALUES].index[0]
-        b_end = b.series[TIME_SERIES_VALUES].index[-1]
+        ts_start = ts.data[TIME_SERIES_VALUES].index[0]
+        ts_end = ts.data[TIME_SERIES_VALUES].index[-1]
+        a_start = a.data[TIME_SERIES_VALUES].index[0]
+        a_end = a.data[TIME_SERIES_VALUES].index[-1]
+        b_start = b.data[TIME_SERIES_VALUES].index[0]
+        b_end = b.data[TIME_SERIES_VALUES].index[-1]
         # Test boundaries
         self.assertEqual(ts_start, a_start)
         self.assertEqual(ts_end, b_end)
@@ -227,7 +227,7 @@ class TestTimeSeries(TestCase):
 
         def is_monotonic(ts):
             # test if monotonic
-            return ts.series.index.is_monotonic
+            return ts.data.index.is_monotonic
 
         def is_freq_similar(ts_before, ts_after):
             # test if freq is the same
@@ -263,7 +263,7 @@ class TestTimeSeries(TestCase):
         # Method at test
         ts_trimmed = ts_pad.trim()
         # test if no NaNs
-        self.assertFalse(ts_trimmed.series.isna().values.any())
+        self.assertFalse(ts_trimmed.data.isna().values.any())
         # test boundaries
         new_start, new_end = ts_trimmed.boundaries()
         self.assertEqual(start, new_start)
@@ -282,7 +282,7 @@ class TestTimeSeries(TestCase):
         # Method at test
         ts_trimmed = ts_pad.trim(side="start")
         # test if NaNs
-        self.assertTrue(ts_trimmed.series.isna().values.any())
+        self.assertTrue(ts_trimmed.data.isna().values.any())
         # test boundaries
         new_start, new_end = ts_trimmed.boundaries()
         self.assertEqual(start, new_start)
@@ -301,7 +301,7 @@ class TestTimeSeries(TestCase):
         # Method at test
         ts_trimmed = ts_pad.trim(side="end")
         # test if NaNs
-        self.assertTrue(ts_trimmed.series.isna().values.any())
+        self.assertTrue(ts_trimmed.data.isna().values.any())
         # test boundaries
         new_start, new_end = ts_trimmed.boundaries()
         self.assertEqual(pad_start, new_start)
@@ -314,7 +314,7 @@ class TestTimeSeries(TestCase):
         # Call function
         ts = ts1.merge(ts2)
         # Test if index is monotonic increasing
-        self.assertTrue(ts.series.index.is_monotonic_increasing)
+        self.assertTrue(ts.data.index.is_monotonic_increasing)
         # Test if all values are there
         len1 = len(ts1) + len(ts2)
         len2 = len(ts)
@@ -407,7 +407,7 @@ class TestTimeSeries(TestCase):
         ts = TimeSeries.create("01-2020", "02-2020", "H")
         ts = ts.fill(np.random.randint(0, 1000, len(ts)))
         dts = ts.to_darts()
-        is_equal = ts.series[TIME_SERIES_VALUES].equals(dts.pd_series())
+        is_equal = ts.data[TIME_SERIES_VALUES].equals(dts.pd_series())
         self.assertTrue(is_equal)
 
     def tearDown(self) -> None:

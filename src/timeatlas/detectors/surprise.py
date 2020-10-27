@@ -130,7 +130,7 @@ class Surprise(AbstractBaseDetector):
         res = []
         if method == "quantile":
             for k, v in enumerate(thresholds):
-                res.append(ts.series[TIME_SERIES_VALUES].quantile(q=v))
+                res.append(ts.data[TIME_SERIES_VALUES].quantile(q=v))
         elif method == "threshold":
             res = thresholds
         else:

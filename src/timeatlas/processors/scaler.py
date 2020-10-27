@@ -19,7 +19,7 @@ class Scaler:
         Returns:
             TimeSeries
         """
-        s = ts.series
+        s = ts.data
         scaled_series = (s - s.min()) / (s.max() - s.min())
         return TimeSeries(scaled_series, ts.metadata)
 
@@ -43,6 +43,6 @@ class Scaler:
         Returns:
             TimeSeries
         """
-        s = ts.series
+        s = ts.data
         scaled_series = (s - s.mean()) / s.std()
         return TimeSeries(scaled_series, ts.metadata)

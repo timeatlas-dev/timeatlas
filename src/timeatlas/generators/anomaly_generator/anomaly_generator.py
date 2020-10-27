@@ -151,7 +151,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         precision_df = np.array(
             [self.precision_and_scale(x) for ts in self.data for x in
-             ts.series.values])
+             ts.data.values])
         # This is more of a security. A correctly formated TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
 
@@ -245,7 +245,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         """
 
-        self.data[index].series[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
+        self.data[index].data[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
         """
@@ -291,7 +291,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         # TODO: This adds the anomalies at the start and not where they belong
         for (ind, ts), (function, params) in zip_list_functions:
-            data = ts.series
+            data = ts.data
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')

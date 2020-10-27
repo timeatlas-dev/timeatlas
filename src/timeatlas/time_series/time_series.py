@@ -4,7 +4,7 @@ from copy import deepcopy, copy
 from darts import TimeSeries as DartsTimeSeries
 import numpy as np
 from pandas import DataFrame, date_range, infer_freq, Series, DatetimeIndex, \
-    Timestamp, Timedelta
+    Timestamp, Timedelta, concat
 
 from timeatlas.abstract import (
     AbstractBaseTimeSeries,
@@ -23,6 +23,8 @@ from timeatlas.metadata import Metadata
 from timeatlas.processors.scaler import Scaler
 from timeatlas.plots.time_series import line_plot
 from timeatlas.utils import ensure_dir, to_pickle
+from timeatlas.time_series.component import Component
+from timeatlas.time_series.component_handler import ComponentHandler
 
 
 class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickle):
@@ -38,81 +40,76 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, series: Union[Series, DataFrame] = None,
-            metadata: Metadata = None, class_label: str or None = None):
+    def __init__(self,
+                 data: DataFrame = None,
+                 components: ComponentHandler = None):
         """Defines a time series
 
         A TimeSeries object is a series of time indexed values.
 
         Args:
-            series: Series or DataFrame containing the values and labels
+            data: Series or DataFrame containing the values and labels
             metadata: Metadata-object
             class_label: class label
         """
-        if series is not None:
+        if data is not None:
             # Check if values have a DatetimeIndex
-            assert isinstance(series.index, DatetimeIndex), \
+            assert isinstance(data.index, DatetimeIndex), \
                 'Values must be indexed with a DatetimeIndex.'
 
             # Check if the length is greater than one
-            assert len(series) >= 1, 'Values must have at least one values.'
+            assert len(data) >= 1, 'Values must have at least one values.'
 
-            # Save the data with the right format
-            if isinstance(series, Series):
-                series.name = TIME_SERIES_VALUES
-                series = series.to_frame()
+            assert len(data.columns) >= 1, \
+                "DataFrame must have at least one column."
 
-            elif isinstance(series, DataFrame):
-                assert len(series.columns) >= 1, \
-                    "DataFrame as input series must have at least one column."
+            # Create the TimeSeries object
+            # ----------------------------
 
-                # If there's only one column, then it is the values column
-                if len(series.columns) == 1:
-                    series.columns = [TIME_SERIES_VALUES]
+            # Create the components handler
+            if components is None:
+                self.components = ComponentHandler()
+                for col in data.columns:
+                    component = Component(col)
+                    self.components.append(component)
+            else:
+                self.components = components
 
-                # Otherwise, one column should be called "values"
-                assert TIME_SERIES_VALUES in series.columns, \
-                    "DataFrame as input series must contain a column called {}" \
-                        .format(TIME_SERIES_VALUES)
+            # Rename the columns
+            data.columns = self.components.get_columns()
 
-            # Create the TimeSeries object with certainty that values
-            # are sorted by the time index
-            self.series = series.sort_index()
+            # Store the data with certainty that values are sorted
+            self.data = data.sort_index()
 
             # Add the freq if regular
-            if len(series) >= 3:
-                self.series.index.freq = infer_freq(self.series.index)
+            if len(data) >= 3:
+                self.data.index.freq = infer_freq(self.data.index)
 
             # Create instance variables
-            self.index = self.series.index  # index accessor
-            self.values = self.series[TIME_SERIES_VALUES]  # values accessor
-        else:
-            self.series = None
+            self.index = self.data.index  # index accessor
+            self.values = self.data[self.components.get_values()]  # values accessor
 
-        self.class_label = class_label  # label of the TimeSeries (for classification)
-
-        if metadata is not None:
-            self.metadata = metadata
         else:
-            self.metadata = None
+            self.data = DataFrame()
+            self.components = ComponentHandler()
 
     def __repr__(self):
-        return self.series.__repr__()
+        return self.data.__repr__()
 
     def __len__(self):
-        return len(self.series)
+        return len(self.data)
 
     def __iter__(self):
-        return (v for v in self.series[TIME_SERIES_VALUES])
+        return (v for v in self.data[TIME_SERIES_VALUES])
 
     def __getitem__(self, item):
-        return TimeSeries(self.series[item])
-
+        return TimeSeries(self.data[item], self.components)
+        
     def __setitem__(self, item, value):
         if isinstance(value, TimeSeries):
-            self.series[item] = value.series[item]
+            self.data[item] = value.data[item]
         else:
-            self.series[item] = value[item]
+            self.data[item] = value[item]
 
     # ==========================================================================
     # Methods
@@ -120,7 +117,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-            metadata: Metadata = None) \
+               components: ComponentHandler = None) \
             -> 'TimeSeries':
         """Creates an empty TimeSeries object with the period as index
 
@@ -135,12 +132,27 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         """
         if freq is not None:
             if isinstance(freq, TimeSeries):
-                freq = infer_freq(freq.series.index)
+                freq = infer_freq(freq.data.index)
             elif isinstance(freq, str):
                 freq = freq
-        series = DataFrame(columns=[TIME_SERIES_VALUES],
-                           index=date_range(start, end, freq=freq))
-        return TimeSeries(series, metadata)
+        data = DataFrame(columns=[TIME_SERIES_VALUES],
+                         index=date_range(start, end, freq=freq))
+        return TimeSeries(data, components)
+
+    def add_component(self, ts: 'TimeSeries'):
+        assert (self.index == ts.index).all(), "Indexes aren't the same"
+        new_data = concat([self.data, ts.data], axis=1)
+        new_components = self.components.copy()
+        for c in ts.components:
+            new_components.append(c)
+        return TimeSeries(new_data, new_components)
+
+    def remove_component(self, index: int):
+        new_data = self.data.copy()
+        new_data = new_data.drop(new_data.columns[index], axis=1)
+        new_components = self.components.copy()
+        del new_components[index]
+        return TimeSeries(new_data, new_components)
 
     def plot(self, *args, **kwargs) -> Any:
         """Plot a TimeSeries
@@ -176,12 +188,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             a Tuple of TimeSeries ([start,...,at] and [at,...,end])
 
         """
-        start = self.series.index[0]
-        end = self.series.index[-1]
-        first_split = self.series[start:timestamp].copy()
-        second_split = self.series[timestamp:end].copy()
-        before = TimeSeries(first_split, self.metadata)
-        after = TimeSeries(second_split, self.metadata)
+        start = self.data.index[0]
+        end = self.data.index[-1]
+        first_split = self.data[start:timestamp].copy()
+        second_split = self.data[timestamp:end].copy()
+        before = TimeSeries(first_split, self.components)
+        after = TimeSeries(second_split, self.components)
         return before, after
 
     def split_in_chunks(self, n: int) -> List['TimeSeries']:
@@ -196,10 +208,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             List of TimeSeries
         """
-        from timeatlas import TimeSeriesDataset
-
-        ts_chunks = [TimeSeries(series=v, metadata=self.metadata) for n, v in
-                     self.series.groupby(np.arange(len(self.series)) // n)]
+        ts_chunks = [TimeSeries(data=v, components=self.components) for n, v in
+                     self.data.groupby(np.arange(len(self.data)) // n)]
         return ts_chunks
 
     def fill(self, value: Any) -> 'TimeSeries':
@@ -215,9 +225,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             TimeSeries
         """
-        s = self.series.copy()
-        s[TIME_SERIES_VALUES] = value
-        return TimeSeries(s, self.metadata)
+        new_data = self.data.copy()
+        new_data[:] = value
+        return TimeSeries(new_data, self.components)
 
     def empty(self) -> 'TimeSeries':
         """Empty the TimeSeries (fill all values with NaNs)
@@ -323,19 +333,19 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         if side == "both":
-            first = self.series.first_valid_index()
-            last = self.series.last_valid_index()
-            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:last]
+            first = self.data.first_valid_index()
+            last = self.data.last_valid_index()
+            series_wo_nans = self.data[TIME_SERIES_VALUES].loc[first:last]
         elif side == "start":
-            first = self.series.first_valid_index()
-            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[first:]
+            first = self.data.first_valid_index()
+            series_wo_nans = self.data[TIME_SERIES_VALUES].loc[first:]
         elif side == "end":
-            last = self.series.last_valid_index()
-            series_wo_nans = self.series[TIME_SERIES_VALUES].loc[:last]
+            last = self.data.last_valid_index()
+            series_wo_nans = self.data[TIME_SERIES_VALUES].loc[:last]
         else:
             raise AttributeError("side attribute must be either 'start' or "
                                  "'end', but not {}".format(side))
-        return TimeSeries(series_wo_nans, self.metadata)
+        return TimeSeries(series_wo_nans, self.components)
 
     def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
         """Merge two time series and make sure all the given indexes are sorted.
@@ -347,11 +357,11 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         # append and infer new freq
-        merged = self.series.append(ts.series)
+        merged = self.data.append(ts.data)
         infer_freq(merged.index)
 
         # instanciate a TimeSeries to sort it
-        return TimeSeries(merged, self.metadata)
+        return TimeSeries(merged, self.components)
 
     # ==========================================================================
     # Processing
@@ -377,14 +387,14 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             assert len(self) == len(ts), "The length of the TimeSeries given " \
                                          "as argument should be equal to self."
 
-            s1 = self.series[TIME_SERIES_VALUES]
-            s2 = ts.series[TIME_SERIES_VALUES]
+            s1 = self.data[TIME_SERIES_VALUES]
+            s2 = ts.data[TIME_SERIES_VALUES]
             df = DataFrame(data={"s1": s1, "s2": s2})
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
-                             self.metadata)
+                             self.components)
         else:
-            res = TimeSeries(self.series[TIME_SERIES_VALUES].apply(func),
-                             self.metadata)
+            res = TimeSeries(self.data[TIME_SERIES_VALUES].apply(func),
+                             self.components)
 
         return res
 
@@ -409,9 +419,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         # select all element in series that are not duplicates
-        new_series = self.series[~self.series.index.duplicated()]
-        new_series = new_series.asfreq(freq, method=method)
-        return TimeSeries(new_series, self.metadata)
+        new_data = self.data[~self.data.index.duplicated()]
+        new_data = new_data.asfreq(freq, method=method)
+        return TimeSeries(new_data, self.components)
 
     def group_by(self, freq: str, method: Optional[str] = "mean") \
             -> 'TimeSeries':
@@ -439,35 +449,35 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         # Group by freq
-        series = self.series.groupby(self.index.round(freq))
+        data = self.data.groupby(self.index.round(freq))
 
         # Apply aggregation
         if method == "mean":
-            series = series.mean()
+            data = data.mean()
         elif method == "sum":
-            series = series.sum()
+            data = data.sum()
         elif method == "size":
-            series = series.size()
+            data = data.size()
         elif method == "count":
-            series = series.count()
+            data = data.count()
         elif method == "std":
-            series = series.std()
+            data = data.std()
         elif method == "var":
-            series = series.var()
+            data = data.var()
         elif method == "sem":
-            series = series.sem()
+            data = data.sem()
         elif method == "first":
-            series = series.first()
+            data = data.first()
         elif method == "last":
-            series = series.last()
+            data = data.last()
         elif method == "min":
-            series = series.min()
+            data = data.min()
         elif method == "max":
-            series = series.max()
+            data = data.max()
         else:
             ValueError("method argument not recognized.")
 
-        return TimeSeries(series, self.metadata)
+        return TimeSeries(data, self.components)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':
         """Wrapper around the Pandas interpolate() method.
@@ -483,8 +493,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
 
         """
-        new_series = self.series.interpolate(*args, **kwargs)
-        return TimeSeries(new_series, self.metadata)
+        new_data = self.data.interpolate(*args, **kwargs)
+        return TimeSeries(new_data, self.components)
 
     def normalize(self, method: str) -> 'TimeSeries':
         """Normalize a TimeSeries with a given method
@@ -498,13 +508,13 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         if method == "minmax":
-            scaled_series = Scaler.minmax(self)
+            scaled_data = Scaler.minmax(self)
         elif method == "zscore":
-            scaled_series = Scaler.zscore(self)
+            scaled_data = Scaler.zscore(self)
         else:
             raise ValueError("{} isn't recognized as a normalization method"
                              .format(method))
-        return scaled_series
+        return scaled_data
 
     def round(self, decimals: int) -> 'TimeSeries':
         """Round the values in the series.values
@@ -516,8 +526,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
 
         """
-        new_series = self.series.astype(float).round(decimals=decimals)
-        return TimeSeries(new_series, self.metadata)
+        new_data = self.data.astype(float).round(decimals=decimals)
+        return TimeSeries(new_data, self.components)
 
     def sort(self, *args, **kwargs):
         """Sort a TimeSeries by time stamps
@@ -532,8 +542,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             TimeSeries
         """
-        sorted_time_series = self.series.sort_index(*args, **kwargs)
-        return TimeSeries(sorted_time_series, self.metadata)
+        new_data = self.data.sort_index(*args, **kwargs)
+        return TimeSeries(new_data, self.components)
 
     # ==========================================================================
     # Analysis
@@ -548,7 +558,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             float
         """
-        return self.series[TIME_SERIES_VALUES].min()
+        return self.data[TIME_SERIES_VALUES].min()
 
     def max(self) -> float:
         """Get the maximum value of a TimeSeries
@@ -556,7 +566,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             float
         """
-        return self.series[TIME_SERIES_VALUES].max()
+        return self.data[TIME_SERIES_VALUES].max()
 
     def mean(self) -> float:
         """Get the mean value of a TimeSeries
@@ -564,7 +574,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returs:
             float
         """
-        return self.series[TIME_SERIES_VALUES].mean()
+        return self.data[TIME_SERIES_VALUES].mean()
 
     def median(self) -> float:
         """Get the median value of a TimeSeries
@@ -572,7 +582,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             float
         """
-        return self.series[TIME_SERIES_VALUES].median()
+        return self.data[TIME_SERIES_VALUES].median()
 
     def skewness(self) -> float:
         """Get the skewness of a TimeSeries
@@ -580,7 +590,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             float
         """
-        return self.series[TIME_SERIES_VALUES].skew()
+        return self.data[TIME_SERIES_VALUES].skew()
 
     def kurtosis(self) -> float:
         """Get the kurtosis of a TimeSeries
@@ -588,7 +598,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             float
         """
-        return self.series[TIME_SERIES_VALUES].kurtosis()
+        return self.data[TIME_SERIES_VALUES].kurtosis()
 
     def describe(self, percentiles=None, include=None, exclude=None) -> Series:
         """Describe a TimeSeries with the describe function from Pandas
@@ -596,7 +606,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             Series
         """
-        return self.series[TIME_SERIES_VALUES].describe()
+        return self.data[TIME_SERIES_VALUES].describe()
 
     # Time Series Statistics
     # ----------------------
@@ -607,7 +617,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             Timestamp
         """
-        start = self.series.index[0]
+        start = self.data.index[0]
         return start
 
     def end(self) -> Timestamp:
@@ -616,7 +626,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             Timestamp
         """
-        end = self.series.index[-1]
+        end = self.data.index[-1]
         return end
 
     def boundaries(self) -> Tuple[Timestamp, Timestamp]:
@@ -625,8 +635,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             a Tuple of Pandas Timestamps
         """
-        start = self.series.index[0]
-        end = self.series.index[-1]
+        start = self.data.index[0]
+        end = self.data.index[-1]
         return start, end
 
     def frequency(self) -> Optional[str]:
@@ -638,7 +648,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             (https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
             None if no discernible frequency
         """
-        return self.series.index.inferred_freq
+        return self.data.index.inferred_freq
 
     def time_detlas(self) -> 'TimeSeries':
         """Compute the time difference in seconds between each timestamp
@@ -647,9 +657,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             TimeSeries
         """
-        deltas = self.series.index.to_series().diff().dt.total_seconds()
+        deltas = self.data.index.to_series().diff().dt.total_seconds()
         ts = TimeSeries(DataFrame(deltas, columns=[TIME_SERIES_VALUES]),
-                        self.metadata)
+                        self.components)
         return ts
 
     def duration(self) -> Timedelta:
@@ -678,7 +688,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         file_path = "{}/{}.{}".format(path, TIME_SERIES_FILENAME,
                                       TIME_SERIES_EXT)
         ensure_dir(file_path)
-        self.__series_to_csv(self.series, file_path)
+        self.__series_to_csv(self.data, file_path)
         if self.metadata is None and self.class_label is not None:
             self.metadata = Metadata(items={'label': self.class_label})
         # Create the metadata file
@@ -696,7 +706,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             numpy.array with dimensions (1, n), where n is th length of the
             TimeSeries
         """
-        return self.series[TIME_SERIES_VALUES].to_numpy()
+        return self.data[TIME_SERIES_VALUES].to_numpy()
 
     def to_pickle(self, path: str) -> NoReturn:
         """Export a TimeSeries to Pickle
@@ -712,7 +722,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             Darts TimeSeries object
         """
-        return DartsTimeSeries.from_series(self.series[TIME_SERIES_VALUES])
+        return DartsTimeSeries.from_series(self.data[TIME_SERIES_VALUES])
 
     def to_df(self) -> DataFrame:
         """Converts a TimeSeries to a Pandas DataFrame
@@ -720,7 +730,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             Pandas DataFrame
         """
-        return self.series
+        return self.data
 
     @staticmethod
     def __series_to_csv(series: Union[Series, DataFrame], path: str) -> NoReturn:

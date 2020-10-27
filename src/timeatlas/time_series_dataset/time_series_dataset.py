@@ -778,11 +778,11 @@ class TimeSeriesDataset(List,
         for i, ts in enumerate(self):
             if res.empty:
                 res = ts.to_df()
-                cols = ts.series.columns
+                cols = ts.data.columns
             else:
                 res = res.merge(ts.to_df(), how="outer",
                                 left_index=True, right_index=True)
-                cols = ts.series.columns
+                cols = ts.data.columns
             for col in cols:
                 columns.append(f"{i}_{col}")
         res.columns = columns

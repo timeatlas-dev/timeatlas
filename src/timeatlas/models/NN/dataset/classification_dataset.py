@@ -11,7 +11,7 @@ class TimeSeriesClassificationDataset(BaseDataset):
 
     def __init__(self, timeseriesdataset: TimeSeriesDataset):
         super(TimeSeriesClassificationDataset, self).__init__(tsd=timeseriesdataset)
-        self.data = np.array([ts.series for ts in timeseriesdataset])
+        self.data = np.array([ts.data for ts in timeseriesdataset])
         self.labels = [ts.class_label for ts in timeseriesdataset]
 
     def __len__(self):

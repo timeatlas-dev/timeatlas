@@ -44,10 +44,10 @@ class AbstractBaseModel(ABC):
         Returns:
             DatetimeIndex
         """
-        start = self.X_train.series.index[-1]
-        end = self.X_train.series.index[-1] + Timedelta(horizon)
+        start = self.X_train.data.index[-1]
+        end = self.X_train.data.index[-1] + Timedelta(horizon)
         if freq is not None:
             freq = freq
         else:
-            freq = infer_freq(self.X_train.series.index)
+            freq = infer_freq(self.X_train.data.index)
         return date_range(start=start, end=end, freq=freq)[0:]

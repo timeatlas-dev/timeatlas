@@ -16,8 +16,8 @@ def chunkify(tsd, seq_len):
     x, y = [], []
     for s in tsd:
         for i in range(len(s) - seq_len):
-            x_i = s.series["values"][i: i + seq_len]
-            y_i = s.series["values"][i + seq_len]
+            x_i = s.data["values"][i: i + seq_len]
+            y_i = s.data["values"][i + seq_len]
 
             x.append(x_i)
             y.append(y_i)
