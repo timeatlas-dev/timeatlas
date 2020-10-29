@@ -50,7 +50,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
             conf_file), f"No config file found under given path '{conf_file}'"
 
         # set data
-        self.data = data
+        self.data = data.copy(deep=True)
 
         # read the config file
         self.config = AnomalyConfigParser(config_file=conf_file)
@@ -203,7 +203,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         """
 
-        ind, data = self.data.random(n=self.amount, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_randomly(n=self.amount, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def chose_selection(self) -> List:
@@ -216,8 +216,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
         Returns: List of pair of indices and data
 
         """
-        ind, data = self.data.select(selection=self.selection, indices=True)
-        return list(zip(ind, data))
+        data = self.data[self.selection]
+        return list(zip(self.selection, data))
 
     def chose_percentage(self) -> List:
         """
@@ -229,7 +229,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         Returns: List of pair of indices and data
 
         """
-        ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_by_percentage(percent=self.percent, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def add_data(self, new_data: TimeSeries, index: int) -> NoReturn:
