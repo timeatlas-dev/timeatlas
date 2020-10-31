@@ -4,14 +4,21 @@ from copy import deepcopy, copy
 import pandas as pd
 
 from .component import Component
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import COMPONENT_VALUES
 
 
 class ComponentHandler:
+    """ Helper class to manage many components
+
+    The purpose of this class is to make the management of components in a
+    time series as simple as possible, with one or many components.
+
+    The underlying data structure is a simple list where component are stored.
+    """
 
     def __init__(self, components: Union[List[Component], Component] = None):
         if isinstance(components, Component):
-            components = list(components)
+            components = [components]
         self.components = components if components is not None else []
 
     def __getitem__(self, item):
@@ -25,7 +32,7 @@ class ComponentHandler:
         print(self.components)
         for k, v in self.components[i].items():
             col_name = self.__format_value_str(i, v) \
-                if k == TIME_SERIES_VALUES \
+                if k == COMPONENT_VALUES \
                 else self.__format_meta_str(i, v)
             cols.append(col_name)
         return cols
@@ -39,7 +46,7 @@ class ComponentHandler:
     def get_values(self):
         values = []
         for i, c in enumerate(self.components):
-            values.append(self.__format_value_str(i, c[TIME_SERIES_VALUES]))
+            values.append(self.__format_value_str(i, c[COMPONENT_VALUES]))
         return values
 
     def copy(self, deep=False) -> 'ComponentHandler':
