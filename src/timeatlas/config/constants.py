@@ -6,6 +6,10 @@ METADATA_FILENAME = "meta"
 METADATA_EXT = "json"
 METADATA_CLASS_LABEL = "label"
 
+# Component
+COMPONENT_VALUES = "values"
+COMPONENT_META_PREFIX = "meta_"
+
 # TimeSeries
 TIME_SERIES_VALUES = "values"
 TIME_SERIES_CI_LOWER = "ci_lower"

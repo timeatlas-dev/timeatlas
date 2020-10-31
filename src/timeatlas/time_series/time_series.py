@@ -40,25 +40,26 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self,
-                 data: DataFrame = None,
+    def __init__(self, data: DataFrame = None,
                  components: ComponentHandler = None):
         """Defines a time series
 
         A TimeSeries object is a series of time indexed values.
 
         Args:
-            data: Series or DataFrame containing the values and labels
-            metadata: Metadata-object
-            class_label: class label
+            data: DataFrame containing the values and labels
+            components: ComponentHandler
         """
         if data is not None:
-            # Check if values have a DatetimeIndex
+
+            # Perform preliminary checks
+            # --------------------------
+
             assert isinstance(data.index, DatetimeIndex), \
                 'Values must be indexed with a DatetimeIndex.'
 
-            # Check if the length is greater than one
-            assert len(data) >= 1, 'Values must have at least one values.'
+            assert len(data) >= 1, \
+                'Values must have at least one values.'
 
             assert len(data.columns) >= 1, \
                 "DataFrame must have at least one column."
@@ -90,6 +91,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             self.values = self.data[self.components.get_values()]  # values accessor
 
         else:
+
+            # Create empty structures
             self.data = DataFrame()
             self.components = ComponentHandler()
 
@@ -102,9 +105,17 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     def __iter__(self):
         return (v for v in self.data[TIME_SERIES_VALUES])
 
-    def __getitem__(self, item):
-        return TimeSeries(self.data[item], self.components)
-        
+    def __getitem__(self, item: Union[Tuple, Any]):
+        if isinstance(item, Tuple):
+            time = item[0]
+            component = item[1]
+            new_data = self.data.loc[time].iloc[:, component]
+            new_components = self.components[component]
+            return TimeSeries(new_data, new_components)
+        else:
+            new_data = self.data[item]
+            return TimeSeries(new_data, self.components)
+
     def __setitem__(self, item, value):
         if isinstance(value, TimeSeries):
             self.data[item] = value.data[item]
@@ -140,12 +151,22 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         return TimeSeries(data, components)
 
     def add_component(self, ts: 'TimeSeries'):
-        assert (self.index == ts.index).all(), "Indexes aren't the same"
+        assert (self.index == ts.index).all(), \
+            "Indexes aren't the same"
         new_data = concat([self.data, ts.data], axis=1)
         new_components = self.components.copy()
-        for c in ts.components:
+        for c in ts.components.components:
             new_components.append(c)
         return TimeSeries(new_data, new_components)
+
+    def add_label(self, ts: 'TimeSeries'):
+        pass
+
+    def add_ci(self, ts: 'TimeSeries'):
+        pass
+
+    def add_meta(self, ts: 'TimeSeries'):
+        pass
 
     def remove_component(self, index: int):
         new_data = self.data.copy()
