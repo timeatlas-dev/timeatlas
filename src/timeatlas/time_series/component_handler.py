@@ -1,10 +1,9 @@
-from typing import List, Union
+from typing import List, Union, NoReturn
 from copy import deepcopy, copy
 
-import pandas as pd
+from pandas import Index
 
 from .component import Component
-from timeatlas.config.constants import COMPONENT_VALUES
 
 
 class ComponentHandler:
@@ -21,41 +20,88 @@ class ComponentHandler:
             components = [components]
         self.components = components if components is not None else []
 
-    def __getitem__(self, item):
-        return ComponentHandler(self.components[item])
+    def append(self, component: Component) -> NoReturn:
+        """
+        Append a Component to the ComponentHandler
 
-    def append(self, component: Component):
+        Args:
+            component: Component to append
+        """
         self.components.append(component)
 
-    def get_component_columns(self, i):
-        cols = []
-        print(self.components)
-        for k, v in self.components[i].items():
-            col_name = self.__format_value_str(i, v) \
-                if k == COMPONENT_VALUES \
-                else self.__format_meta_str(i, v)
-            cols.append(col_name)
-        return cols
+    def get_component_by_id(self, index: int, with_meta: bool = True) -> Index:
+        """ Get Pandas Index of a Component by ID
 
-    def get_columns(self):
+        Get Pandas Index of a Component from the ComponentHandler by its
+        positional identifier
+
+        Args:
+            index: int of the index of the component in the ComponentHandler
+            with_meta: bool to include or not meta series in the return value
+
+        Returns:
+            Pandas Index of the names of the component
+        """
+        c = self.components[index]
+        cols = self.__format_main_series(index, c.get_main())
+        if with_meta:
+            meta = self.__format_meta_series(index, c.get_meta())
+            cols += meta
+        return Index(cols)
+
+    def get_components(self, with_meta=True) -> Index:
+        """ Get Pandas Index of all the Components
+
+        Get Pandas Index of a Component from the ComponentHandler by its
+        positional identifier
+
+        Args:
+            index: int of the index of the component in the ComponentHandler
+            with_meta: bool to include or not meta series in the return value
+
+        Returns:
+            Pandas Index of the names of the component
+        """
         cols = []
         for i, c in enumerate(self.components):
-            cols += self.get_component_columns(i)
-        return pd.Index(cols)
+            cols.extend(self.get_component_by_id(i, with_meta).to_list())
+        return Index(cols)
 
-    def get_values(self):
-        values = []
-        for i, c in enumerate(self.components):
-            values.append(self.__format_value_str(i, c[COMPONENT_VALUES]))
-        return values
+    def copy(self, deep=True) -> 'ComponentHandler':
+        """
+        Copy function, deep by default
 
-    def copy(self, deep=False) -> 'ComponentHandler':
+        Args:
+            deep: bool if deep copy or not
+
+        Returns:
+            ComponentHandler
+        """
+
         return deepcopy(self) if deep else copy(self)
 
     @staticmethod
-    def __format_value_str(index, value):
-        return f"{index}_{value}"
+    def __format_main_series(index: int, value: list):
+        """ Format a main series name
+
+        Args:
+            index: int of the position of the main series
+            value: list with the main series name
+
+        Returns:
+            list with the formatted str of the series
+        """
+        return [f"{index}_{v}" for v in value]
 
     @staticmethod
-    def __format_meta_str(index, value):
-        return f"{index}-{value}"
+    def __format_meta_series(index, value):
+        """ Format a meta series name(s)
+
+        Args:
+            index: int of the position of the meta series
+            value: list with the meta series names
+
+        Returns:
+            list with the formatted str of the series
+        """
+        return [f"{index}-{v}" for v in value]

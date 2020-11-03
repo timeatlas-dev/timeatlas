@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from pandas import Index
-
 from timeatlas.time_series.component import Component
 from timeatlas.metadata import Metadata
 from timeatlas.config.constants import *
@@ -36,17 +34,17 @@ class TestComponent(TestCase):
     def test__add_meta_series__should_increment_n_meta(self):
         c = Component("test")
         self.assertEqual(0, c.n_meta)
-        c.add_meta_series("ci_lower")
+        c.add_meta("ci_lower")
         self.assertEqual(1, c.n_meta)
-        c.add_meta_series("ci_upper")
+        c.add_meta("ci_upper")
         self.assertEqual(2, c.n_meta)
 
     def test__add_meta_series__series_dict_has_right_items(self):
         # prepare object
         args = ["test", "ci_lower", "ci_upper"]
         c = Component(args[0])
-        c.add_meta_series(args[1])
-        c.add_meta_series(args[2])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
 
         # test keys
         k = list(c.series.keys())
@@ -62,27 +60,74 @@ class TestComponent(TestCase):
                     f"1_{args[2]}"]
         self.assertEqual(v, wanted_v)
 
-    def test__get_columns__return_pandas_index(self):
+    def test__get_main__return_list(self):
         # prepare object
         args = ["test", "ci_lower", "ci_upper"]
         c = Component(args[0])
-        c.add_meta_series(args[1])
-        c.add_meta_series(args[2])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
 
         # test
-        cols = c.get_columns()
-        self.assertIsInstance(cols, Index)
+        cols = c.get_main()
+        self.assertIsInstance(cols, list)
 
-    def test__get_columns__has_right_elements(self):
+    def test__get_main__has_right_elements(self):
         # prepare object
         args = ["test", "ci_lower", "ci_upper"]
         c = Component(args[0])
-        c.add_meta_series(args[1])
-        c.add_meta_series(args[2])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
 
         # test
-        cols = c.get_columns().to_list()
-        wanted_cols = [args[0],
+        cols = c.get_main()
+        wanted_cols = [args[0]]
+        self.assertEqual(cols, wanted_cols)
+
+    def test__get_meta__return_list(self):
+        # prepare object
+        args = ["test", "ci_lower", "ci_upper"]
+        c = Component(args[0])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
+
+        # test
+        cols = c.get_meta()
+        self.assertIsInstance(cols, list)
+
+    def test__get_meta__has_right_elements(self):
+        # prepare object
+        args = ["test", "ci_lower", "ci_upper"]
+        c = Component(args[0])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
+
+        # test
+        cols = c.get_meta()
+        wanted_cols = [f"0_{args[1]}",
+                       f"1_{args[2]}"]
+        self.assertEqual(cols, wanted_cols)
+
+    def test__get_all__return_list(self):
+        # prepare object
+        args = ["test", "ci_lower", "ci_upper"]
+        c = Component(args[0])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
+
+        # test
+        cols = c.get_all()
+        self.assertIsInstance(cols, list)
+
+    def test__get_all__has_right_elements(self):
+        # prepare object
+        args = ["test", "ci_lower", "ci_upper"]
+        c = Component(args[0])
+        c.add_meta(args[1])
+        c.add_meta(args[2])
+
+        # test
+        cols = c.get_all()
+        wanted_cols = [f"{args[0]}",
                        f"0_{args[1]}",
                        f"1_{args[2]}"]
         self.assertEqual(cols, wanted_cols)

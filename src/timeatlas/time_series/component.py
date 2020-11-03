@@ -32,7 +32,7 @@ class Component:
         else:
             self.metadata = None
 
-    def add_meta_series(self, name: str) -> NoReturn:
+    def add_meta(self, name: str) -> NoReturn:
         """ Add a meta series to the Component
 
         Args:
@@ -42,14 +42,29 @@ class Component:
             f"{self.n_meta}_{name}"
         self.n_meta = self.n_meta + 1
 
-    def get_columns(self) -> pd.Index:
-        """ Gives the column names of this component as if they were in a Pandas
-        DataFrame.
-
-        Allows for easy selection of the data stored in a DataFrame when used
-        in association with a ComponentHandler
+    def get_main(self) -> list:
+        """ Get the name of the main series in the component
 
         Returns:
-            Pandas Index
+            list with the name of the main series
         """
-        return pd.Index(list(self.series.values()))
+        return [self.series[COMPONENT_VALUES]]
+
+    def get_meta(self) -> list:
+        """ Get the names of all meta series in this component
+
+        Returns:
+            list with all the names of the meta series
+        """
+        blacklist = [COMPONENT_VALUES]
+        return [v for k, v in self.series.items() if k not in blacklist]
+
+    def get_all(self) -> list:
+        """ Get the names of all series in this component
+
+        Returns:
+            list with all the series names
+        """
+        return list(self.series.values())
+
+
