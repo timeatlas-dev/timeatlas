@@ -4,8 +4,6 @@ from pandas import Index
 
 from timeatlas.time_series.component import Component
 from timeatlas.time_series.component_handler import ComponentHandler
-from timeatlas.metadata import Metadata
-from timeatlas.config.constants import *
 
 
 class TestComponentHandler(TestCase):
@@ -34,7 +32,7 @@ class TestComponentHandler(TestCase):
         for i in ch.components:
             self.assertIsInstance(i, Component)
 
-    def test__init__with_component_as_arg(self):
+    def test__init__with_list_of_component_as_arg(self):
         # object
         c1 = Component("temperature")
         c2 = Component("pressure")

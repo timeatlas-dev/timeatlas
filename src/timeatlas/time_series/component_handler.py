@@ -68,8 +68,7 @@ class ComponentHandler:
         return Index(cols)
 
     def copy(self, deep=True) -> 'ComponentHandler':
-        """
-        Copy function, deep by default
+        """ Copy function, deep by default
 
         Args:
             deep: bool if deep copy or not
@@ -77,7 +76,6 @@ class ComponentHandler:
         Returns:
             ComponentHandler
         """
-
         return deepcopy(self) if deep else copy(self)
 
     @staticmethod

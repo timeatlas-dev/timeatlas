@@ -1,7 +1,5 @@
 from typing import NoReturn
 
-import pandas as pd
-
 from timeatlas.metadata import Metadata
 from timeatlas.config.constants import COMPONENT_VALUES, COMPONENT_META_PREFIX
 
