@@ -24,7 +24,7 @@ class Component:
         assert name is not None, "name argument can't be None"
         self.series[COMPONENT_VALUES] = name
 
-        self.n_meta = None  # Initialize the meta series
+        self.n_meta = 0  # Initialize the meta series
 
         # Add metadata if present
         if metadata is not None:
@@ -38,9 +38,9 @@ class Component:
         Args:
             name: str giving the name to the meta series
         """
-        self.n_meta = self.n_meta + 1 if type(self.n_meta) is int else 0
         self.series[f"{COMPONENT_META_PREFIX}{self.n_meta}"] = \
             f"{self.n_meta}_{name}"
+        self.n_meta = self.n_meta + 1
 
     def get_columns(self) -> pd.Index:
         """ Gives the column names of this component as if they were in a Pandas
