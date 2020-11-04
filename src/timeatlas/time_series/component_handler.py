@@ -20,6 +20,9 @@ class ComponentHandler:
             components = [components]
         self.components = components if components is not None else []
 
+    def __getitem__(self, item):
+        return self.components[item]
+
     def append(self, component: Component) -> NoReturn:
         """
         Append a Component to the ComponentHandler

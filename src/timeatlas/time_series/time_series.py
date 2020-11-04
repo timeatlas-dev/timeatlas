@@ -77,7 +77,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                 self.components = components
 
             # Rename the columns
-            data.columns = self.components.get_columns()
+            data.columns = self.components.get_components()
 
             # Store the data with certainty that values are sorted
             self.data = data.sort_index()
