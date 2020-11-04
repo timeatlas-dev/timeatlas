@@ -52,6 +52,10 @@ class ComponentHandler:
             cols += meta
         return Index(cols)
 
+    def get_component_by_name(self, name: str, with_meta: bool = True) -> Index:
+        # TODO
+        pass
+
     def get_components(self, with_meta=True) -> Index:
         """ Get Pandas Index of all the Components
 

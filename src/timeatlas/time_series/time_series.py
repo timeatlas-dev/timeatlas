@@ -88,7 +88,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
             # Create instance variables
             self.index = self.data.index  # index accessor
-            self.values = self.data[self.components.get_values()]  # values accessor
+            self.values = self.data[
+                self.components.get_components(with_meta=False).to_list()
+            ]
 
         else:
 
@@ -105,16 +107,61 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     def __iter__(self):
         return (v for v in self.data[TIME_SERIES_VALUES])
 
-    def __getitem__(self, item: Union[Tuple, Any]):
-        if isinstance(item, Tuple):
-            time = item[0]
-            component = item[1]
-            new_data = self.data.loc[time].iloc[:, component]
-            new_components = self.components[component]
-            return TimeSeries(new_data, new_components)
+    def __getitem__(self, item: Union[int, str, Timestamp,
+                                      slice,
+                                      List[int], List[str]]):
+
+        # ts[0] -> select rows
+        if isinstance(item, int):
+            new_data = self.data.iloc[[item]]
+
+        # ts["0_foo"] -> select columns
+        elif isinstance(item, str):
+            # TODO slice self.component
+            # TODO slice data according to the meta series as well
+            new_data = self.data.loc[:, item].to_frame()
+
+        # ts[my_timestamp] -> select rows
+        elif isinstance(item, Timestamp):
+            new_data = self.data.loc[item]
+
+        elif isinstance(item, slice):
+
+            # ts[0:4] -> select rows
+            if isinstance(item.start, int) or isinstance(item.stop, int):
+                new_data = self.data.iloc[item]
+
+            # ts["2013":"2014"] -> select rows
+            elif isinstance(item.start, str) or isinstance(item.stop, str):
+                new_data = self.data.loc[item]
+
+            else:
+                raise KeyError(f"rows can't be sliced with type {type(item)}")
+
+        elif isinstance(item, list):
+
+            # ts[[0,3,5]] -> select columns
+            if all(isinstance(i, int) for i in item):
+                new_data = self.data.iloc[:, item]
+                # TODO slice self.component
+                # TODO slice data according to the meta series as well
+
+            # ts[["a",... ,"b"]] -> select columns
+            elif all(isinstance(i, str) for i in item):
+                new_data = self.data.loc[:, item]
+                # TODO slice self.component
+                # TODO slice data according to the meta series as well
+
+            else:
+                raise KeyError(f"TimeSeries can't selected with list of type "
+                               f"{type(item)}")
+
         else:
-            new_data = self.data[item]
-            return TimeSeries(new_data, self.components)
+            raise KeyError(f"TimeSeries can't be selected with type "
+                           f"{type(item)}")
+
+        #return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data)
 
     def __setitem__(self, item, value):
         if isinstance(value, TimeSeries):

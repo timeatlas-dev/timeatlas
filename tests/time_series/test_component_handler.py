@@ -127,6 +127,27 @@ class TestComponentHandler(TestCase):
         cols = ch.get_components().to_list()
         self.assertEqual(wanted_cols, cols)
 
+    def test__get_components__without_meta(self):
+        # object
+        args1 = ["temperature", "ci-lower", "ci-upper"]
+        args2 = ["pressure", "label"]
+        c1 = Component(args1[0])
+        c1.add_meta(args1[1])
+        c1.add_meta(args1[2])
+        c2 = Component(args2[0])
+        c2.add_meta(args2[1])
+        component_list = [c1, c2]
+        ch = ComponentHandler(component_list)
+        # test 1 - cols are not equal
+        wanted_cols_1 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
+                         f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        cols_1 = ch.get_components(with_meta=False).to_list()
+        self.assertNotEqual(wanted_cols_1, cols_1)
+        # test 2 - cols are equal
+        wanted_cols_2 = [f"0_{args1[0]}", f"1_{args2[0]}"]
+        cols_2 = ch.get_components(with_meta=False).to_list()
+        self.assertEqual(wanted_cols_2, cols_2)
+
     def test__get_components__returns_pandas_index(self):
         # object
         args1 = ["temperature", "ci-lower", "ci-upper"]
