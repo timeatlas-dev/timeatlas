@@ -41,14 +41,14 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     """
 
     def __init__(self, data: DataFrame = None,
-                 components: ComponentHandler = None):
+                 handler: ComponentHandler = None):
         """Defines a time series
 
         A TimeSeries object is a series of time indexed values.
 
         Args:
             data: DataFrame containing the values and labels
-            components: ComponentHandler
+            handler: ComponentHandler
         """
         if data is not None:
 
@@ -68,16 +68,16 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             # ----------------------------
 
             # Create the components handler
-            if components is None:
-                self.components = ComponentHandler()
+            if handler is None:
+                self.handler = ComponentHandler()
                 for col in data.columns:
                     component = Component(col)
-                    self.components.append(component)
+                    self.handler.append(component)
             else:
-                self.components = components
+                self.handler = handler
 
             # Rename the columns
-            data.columns = self.components.get_components()
+            data.columns = self.handler.get_columns()
 
             # Store the data with certainty that values are sorted
             self.data = data.sort_index()
@@ -89,14 +89,14 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             # Create instance variables
             self.index = self.data.index  # index accessor
             self.values = self.data[
-                self.components.get_components(with_meta=False).to_list()
+                self.handler.get_columns(with_meta=False).to_list()
             ]
 
         else:
 
             # Create empty structures
             self.data = DataFrame()
-            self.components = ComponentHandler()
+            self.handler = ComponentHandler()
 
     def __repr__(self):
         return self.data.__repr__()
@@ -113,55 +113,58 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
         # ts[0] -> select rows
         if isinstance(item, int):
+            new_handler = self.handler
             new_data = self.data.iloc[[item]]
 
         # ts["0_foo"] -> select columns
         elif isinstance(item, str):
-            # TODO slice self.component
-            # TODO slice data according to the meta series as well
-            new_data = self.data.loc[:, item].to_frame()
+            new_handler = self.handler[item]
+            cols = self.handler.get_columns()
+            new_data = self.data.loc[:, cols].to_frame() \
+                if len(cols.to_list()) == 1 \
+                else self.data.loc[:, cols]
 
         # ts[my_timestamp] -> select rows
         elif isinstance(item, Timestamp):
+            # TODO test
+            new_handler = self.handler
             new_data = self.data.loc[item]
 
         elif isinstance(item, slice):
 
             # ts[0:4] -> select rows
             if isinstance(item.start, int) or isinstance(item.stop, int):
+                new_handler = self.handler
                 new_data = self.data.iloc[item]
 
             # ts["2013":"2014"] -> select rows
             elif isinstance(item.start, str) or isinstance(item.stop, str):
+                new_handler = self.handler
                 new_data = self.data.loc[item]
 
             else:
                 raise KeyError(f"rows can't be sliced with type {type(item)}")
 
         elif isinstance(item, list):
-
             # ts[[0,3,5]] -> select columns
             if all(isinstance(i, int) for i in item):
-                new_data = self.data.iloc[:, item]
-                # TODO slice self.component
-                # TODO slice data according to the meta series as well
+                new_handler = self.handler[item]
+                new_data = self.data.iloc[:, self.handler.get_columns()]
 
             # ts[["a",... ,"b"]] -> select columns
             elif all(isinstance(i, str) for i in item):
-                new_data = self.data.loc[:, item]
-                # TODO slice self.component
-                # TODO slice data according to the meta series as well
+                new_handler = self.handler[item]
+                new_data = self.data.loc[:, self.handler.get_columns()]
 
             else:
-                raise KeyError(f"TimeSeries can't selected with list of type "
-                               f"{type(item)}")
+                raise TypeError(f"TimeSeries can't be selected with list of "
+                                f"type {type(item)}")
 
         else:
-            raise KeyError(f"TimeSeries can't be selected with type "
+            raise TypeError(f"TimeSeries can't be selected with type "
                            f"{type(item)}")
 
-        #return TimeSeries(new_data, self.components)
-        return TimeSeries(new_data)
+        return TimeSeries(new_data, new_handler)
 
     def __setitem__(self, item, value):
         if isinstance(value, TimeSeries):
@@ -175,7 +178,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
     @staticmethod
     def create(start: str, end: str, freq: Union[str, 'TimeSeries'] = None,
-               components: ComponentHandler = None) \
+               handler: ComponentHandler = None) \
             -> 'TimeSeries':
         """Creates an empty TimeSeries object with the period as index
 
@@ -195,14 +198,14 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                 freq = freq
         data = DataFrame(columns=[TIME_SERIES_VALUES],
                          index=date_range(start, end, freq=freq))
-        return TimeSeries(data, components)
+        return TimeSeries(data, handler)
 
     def add_component(self, ts: 'TimeSeries'):
         assert (self.index == ts.index).all(), \
             "Indexes aren't the same"
         new_data = concat([self.data, ts.data], axis=1)
-        new_components = self.components.copy()
-        for c in ts.components.components:
+        new_components = self.handler.copy()
+        for c in ts.handler.components:
             new_components.append(c)
         return TimeSeries(new_data, new_components)
 
@@ -218,7 +221,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     def remove_component(self, index: int):
         new_data = self.data.copy()
         new_data = new_data.drop(new_data.columns[index], axis=1)
-        new_components = self.components.copy()
+        new_components = self.handler.copy()
         del new_components[index]
         return TimeSeries(new_data, new_components)
 
@@ -260,8 +263,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         end = self.data.index[-1]
         first_split = self.data[start:timestamp].copy()
         second_split = self.data[timestamp:end].copy()
-        before = TimeSeries(first_split, self.components)
-        after = TimeSeries(second_split, self.components)
+        before = TimeSeries(first_split, self.handler)
+        after = TimeSeries(second_split, self.handler)
         return before, after
 
     def split_in_chunks(self, n: int) -> List['TimeSeries']:
@@ -276,7 +279,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             List of TimeSeries
         """
-        ts_chunks = [TimeSeries(data=v, components=self.components) for n, v in
+        ts_chunks = [TimeSeries(data=v, handler=self.handler) for n, v in
                      self.data.groupby(np.arange(len(self.data)) // n)]
         return ts_chunks
 
@@ -295,7 +298,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         """
         new_data = self.data.copy()
         new_data[:] = value
-        return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data, self.handler)
 
     def empty(self) -> 'TimeSeries':
         """Empty the TimeSeries (fill all values with NaNs)
@@ -413,7 +416,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         else:
             raise AttributeError("side attribute must be either 'start' or "
                                  "'end', but not {}".format(side))
-        return TimeSeries(series_wo_nans, self.components)
+        return TimeSeries(series_wo_nans, self.handler)
 
     def merge(self, ts: 'TimeSeries') -> 'TimeSeries':
         """Merge two time series and make sure all the given indexes are sorted.
@@ -429,7 +432,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         infer_freq(merged.index)
 
         # instanciate a TimeSeries to sort it
-        return TimeSeries(merged, self.components)
+        return TimeSeries(merged, self.handler)
 
     # ==========================================================================
     # Processing
@@ -459,10 +462,10 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             s2 = ts.data[TIME_SERIES_VALUES]
             df = DataFrame(data={"s1": s1, "s2": s2})
             res = TimeSeries(df.apply(lambda x: func(x.s1, x.s2), axis=1),
-                             self.components)
+                             self.handler)
         else:
             res = TimeSeries(self.data[TIME_SERIES_VALUES].apply(func),
-                             self.components)
+                             self.handler)
 
         return res
 
@@ -489,7 +492,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         # select all element in series that are not duplicates
         new_data = self.data[~self.data.index.duplicated()]
         new_data = new_data.asfreq(freq, method=method)
-        return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data, self.handler)
 
     def group_by(self, freq: str, method: Optional[str] = "mean") \
             -> 'TimeSeries':
@@ -545,7 +548,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         else:
             ValueError("method argument not recognized.")
 
-        return TimeSeries(data, self.components)
+        return TimeSeries(data, self.handler)
 
     def interpolate(self, *args, **kwargs) -> 'TimeSeries':
         """Wrapper around the Pandas interpolate() method.
@@ -562,7 +565,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
         """
         new_data = self.data.interpolate(*args, **kwargs)
-        return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data, self.handler)
 
     def normalize(self, method: str) -> 'TimeSeries':
         """Normalize a TimeSeries with a given method
@@ -595,7 +598,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
         """
         new_data = self.data.astype(float).round(decimals=decimals)
-        return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data, self.handler)
 
     def sort(self, *args, **kwargs):
         """Sort a TimeSeries by time stamps
@@ -611,7 +614,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             TimeSeries
         """
         new_data = self.data.sort_index(*args, **kwargs)
-        return TimeSeries(new_data, self.components)
+        return TimeSeries(new_data, self.handler)
 
     # ==========================================================================
     # Analysis
@@ -727,7 +730,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         """
         deltas = self.data.index.to_series().diff().dt.total_seconds()
         ts = TimeSeries(DataFrame(deltas, columns=[TIME_SERIES_VALUES]),
-                        self.components)
+                        self.handler)
         return ts
 
     def duration(self) -> Timedelta:

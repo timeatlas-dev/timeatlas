@@ -20,20 +20,64 @@ class ComponentHandler:
             components = [components]
         self.components = components if components is not None else []
 
-    def __getitem__(self, item):
-        return self.components[item]
+    def __getitem__(self, item: Union[int, str, List[int], List[str]]):
+        # handler[0]
+        if isinstance(item, int):
+            new_components = self.components[item]
+        # handler["0_foo"]
+        elif isinstance(item, str):
+            new_components = self.get_component_by_name(item)
+
+        elif isinstance(item, list):
+
+            # handler[[0,3,5]]
+            if all(isinstance(i, int) for i in item):
+                new_components = [self.components[i] for i in item]
+
+            # handler[["0_foo","1_bar"]]
+            elif all(isinstance(i, str) for i in item):
+                new_components = [self.get_component_by_name(i_n)
+                                  for i_n in item]
+            else:
+                raise TypeError(f"ComponentHandler list indices must be int or "
+                                f"str, not {type(item)}")
+        else:
+            raise TypeError(f"ComponentHandler indices must be int, str or list,"
+                            f" not {type(item)}")
+
+        return ComponentHandler(new_components)
 
     def append(self, component: Component) -> NoReturn:
-        """
-        Append a Component to the ComponentHandler
+        """ Append a Component to the ComponentHandler
 
         Args:
             component: Component to append
         """
         self.components.append(component)
 
-    def get_component_by_id(self, index: int, with_meta: bool = True) -> Index:
-        """ Get Pandas Index of a Component by ID
+    def clear(self):
+        """ Removes all Components from the ComponentHandler
+        """
+        self.components.clear()
+
+    def get_component_by_name(self, name: str):
+        """ Get a Component by its name
+
+        Args:
+            name: str of the name of the Component, including the ID
+                e.g. "0_temperature"
+
+        Returns:
+            Component
+        """
+        for i, c in enumerate(self.components):
+            component_name = self.__format_main_series(i, c.get_main())
+            if name == component_name:
+                return c
+        raise KeyError(f"Component with name '{name}' does not exist.")
+
+    def get_column_by_id(self, index: int, with_meta: bool = True) -> Index:
+        """ Get a the name of a column by its Component ID
 
         Get Pandas Index of a Component from the ComponentHandler by its
         positional identifier
@@ -46,18 +90,31 @@ class ComponentHandler:
             Pandas Index of the names of the component
         """
         c = self.components[index]
-        cols = self.__format_main_series(index, c.get_main())
+        cols = [self.__format_main_series(index, c.get_main())]
         if with_meta:
             meta = self.__format_meta_series(index, c.get_meta())
             cols += meta
         return Index(cols)
 
-    def get_component_by_name(self, name: str, with_meta: bool = True) -> Index:
-        # TODO
-        pass
+    def get_column_by_name(self, name: str, with_meta: bool = True) -> Index:
+        """ Get the name of a column by its Component name
 
-    def get_components(self, with_meta=True) -> Index:
-        """ Get Pandas Index of all the Components
+        Args:
+            name: str if the name of the component in the ComponentHandler
+                  e.g: "0_temperature"
+            with_meta: bool to include or not meta series in the return value
+
+        Returns:
+            Pandas Index of the names of the component
+        """
+        for i, c in enumerate(self.get_columns(with_meta=False).to_list()):
+            if name == c:
+                return self.get_column_by_id(i, with_meta=with_meta)
+        # if no component are found throughout the for loop
+        raise KeyError(f"Component with name '{name}' does not exist.")
+
+    def get_columns(self, with_meta=True) -> Index:
+        """ Get names of all the Components columns
 
         Get Pandas Index of a Component from the ComponentHandler by its
         positional identifier
@@ -71,7 +128,7 @@ class ComponentHandler:
         """
         cols = []
         for i, c in enumerate(self.components):
-            cols.extend(self.get_component_by_id(i, with_meta).to_list())
+            cols.extend(self.get_column_by_id(i, with_meta).to_list())
         return Index(cols)
 
     def copy(self, deep=True) -> 'ComponentHandler':
@@ -86,7 +143,7 @@ class ComponentHandler:
         return deepcopy(self) if deep else copy(self)
 
     @staticmethod
-    def __format_main_series(index: int, value: list):
+    def __format_main_series(index: int, value: Union[str, list]):
         """ Format a main series name
 
         Args:
@@ -96,7 +153,12 @@ class ComponentHandler:
         Returns:
             list with the formatted str of the series
         """
-        return [f"{index}_{v}" for v in value]
+        if isinstance(value, str):
+            return f"{index}_{value}"
+        elif isinstance(value, list):
+            return [f"{index}_{v}" for v in value]
+        else:
+            TypeError(f"Type {value} isn't accepted")
 
     @staticmethod
     def __format_meta_series(index, value):
@@ -109,4 +171,9 @@ class ComponentHandler:
         Returns:
             list with the formatted str of the series
         """
-        return [f"{index}-{v}" for v in value]
+        if isinstance(value, str):
+            return f"{index}-{value}"
+        elif isinstance(value, list):
+            return [f"{index}-{v}" for v in value]
+        else:
+            TypeError(f"Type {value} isn't accepted")

@@ -21,8 +21,9 @@ class Component:
         # Create the main value of the component
         assert name is not None, "name argument can't be None"
         self.series[COMPONENT_VALUES] = name
+        self.name = self.series[COMPONENT_VALUES]
 
-        self.n_meta = 0  # Initialize the meta series
+        self.n_meta = 0  # Initialize the meta series counter
 
         # Add metadata if present
         if metadata is not None:
@@ -40,13 +41,13 @@ class Component:
             f"{self.n_meta}_{name}"
         self.n_meta = self.n_meta + 1
 
-    def get_main(self) -> list:
+    def get_main(self) -> str:
         """ Get the name of the main series in the component
 
         Returns:
-            list with the name of the main series
+            str of the name of the main series
         """
-        return [self.series[COMPONENT_VALUES]]
+        return self.series[COMPONENT_VALUES]
 
     def get_meta(self) -> list:
         """ Get the names of all meta series in this component

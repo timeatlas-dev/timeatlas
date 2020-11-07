@@ -68,7 +68,7 @@ class TestComponent(TestCase):
         c.add_meta(args[2])
 
         # test
-        cols = c.get_main()
+        cols = [c.get_main()]
         self.assertIsInstance(cols, list)
 
     def test__get_main__has_right_elements(self):
@@ -79,7 +79,7 @@ class TestComponent(TestCase):
         c.add_meta(args[2])
 
         # test
-        cols = c.get_main()
+        cols = [c.get_main()]
         wanted_cols = [args[0]]
         self.assertEqual(cols, wanted_cols)
 
