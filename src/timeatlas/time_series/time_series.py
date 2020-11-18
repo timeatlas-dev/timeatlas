@@ -40,7 +40,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         metadata: An optional Dict storing metadata about this TimeSeries
     """
 
-    def __init__(self, data: DataFrame = None,
+    def __init__(self,
+                 data: DataFrame = None,
                  handler: ComponentHandler = None):
         """Defines a time series
 
@@ -54,6 +55,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
             # Perform preliminary checks
             # --------------------------
+
+            assert isinstance(data, DataFrame), \
+                'data must be of a DataFrame.'
 
             assert isinstance(data.index, DatetimeIndex), \
                 'Values must be indexed with a DatetimeIndex.'
@@ -119,16 +123,12 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         # ts["0_foo"] -> select columns
         elif isinstance(item, str):
             new_handler = self.handler[item]
-            cols = self.handler.get_columns()
-            new_data = self.data.loc[:, cols].to_frame() \
-                if len(cols.to_list()) == 1 \
-                else self.data.loc[:, cols]
+            new_data = self.data.loc[:, new_handler.get_columns()]
 
         # ts[my_timestamp] -> select rows
         elif isinstance(item, Timestamp):
-            # TODO test
             new_handler = self.handler
-            new_data = self.data.loc[item]
+            new_data = self.data.loc[[item]]
 
         elif isinstance(item, slice):
 
@@ -146,15 +146,16 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                 raise KeyError(f"rows can't be sliced with type {type(item)}")
 
         elif isinstance(item, list):
+
             # ts[[0,3,5]] -> select columns
             if all(isinstance(i, int) for i in item):
                 new_handler = self.handler[item]
-                new_data = self.data.iloc[:, self.handler.get_columns()]
+                new_data = self.data.iloc[:, item]
 
             # ts[["a",... ,"b"]] -> select columns
             elif all(isinstance(i, str) for i in item):
                 new_handler = self.handler[item]
-                new_data = self.data.loc[:, self.handler.get_columns()]
+                new_data = self.data.loc[:, item]
 
             else:
                 raise TypeError(f"TimeSeries can't be selected with list of "
@@ -200,7 +201,19 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                          index=date_range(start, end, freq=freq))
         return TimeSeries(data, handler)
 
-    def add_component(self, ts: 'TimeSeries'):
+    def stack(self, ts: 'TimeSeries'):
+        """ Stack two TimeSeries together
+
+        Create a unique TimeSeries from two TimeSeries so that the resulting
+        TimeSeries has the component(s) from self and ts.
+
+        Args:
+            ts: the TimeSeries to stack
+
+        Returns:
+            TimeSeries
+
+        """
         assert (self.index == ts.index).all(), \
             "Indexes aren't the same"
         new_data = concat([self.data, ts.data], axis=1)
@@ -209,21 +222,104 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             new_components.append(c)
         return TimeSeries(new_data, new_components)
 
-    def add_label(self, ts: 'TimeSeries'):
-        pass
+    def drop(self, key: Union[int, str]) -> 'TimeSeries':
+        """ Drop a component of a TimeSeries by its index
 
-    def add_ci(self, ts: 'TimeSeries'):
-        pass
+        Args:
+            key: int or str of the component to delete
 
-    def add_meta(self, ts: 'TimeSeries'):
-        pass
+        Returns:
+            TimeSeries
+        """
+        # Given the current state of the TimeSeries, get the name of the columns
+        # that will compose the new_data
+        all_cols = self.handler.get_columns().to_list()
+        if isinstance(key, int):
+            cols_to_remove = self.handler.get_column_by_id(key).to_list()
+        elif isinstance(key, str):
+            cols_to_remove = self.handler.get_column_by_name(key).to_list()
+        else:
+            raise TypeError(f"key must be int or str, not {type(key)}")
+        new_cols = self.__list_diff(all_cols, cols_to_remove)
 
-    def remove_component(self, index: int):
+        # select only the leftover data from self.data
         new_data = self.data.copy()
-        new_data = new_data.drop(new_data.columns[index], axis=1)
-        new_components = self.handler.copy()
-        del new_components[index]
+        new_data = new_data[new_cols]
+
+        # drop the component to get rid off
+        new_handler = self.handler.copy()
+        del new_handler[key]
+
+        return TimeSeries(new_data, new_handler)
+
+    def add_meta(self,
+                 meta_series: Union['TimeSeries'],
+                 meta_series_name: str = None,
+                 component_name: str = None) \
+            -> 'TimeSeries':
+        """Add a meta series to a component of the TimeSeries
+
+        Args:
+            meta_series: the meta TimeSeries to add. It must have only one component and no meta series
+            meta_series_name: the name of the meta series
+            component_name: str of the component id
+
+        Returns:
+            TimeSeries
+
+        """
+        # check if meta series is ok
+        assert (self.index == meta_series.index).all(), \
+            "Indexes aren't the same"
+
+        assert len(meta_series.data.columns) == 1 or \
+               len(meta_series.handler.get_columns().to_list()) == 1, \
+            "Meta series contains more than one column"
+
+        # Add the meta series to the handler
+        self.handler\
+            .get_component_by_name(component_name)\
+            .add_meta(meta_series_name)
+        new_components = self.handler
+
+        # Add the meta series to the data
+        new_data = concat([self.data, meta_series.data], axis=1)
+
         return TimeSeries(new_data, new_components)
+
+    def drop_meta(self, component_name: str = None) \
+            -> 'TimeSeries':
+        """Drop the meta series associated to one or all components
+
+        Args:
+            component_name: int or str of the component id
+
+        Returns:
+            TimeSeries
+        """
+        if component_name is None:
+            # all cols
+            cols = self.handler.get_columns(with_meta=False)
+        else:
+            # all cols from this component
+            cols_to_remove = self.handler.get_column_by_name(component_name).to_list()
+            cols_to_remove.remove(component_name)
+            all_cols = self.handler.get_columns(with_meta=False)
+            cols = self.__list_diff(all_cols, cols_to_remove)
+
+        new_components = self.handler.
+
+
+    def has_meta(self, component: Union[int, str] = None) -> bool:
+        """Check the presence of meta series in one or all components
+
+        Args:
+            component: int or str of the component id
+
+        Returns:
+            Boolean
+        """
+        pass
 
     def plot(self, *args, **kwargs) -> Any:
         """Plot a TimeSeries
@@ -814,3 +910,17 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                 The path where the Series will be saved
         """
         series.to_csv(path, header=True, index_label="index")
+
+    @staticmethod
+    def __list_diff(list_1: List, list_2: List):
+        """ Compute the difference between two lists
+
+        Args:
+            list_1: first list
+            list_2: second list
+
+        Returns:
+            List
+        """
+        return [i for i in list_1 + list_2
+                if i not in list_1 or i not in list_2]

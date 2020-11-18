@@ -105,7 +105,6 @@ class TestComponentHandler(TestCase):
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
-
     def test__getitem__with_list_of_str(self):
         # object
         args1 = ["temperature", "ci-lower", "ci-upper"]
@@ -127,6 +126,58 @@ class TestComponentHandler(TestCase):
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
+    def test__delitem__with_int(self):
+        # object
+        args1 = ["temperature", "ci-lower", "ci-upper"]
+        args2 = ["pressure", "label"]
+        c1 = Component(args1[0])
+        c1.add_meta(args1[1])
+        c1.add_meta(args1[2])
+        c2 = Component(args2[0])
+        c2.add_meta(args2[1])
+        component_list = [c1, c2]
+        ch = ComponentHandler(component_list)
+        # execute function
+        len_before = len(ch)
+        del ch[0]
+        len_after = len(ch)
+        # test
+        self.assertTrue(len_before == len_after + 1)
+
+    def test__delitem__with_str(self):
+        # object
+        args1 = ["temperature", "ci-lower", "ci-upper"]
+        args2 = ["pressure", "label"]
+        c1 = Component(args1[0])
+        c1.add_meta(args1[1])
+        c1.add_meta(args1[2])
+        c2 = Component(args2[0])
+        c2.add_meta(args2[1])
+        component_list = [c1, c2]
+        ch = ComponentHandler(component_list)
+        # execute function
+        len_before = len(ch)
+        del ch["0_temperature"]
+        len_after = len(ch)
+        # test
+        self.assertTrue(len_before == len_after + 1)
+
+    def test__str(self):
+        # object
+        args1 = ["temperature", "ci-lower", "ci-upper"]
+        args2 = ["pressure", "label"]
+        c1 = Component(args1[0])
+        c1.add_meta(args1[1])
+        c1.add_meta(args1[2])
+        c2 = Component(args2[0])
+        c2.add_meta(args2[1])
+        component_list = [c1, c2]
+        ch = ComponentHandler(component_list)
+        # test
+        my_str = ch.__str__()
+        wanted_str = str([f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
+                          f"1_{args2[0]}", f"1-0_{args2[1]}"])
+        self.assertEqual(wanted_str, my_str)
 
     def test__append__contains_component(self):
         # object

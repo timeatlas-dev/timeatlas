@@ -19,7 +19,7 @@ class TestTimeSeries(TestCase):
         # Create a time indexed series
         index = DatetimeIndex(['2019-01-01', '2019-01-02',
                                '2019-01-03', '2019-01-04'])
-        self.my_series = Series([0.4, 1.0, 0.7, 0.6], index=index)
+        self.my_data = Series([0.4, 1.0, 0.7, 0.6], index=index).to_frame()
 
         # Create metadata
         my_unit = {
@@ -37,7 +37,9 @@ class TestTimeSeries(TestCase):
         }
         self.my_metadata = Metadata(my_dict)
 
-        self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
+        #self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
+
+        self.my_time_series = TimeSeries(self.my_data)
 
         # Define a target directory
         self.target_dir = "data/test-export"
@@ -117,6 +119,128 @@ class TestTimeSeries(TestCase):
         ts = TimeSeries(my_series)
         self.assertEqual(infer_freq(index), ts.data.index.freq)
 
+    def test__getitem__with_int(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        # test selection
+        expected = ts.data.iloc[[0]]
+        actual = ts[0].data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        expected_handler = ts.handler
+        actual_handler = ts[0].handler
+        self.assertEqual(id(actual_handler), id(expected_handler))
+
+    def test__getitem__with_str__select_the_right_data(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
+        ts = ts1.stack(ts2)
+        # test data
+        expected = ts.data.loc[:, ["0_values"]]
+        actual = ts["0_values"].data
+        self.assertTrue(actual.equals(expected))
+
+    def test__getitem__with_str__select_the_right_component_in_handler(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
+        ts = ts1.stack(ts2)
+        # test presence of two components in handler
+        self.assertEqual(ts.handler.get_columns().to_list(),
+                         ["0_values", "1_values"])
+        # test that selection with one component returns one component in
+        # handler
+        new_ts = ts["0_values"]
+        self.assertEqual(new_ts.handler.get_columns().to_list(),
+                         ["0_values"])
+        nb_components = len(new_ts.handler.components)
+        self.assertEqual(nb_components, 1)
+        # test that it is the right component
+        c = new_ts.handler.get_component_by_name("0_values")
+        self.assertEqual(c.get_main(), "values")
+
+    def test__getitem__with_timestamp(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        timestamp = Timestamp("01-01-2020")
+        # test selection
+        expected = ts.data.loc[[timestamp]]
+        actual = ts[timestamp].data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        expected_handler = ts.handler
+        actual_handler = ts[timestamp].handler
+        self.assertEqual(id(actual_handler), id(expected_handler))
+
+    def test__getitem__with_slice_of_int(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        # test selection
+        expected = ts.data.iloc[0:5]
+        actual = ts[0:5].data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        expected_handler = ts.handler
+        actual_handler = ts[0:5].handler
+        self.assertEqual(id(actual_handler), id(expected_handler))
+
+    def test__getitem__with_slice_of_str(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        # test selection
+        expected = ts.data.loc["01-01-2020 10:00":"01-01-2020 20:00"]
+        actual = ts["01-01-2020 10:00":"01-01-2020 20:00"].data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        expected_handler = ts.handler
+        actual_handler = ts["01-01-2020 10:00":"01-01-2020 20:00"].handler
+        self.assertEqual(id(actual_handler), id(expected_handler))
+
+    def test__getitem__with_list_of_int(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
+        ts3 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
+        ts4 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
+        ts = ts1.stack(ts2).stack(ts3).stack(ts4)
+        # function at test
+        selection = [0, 1, 3]
+        new_ts = ts[selection]
+        # test selection
+        expected = ts.data.iloc[:, selection]
+        expected = expected.rename(columns={"3_values": "2_values"})
+        actual = new_ts.data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        self.assertEqual(new_ts.handler.get_columns().to_list(),
+                         ["0_values", "1_values", "2_values"])
+        # test nb of components
+        nb_components = len(new_ts.handler.components)
+        self.assertEqual(nb_components, 3)
+
+    def test__getitem__with_list_of_str(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
+        ts3 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
+        ts4 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
+        ts = ts1.stack(ts2).stack(ts3).stack(ts4)
+        # function at test
+        selection = ["0_values", "2_values"]
+        new_ts = ts[selection]
+        # test selection
+        expected = ts.data.loc[:, selection]
+        expected = expected.rename(columns={"2_values": "1_values"})
+        actual = new_ts.data
+        self.assertTrue(actual.equals(expected))
+        # test handler similarity
+        self.assertEqual(new_ts.handler.get_columns().to_list(),
+                         ["0_values", "1_values"])
+        # test nb of components
+        nb_components = len(new_ts.handler.components)
+        self.assertEqual(nb_components, 2)
+
     def test__create(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
         self.assertIsInstance(ts, TimeSeries)
@@ -127,7 +251,7 @@ class TestTimeSeries(TestCase):
 
     def test__create__is_regular(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
-        no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
+        no_duration_diff = ts.index.to_series().__list_diff().__list_diff()[2:] == \
                            Timedelta(0)
         is_regular = no_duration_diff.eq(True).all()
         self.assertTrue(is_regular)
@@ -149,6 +273,72 @@ class TestTimeSeries(TestCase):
         # Test if frequency is daily
         self.assertEqual(ts.data.index.inferred_freq,
                          ts_freq.data.index.inferred_freq)
+
+    def test__stack(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H")
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        # test
+        ts3 = ts1.stack(ts2)
+        s1 = ts1.data["0_values"]
+        s2 = ts2.data["0_values"]
+        ss1 = ts3.data["0_values"]
+        ss2 = ts3.data["1_values"]
+        self.assertTrue(s1.equals(ss1))
+        self.assertTrue(s2.equals(ss2))
+
+    def test__drop(self):
+        # object
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H")
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts3 = ts1.stack(ts2)
+        # test
+        ts4 = ts3.drop(0)
+        s2 = ts2.data["0_values"]
+        s4 = ts4.data["0_values"]
+        self.assertTrue(s2.equals(s4))
+
+    def test__add_meta(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
+        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
+        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
+        # function at test
+        ts = ts.add_meta(ms1, "ci_lower", "0_values")
+        ts = ts.add_meta(ms2, "ci_upper", "0_values")
+        # test handler contains the right columns
+        expected = ["0_values", "0-0_ci_lower", "0-1_ci_upper"]
+        actual = ts.handler.get_columns().to_list()
+        self.assertEqual(expected, actual)
+        # test data has the right infos
+        expected = ms1
+        expected = expected.data.rename(columns={"0_values": "0-0_ci_lower"})
+        actual = ts.data.loc[:, ["0-0_ci_lower"]]
+        self.assertTrue(expected.equals(actual))
+        # test data has the right columns
+        expected = ["0_values", "0-0_ci_lower", "0-1_ci_upper"]
+        actual = ts["0_values"].data.columns.to_list()
+        self.assertEquals(expected, actual)
+
+    def test__drop_meta__on_one_component(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
+        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
+        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
+        ts = ts.add_meta(ms1, "ci_lower", "0_values")
+        ts = ts.add_meta(ms2, "ci_upper", "0_values")
+        # function at test
+        ts.drop_meta("0_values")
+
+    def test__drop_meta__on_all_component(self):
+        # object
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
+        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
+        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
+        ts = ts.add_meta(ms1, "ci_lower", "0_values")
+        ts = ts.add_meta(ms2, "ci_upper", "0_values")
+        # function at test
+        ts.drop_meta()
 
     def test__plot__returns_graph_object_axes(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
@@ -221,7 +411,7 @@ class TestTimeSeries(TestCase):
 
         def is_regular(ts):
             # test if double timestamps in ts
-            no_duration_diff = ts.index.to_series().diff().diff()[2:] == \
+            no_duration_diff = ts.index.to_series().__list_diff().__list_diff()[2:] == \
                                Timedelta(0)
             return no_duration_diff.eq(True).all()
 

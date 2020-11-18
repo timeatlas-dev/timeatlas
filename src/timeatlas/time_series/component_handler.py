@@ -47,6 +47,34 @@ class ComponentHandler:
 
         return ComponentHandler(new_components)
 
+    def __delitem__(self, key: Union[int, str]) -> NoReturn:
+        """ Delete an item from the ComponentHandler
+
+        Args:
+            key: int or str of the item to delete
+        """
+        if isinstance(key, int):
+            del self.components[key]
+        elif isinstance(key, str):
+            i = self.get_component_id_by_name(key)
+            del self.components[i]
+
+    def __len__(self) -> int:
+        """ Get the number of item in the ComponentHandler
+
+        Returns:
+            int
+        """
+        return len(self.components)
+
+    def __str__(self):
+        """ get the str representation of a ComponentHandler
+
+        Returns:
+            str
+        """
+        return str(self.get_columns().to_list())
+
     def append(self, component: Component) -> NoReturn:
         """ Append a Component to the ComponentHandler
 
@@ -59,6 +87,22 @@ class ComponentHandler:
         """ Removes all Components from the ComponentHandler
         """
         self.components.clear()
+
+    def get_component_id_by_name(self, name: str) -> int:
+        """ Get a Component ID by its name
+
+        Args:
+            name: str of the name of the Component, including the ID (lol)
+                e.g. "0_temperature"
+
+        Returns:
+            int
+        """
+        for i, c in enumerate(self.get_columns(with_meta=False).to_list()):
+            if name == c:
+                return i
+        # if no component are found throughout the for loop
+        raise KeyError(f"Component with name '{name}' does not exist.")
 
     def get_component_by_name(self, name: str):
         """ Get a Component by its name
