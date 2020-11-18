@@ -298,48 +298,6 @@ class TestTimeSeries(TestCase):
         s4 = ts4.data["0_values"]
         self.assertTrue(s2.equals(s4))
 
-    def test__add_meta(self):
-        # object
-        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
-        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
-        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
-        # function at test
-        ts = ts.add_meta(ms1, "ci_lower", "0_values")
-        ts = ts.add_meta(ms2, "ci_upper", "0_values")
-        # test handler contains the right columns
-        expected = ["0_values", "0-0_ci_lower", "0-1_ci_upper"]
-        actual = ts.handler.get_columns().to_list()
-        self.assertEqual(expected, actual)
-        # test data has the right infos
-        expected = ms1
-        expected = expected.data.rename(columns={"0_values": "0-0_ci_lower"})
-        actual = ts.data.loc[:, ["0-0_ci_lower"]]
-        self.assertTrue(expected.equals(actual))
-        # test data has the right columns
-        expected = ["0_values", "0-0_ci_lower", "0-1_ci_upper"]
-        actual = ts["0_values"].data.columns.to_list()
-        self.assertEquals(expected, actual)
-
-    def test__drop_meta__on_one_component(self):
-        # object
-        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
-        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
-        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
-        ts = ts.add_meta(ms1, "ci_lower", "0_values")
-        ts = ts.add_meta(ms2, "ci_upper", "0_values")
-        # function at test
-        ts.drop_meta("0_values")
-
-    def test__drop_meta__on_all_component(self):
-        # object
-        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(2)
-        ms1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
-        ms2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(3)
-        ts = ts.add_meta(ms1, "ci_lower", "0_values")
-        ts = ts.add_meta(ms2, "ci_upper", "0_values")
-        # function at test
-        ts.drop_meta()
-
     def test__plot__returns_graph_object_axes(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020", "H")
         my_fig = ts.plot()
