@@ -14,9 +14,9 @@ import plotly.io as pio
 from timeatlas.config.colors import colors
 from ._utils import add_metadata_to_plot
 from timeatlas.config.constants import (
-    TIME_SERIES_VALUES,
-    TIME_SERIES_CI_LOWER,
-    TIME_SERIES_CI_UPPER,
+    COMPONENT_VALUES,
+    COMPONENT_META_CI_LOWER,
+    COMPONENT_META_CI_UPPER,
 )
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ def line_plot(ts: 'TimeSeries', context: str = "paper", *args, **kwargs) -> Any:
         if 'color' not in kwargs:
             kwargs['color'] = colors.blue_dark
 
-        ax = ts.data.plot(*args, **kwargs)
+        ax = ts._data.plot(*args, **kwargs)
         ax.set_xlabel("Date")
         ax.grid(True, c=colors.grey, ls='-', lw=1, alpha=0.2)
 
@@ -70,7 +70,7 @@ def line_plot(ts: 'TimeSeries', context: str = "paper", *args, **kwargs) -> Any:
         fig.add_trace(go.Scatter(
             x=ts.index,
             y=ts.values,
-            name=ts.data[TIME_SERIES_VALUES].name
+            name=ts._data[COMPONENT_VALUES].name
         ))
         fig.update_layout(showlegend=True)
 
@@ -113,22 +113,22 @@ def prediction_plot(forecast: 'TimeSeries', observation: 'TimeSeries' = None) ->
             ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
 
     # Add the lines to the plot
-    ax.plot(forecast.data.index, forecast.data[TIME_SERIES_VALUES].values,
+    ax.plot(forecast._data.index, forecast._data[COMPONENT_VALUES].values,
             ls='--',
             c=colors.blue_dark,
             label="prediction")
 
     # If present, add confidence interval
-    if TIME_SERIES_CI_LOWER in forecast.data.columns and \
-            TIME_SERIES_CI_UPPER in forecast.data.columns:
-        ax.fill_between(forecast.data.index,
-                        forecast.data[TIME_SERIES_CI_LOWER].values,
-                        forecast.data[TIME_SERIES_CI_UPPER].values,
+    if COMPONENT_META_CI_LOWER in forecast._data.columns and \
+            COMPONENT_META_CI_UPPER in forecast._data.columns:
+        ax.fill_between(forecast._data.index,
+                        forecast._data[COMPONENT_META_CI_LOWER].values,
+                        forecast._data[COMPONENT_META_CI_UPPER].values,
                         color=colors.blue_light,
                         label="confidence interval")
 
     if observation is not None:
-        ax.plot(observation.data.index, observation.data.values,
+        ax.plot(observation._data.index, observation._data.values,
                 ls='-',
                 c=colors.blue_dark,
                 label="observation")
@@ -167,7 +167,7 @@ def status_plot(ts: 'TimeSeries', cmap: str = "autumn_r") -> Any:
     ax.set_yticks([])  # remove all yticks
     ax.xaxis_date()
 
-    m = ax.imshow([ts.data],
+    m = ax.imshow([ts._data],
                   extent=[x_lims[0], x_lims[1], y_lims[0], y_lims[1]],
                   aspect='auto',
                   cmap=cmap)
@@ -192,8 +192,8 @@ def kde_plot(ts: 'TimeSeries') -> np.ndarray:
     Returns:
         numpy.ndarray[matplotlib.axes._subplots.AxesSubplot]
     """
-    timestamps = ts.data.index.astype(np.int64) // 10 ** 9
-    values = ts.data["values"].values
+    timestamps = ts._data.index.astype(np.int64) // 10 ** 9
+    values = ts._data["values"].values
 
     fig, axs = plt.subplots(2, 1,
                             sharex='col',

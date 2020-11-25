@@ -9,7 +9,7 @@ from pandas.tseries.frequencies import to_offset
 import numpy as np
 
 from timeatlas import TimeSeries, TimeSeriesDataset
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import COMPONENT_VALUES
 
 
 class TestTimeSeriesDataset(TestCase):
@@ -169,13 +169,13 @@ class TestTimeSeriesDataset(TestCase):
         tsd = TimeSeriesDataset.create(length, start, end, freq)
         # test if every elements are nans
         for ts in tsd:
-            for i in ts.data[TIME_SERIES_VALUES]:
+            for i in ts._data[COMPONENT_VALUES]:
                 self.assertIs(i, np.nan)
         # fill with zeros
         tsd = tsd.fill(0)
         # test if every elements are zeros
         for ts in tsd:
-            for i in ts.data[TIME_SERIES_VALUES]:
+            for i in ts._data[COMPONENT_VALUES]:
                 self.assertIs(i, 0)
 
     def test__empty(self):
@@ -189,13 +189,13 @@ class TestTimeSeriesDataset(TestCase):
         tsd = tsd.fill(0)
         # test if every elements are zeros
         for ts in tsd:
-            for i in ts.data[TIME_SERIES_VALUES]:
+            for i in ts._data[COMPONENT_VALUES]:
                 self.assertIs(i, 0)
         # fill with Nans
         tsd = tsd.empty()
         # test if every elements are nans
         for ts in tsd:
-            for i in ts.data[TIME_SERIES_VALUES]:
+            for i in ts._data[COMPONENT_VALUES]:
                 self.assertTrue(np.isnan(i))
 
     def test__pad_right(self):
@@ -234,17 +234,17 @@ class TestTimeSeriesDataset(TestCase):
         ts1 = TimeSeries.create("02-01-2020", "06-01-2020", "H").fill(0)
         ts2 = TimeSeries.create("01-01-2020", "04-01-2020", "H").fill(0)
         # Add Nones
-        ts1.data[:21] = None
-        ts1.data[-4:] = None
-        ts2.data[:2] = None
-        ts2.data[-14:] = None
+        ts1._data[:21] = None
+        ts1._data[-4:] = None
+        ts2._data[:2] = None
+        ts2._data[-14:] = None
         # Make the TSD
         tsd = TimeSeriesDataset([ts1, ts2])
         # Call the function to test
         tsd = tsd.trim()
         # Test
         for ts in tsd:
-            for i in ts.data[TIME_SERIES_VALUES]:
+            for i in ts._data[COMPONENT_VALUES]:
                 self.assertFalse(np.isnan(i))
 
     def test__merge(self):
@@ -266,17 +266,17 @@ class TestTimeSeriesDataset(TestCase):
     def test__merge_by_label(self):
         # Create TSD
         ts_1 = TimeSeries.create('2019-01-01', '2019-01-02', "1D")
-        ts_1.data[TIME_SERIES_VALUES] = [0, 1]
+        ts_1._data[COMPONENT_VALUES] = [0, 1]
         ts_1.class_label = "Sensor1"
 
         ts_2 = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts_2.data[TIME_SERIES_VALUES] = [2]
+        ts_2._data[COMPONENT_VALUES] = [2]
         ts_2.class_label = "Sensor1"
 
         tsd1 = TimeSeriesDataset([ts_1, ts_2])
 
         ts_3 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
-        ts_3.data[TIME_SERIES_VALUES] = [0, 1, 2]
+        ts_3._data[COMPONENT_VALUES] = [0, 1, 2]
         ts_3.class_label = "Sensor2"
 
         tsd2 = TimeSeriesDataset([ts_3])
@@ -286,18 +286,18 @@ class TestTimeSeriesDataset(TestCase):
 
         # Create Goal
         ts_goal_1 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
-        ts_goal_1.data[TIME_SERIES_VALUES] = [0, 1, 2]
+        ts_goal_1._data[COMPONENT_VALUES] = [0, 1, 2]
         ts_goal_1.class_label = "Sensor1"
 
         ts_goal_2 = TimeSeries.create('2019-01-01', '2019-01-03', "1D")
-        ts_goal_2.data[TIME_SERIES_VALUES] = [0, 1, 2]
+        ts_goal_2._data[COMPONENT_VALUES] = [0, 1, 2]
         ts_goal_2.class_label = "Sensor2"
 
         tsd_goal = TimeSeriesDataset([ts_goal_1, ts_goal_2])
 
         check = True
         for i, ts in enumerate(tsd_goal):
-            check &= ts.data.equals(tsd_merged[i].data)
+            check &= ts._data.equals(tsd_merged[i]._data)
             check &= (ts.class_label == tsd_merged[i].class_label)
 
         self.assertTrue(check)
@@ -305,7 +305,7 @@ class TestTimeSeriesDataset(TestCase):
     def test__shuffle(self):
         # Create TSD
         ts = TimeSeries.create('2019-01-03', '2019-01-03', "1D")
-        ts.data[TIME_SERIES_VALUES] = [2]
+        ts._data[COMPONENT_VALUES] = [2]
 
         tss = []
         for i in range(100):
@@ -373,13 +373,13 @@ class TestTimeSeriesDataset(TestCase):
 
         # setup data
         ts_1 = TimeSeries.create('2019-01-03', '2019-01-05', "1D")
-        ts_1.data[TIME_SERIES_VALUES] = [3, 4, 5]
+        ts_1._data[COMPONENT_VALUES] = [3, 4, 5]
         ts_2 = TimeSeries.create('2019-01-01', '2019-01-05', "1D")
-        ts_2.data[TIME_SERIES_VALUES] = [1, 2, 3, 4, 5]
+        ts_2._data[COMPONENT_VALUES] = [1, 2, 3, 4, 5]
         ts_3 = TimeSeries.create('2019-01-05', '2019-01-10', "1D")
-        ts_3.data[TIME_SERIES_VALUES] = [5, 6, 7, 8, 9, 10]
+        ts_3._data[COMPONENT_VALUES] = [5, 6, 7, 8, 9, 10]
         ts_4 = TimeSeries.create('2019-01-03', '2019-01-07', "1D")
-        ts_4.data[TIME_SERIES_VALUES] = [3, 4, 5, 6, 7]
+        ts_4._data[COMPONENT_VALUES] = [3, 4, 5, 6, 7]
 
         tsd = TimeSeriesDataset([ts_1, ts_2, ts_3, ts_4])
 
@@ -396,13 +396,13 @@ class TestTimeSeriesDataset(TestCase):
 
         # setup data
         ts_1 = TimeSeries.create('2019-01-03', '2019-01-05', "1D")
-        ts_1.data[TIME_SERIES_VALUES] = [3, 4, 5]
+        ts_1._data[COMPONENT_VALUES] = [3, 4, 5]
         ts_2 = TimeSeries.create('2019-01-01', '2019-01-05', "1D")
-        ts_2.data[TIME_SERIES_VALUES] = [1, 2, 3, 4, 5]
+        ts_2._data[COMPONENT_VALUES] = [1, 2, 3, 4, 5]
         ts_3 = TimeSeries.create('2019-01-05', '2019-01-10', "1D")
-        ts_3.data[TIME_SERIES_VALUES] = [5, 6, 7, 8, 9, 10]
+        ts_3._data[COMPONENT_VALUES] = [5, 6, 7, 8, 9, 10]
         ts_4 = TimeSeries.create('2019-01-03', '2019-01-07', "1D")
-        ts_4.data[TIME_SERIES_VALUES] = [3, 4, 5, 6, 7]
+        ts_4._data[COMPONENT_VALUES] = [3, 4, 5, 6, 7]
 
         tsd = TimeSeriesDataset([ts_1, ts_2, ts_3, ts_4])
 
@@ -418,13 +418,13 @@ class TestTimeSeriesDataset(TestCase):
 
         # setup data
         ts_1 = TimeSeries.create('2019-01-03', '2019-01-05', "1D")
-        ts_1.data[TIME_SERIES_VALUES] = [3, 4, 5]
+        ts_1._data[COMPONENT_VALUES] = [3, 4, 5]
         ts_2 = TimeSeries.create('2019-01-01', '2019-01-05', "1D")
-        ts_2.data[TIME_SERIES_VALUES] = [1, 2, 3, 4, 5]
+        ts_2._data[COMPONENT_VALUES] = [1, 2, 3, 4, 5]
         ts_3 = TimeSeries.create('2019-01-05', '2019-01-10', "1D")
-        ts_3.data[TIME_SERIES_VALUES] = [5, 6, 7, 8, 9, 10]
+        ts_3._data[COMPONENT_VALUES] = [5, 6, 7, 8, 9, 10]
         ts_4 = TimeSeries.create('2019-01-03', '2019-01-07', "1D")
-        ts_4.data[TIME_SERIES_VALUES] = [3, 4, 5, 6, 7]
+        ts_4._data[COMPONENT_VALUES] = [3, 4, 5, 6, 7]
 
         tsd = TimeSeriesDataset([ts_1, ts_2, ts_3, ts_4])
 
@@ -441,13 +441,13 @@ class TestTimeSeriesDataset(TestCase):
 
         # setup data
         ts_1 = TimeSeries.create('2019-01-03', '2019-01-05', "1D")
-        ts_1.data[TIME_SERIES_VALUES] = [3, 4, 5]
+        ts_1._data[COMPONENT_VALUES] = [3, 4, 5]
         ts_2 = TimeSeries.create('2019-01-01', '2019-01-05', "1D")
-        ts_2.data[TIME_SERIES_VALUES] = [1, 2, 3, 4, 5]
+        ts_2._data[COMPONENT_VALUES] = [1, 2, 3, 4, 5]
         ts_3 = TimeSeries.create('2019-01-05', '2019-01-10', "1D")
-        ts_3.data[TIME_SERIES_VALUES] = [5, 6, 7, 8, 9, 10]
+        ts_3._data[COMPONENT_VALUES] = [5, 6, 7, 8, 9, 10]
         ts_4 = TimeSeries.create('2019-01-03', '2019-01-07', "1D")
-        ts_4.data[TIME_SERIES_VALUES] = [3, 4, 5, 6, 7]
+        ts_4._data[COMPONENT_VALUES] = [3, 4, 5, 6, 7]
 
         tsd = TimeSeriesDataset([ts_1, ts_2, ts_3, ts_4])
 
@@ -464,8 +464,8 @@ class TestTimeSeriesDataset(TestCase):
 
         # prepare data
 
-        ts.data[TIME_SERIES_VALUES] = [0, 1, 2]
-        ts.data["label_test"] = [0, None, 2]
+        ts._data[COMPONENT_VALUES] = [0, 1, 2]
+        ts._data["label_test"] = [0, None, 2]
         ts.class_label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
@@ -496,8 +496,8 @@ class TestTimeSeriesDataset(TestCase):
 
         # prepare data
 
-        ts.data[TIME_SERIES_VALUES] = [0, 1, 2]
-        ts.data["label_test"] = [0, None, 2]
+        ts._data[COMPONENT_VALUES] = [0, 1, 2]
+        ts._data["label_test"] = [0, None, 2]
         ts.class_label = "Test"
 
         tsd = TimeSeriesDataset([ts, ts, ts])
@@ -520,8 +520,8 @@ class TestTimeSeriesDataset(TestCase):
 
         # prepare data
 
-        ts.data[TIME_SERIES_VALUES] = [0, 1]
-        ts.data["label_test"] = [0, None]
+        ts._data[COMPONENT_VALUES] = [0, 1]
+        ts._data["label_test"] = [0, None]
         ts.class_label = "Test"
         tsd = TimeSeriesDataset([ts, ts])
 

@@ -3,7 +3,7 @@ from typing import NoReturn, Tuple, Any, Union, Optional, List, Callable, Dict
 from timeatlas.abstract.abstract_base_generator import AbstractBaseGenerator
 from timeatlas.time_series import TimeSeries
 from timeatlas.time_series_dataset import TimeSeriesDataset
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import COMPONENT_VALUES
 
 from .anomalies import AnomalyABC
 from .utils import get_operator
@@ -151,7 +151,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         precision_df = np.array(
             [self.precision_and_scale(x) for ts in self.data for x in
-             ts.data.values])
+             ts._data.values])
         # This is more of a security. A correctly formated TimeSeries-object has no None elements
         precision_df = precision_df[precision_df != None]
 
@@ -245,7 +245,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         """
 
-        self.data[index].data[TIME_SERIES_VALUES].replace(to_replace=pd.Series(new_data))
+        self.data[index]._data[COMPONENT_VALUES].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
         """
@@ -291,12 +291,12 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         # TODO: This adds the anomalies at the start and not where they belong
         for (ind, ts), (function, params) in zip_list_functions:
-            data = ts.data
+            data = ts._data
             operation_param = params['operation']
             function_params = copy(params)
             function_params.pop('operation')
             # TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
-            anomaly, coordinates = function(data[TIME_SERIES_VALUES], **function_params)
+            anomaly, coordinates = function(data[COMPONENT_VALUES], **function_params)
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)

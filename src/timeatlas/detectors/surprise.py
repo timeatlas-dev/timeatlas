@@ -3,7 +3,7 @@ from typing import List, Callable, Tuple, Union
 from timeatlas.time_series import TimeSeries
 from timeatlas.abstract import AbstractBaseDetector, AbstractBaseModel
 from timeatlas.processors import Scaler, miscellaneous
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import COMPONENT_VALUES
 
 
 class Surprise(AbstractBaseDetector):
@@ -130,7 +130,7 @@ class Surprise(AbstractBaseDetector):
         res = []
         if method == "quantile":
             for k, v in enumerate(thresholds):
-                res.append(ts.data[TIME_SERIES_VALUES].quantile(q=v))
+                res.append(ts._data[COMPONENT_VALUES].quantile(q=v))
         elif method == "threshold":
             res = thresholds
         else:

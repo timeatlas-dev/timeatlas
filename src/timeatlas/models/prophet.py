@@ -8,9 +8,9 @@ except ModuleNotFoundError:
 
 from timeatlas.abstract import AbstractBaseModel
 from timeatlas.config.constants import (
-    TIME_SERIES_VALUES,
-    TIME_SERIES_CI_UPPER,
-    TIME_SERIES_CI_LOWER,
+    COMPONENT_VALUES,
+    COMPONENT_META_CI_UPPER,
+    COMPONENT_META_CI_LOWER,
     MODEL_TYPE_UNIVARIATE,
     MODEL_TYPE_MULTIVARIATE
 )
@@ -94,13 +94,13 @@ class Prophet(AbstractBaseModel):
 
         # Predict
         forecast = self.model.predict(future)
-        forecast.rename(columns={"yhat": TIME_SERIES_VALUES,
-                                 "yhat_lower": TIME_SERIES_CI_LOWER,
-                                 "yhat_upper": TIME_SERIES_CI_UPPER},
+        forecast.rename(columns={"yhat": COMPONENT_VALUES,
+                                 "yhat_lower": COMPONENT_META_CI_LOWER,
+                                 "yhat_upper": COMPONENT_META_CI_UPPER},
                         inplace=True)
-        df = forecast[[TIME_SERIES_VALUES,
-                       TIME_SERIES_CI_LOWER,
-                       TIME_SERIES_CI_UPPER]]
+        df = forecast[[COMPONENT_VALUES,
+                       COMPONENT_META_CI_LOWER,
+                       COMPONENT_META_CI_UPPER]]
         df.index = forecast["ds"]
 
         # Register the prediction plot

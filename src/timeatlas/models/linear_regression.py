@@ -5,7 +5,7 @@ from sklearn import linear_model
 
 from timeatlas.time_series import TimeSeries
 from timeatlas.abstract import AbstractBaseModel
-from timeatlas.config.constants import TIME_SERIES_VALUES
+from timeatlas.config.constants import COMPONENT_VALUES
 
 
 class LinearRegression(AbstractBaseModel):
@@ -42,7 +42,7 @@ class LinearRegression(AbstractBaseModel):
             future, index = self.make_future_arrays(horizon)
         elif isinstance(horizon, TimeSeries):
             future, y_train = self.__prepare_series_for_sklearn(horizon)
-            index = horizon.data.index
+            index = horizon._data.index
         forecast = self.model.predict(future)
         return TimeSeries(Series(data=forecast, index=index))
 
@@ -61,8 +61,8 @@ class LinearRegression(AbstractBaseModel):
                 - a Numpy ndarray with shape (n, 1)
                 - a Numpy ndarray with shape (n,)
         """
-        X_train = ts.data.index.factorize()[0].reshape(-1, 1)
-        y_train = ts.data[TIME_SERIES_VALUES].to_numpy()
+        X_train = ts._data.index.factorize()[0].reshape(-1, 1)
+        y_train = ts._data[COMPONENT_VALUES].to_numpy()
         return X_train, y_train
 
     def make_future_arrays(self, horizon: str, freq: str = None)\
