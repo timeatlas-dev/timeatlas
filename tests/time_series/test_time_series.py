@@ -133,7 +133,7 @@ class TestTimeSeries(TestCase):
         ts = ts1.stack(ts2)
         # test
         for i in ts:
-            self.assertEqual(i.to_list(), [0,1])
+            self.assertEqual(i.to_list(), [0, 1])
 
     def test__getitem__with_int(self):
         # object
@@ -143,8 +143,8 @@ class TestTimeSeries(TestCase):
         actual = ts[0]._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        expected_handler = ts.handler
-        actual_handler = ts[0].handler
+        expected_handler = ts._handler
+        actual_handler = ts[0]._handler
         self.assertEqual(id(actual_handler), id(expected_handler))
 
     def test__getitem__with_str__select_the_right_data(self):
@@ -163,17 +163,17 @@ class TestTimeSeries(TestCase):
         ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
         ts = ts1.stack(ts2)
         # test presence of two components in handler
-        self.assertEqual(ts.handler.get_columns().to_list(),
+        self.assertEqual(ts._handler.get_columns().to_list(),
                          ["0_values", "1_values"])
         # test that selection with one component returns one component in
         # handler
         new_ts = ts["0_values"]
-        self.assertEqual(new_ts.handler.get_columns().to_list(),
+        self.assertEqual(new_ts._handler.get_columns().to_list(),
                          ["0_values"])
-        nb_components = len(new_ts.handler.components)
+        nb_components = len(new_ts._handler.components)
         self.assertEqual(nb_components, 1)
         # test that it is the right component
-        c = new_ts.handler.get_component_by_name("0_values")
+        c = new_ts._handler.get_component_by_name("0_values")
         self.assertEqual(c.get_main(), "values")
 
     def test__getitem__with_timestamp(self):
@@ -185,8 +185,8 @@ class TestTimeSeries(TestCase):
         actual = ts[timestamp]._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        expected_handler = ts.handler
-        actual_handler = ts[timestamp].handler
+        expected_handler = ts._handler
+        actual_handler = ts[timestamp]._handler
         self.assertEqual(id(actual_handler), id(expected_handler))
 
     def test__getitem__with_slice_of_int(self):
@@ -197,8 +197,8 @@ class TestTimeSeries(TestCase):
         actual = ts[0:5]._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        expected_handler = ts.handler
-        actual_handler = ts[0:5].handler
+        expected_handler = ts._handler
+        actual_handler = ts[0:5]._handler
         self.assertEqual(id(actual_handler), id(expected_handler))
 
     def test__getitem__with_slice_of_str(self):
@@ -209,8 +209,8 @@ class TestTimeSeries(TestCase):
         actual = ts["01-01-2020 10:00":"01-01-2020 20:00"]._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        expected_handler = ts.handler
-        actual_handler = ts["01-01-2020 10:00":"01-01-2020 20:00"].handler
+        expected_handler = ts._handler
+        actual_handler = ts["01-01-2020 10:00":"01-01-2020 20:00"]._handler
         self.assertEqual(id(actual_handler), id(expected_handler))
 
     def test__getitem__with_list_of_int(self):
@@ -229,10 +229,10 @@ class TestTimeSeries(TestCase):
         actual = new_ts._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        self.assertEqual(new_ts.handler.get_columns().to_list(),
+        self.assertEqual(new_ts._handler.get_columns().to_list(),
                          ["0_values", "1_values", "2_values"])
         # test nb of components
-        nb_components = len(new_ts.handler.components)
+        nb_components = len(new_ts._handler.components)
         self.assertEqual(nb_components, 3)
 
     def test__getitem__with_list_of_str(self):
@@ -251,10 +251,10 @@ class TestTimeSeries(TestCase):
         actual = new_ts._data
         self.assertTrue(actual.equals(expected))
         # test handler similarity
-        self.assertEqual(new_ts.handler.get_columns().to_list(),
+        self.assertEqual(new_ts._handler.get_columns().to_list(),
                          ["0_values", "1_values"])
         # test nb of components
-        nb_components = len(new_ts.handler.components)
+        nb_components = len(new_ts._handler.components)
         self.assertEqual(nb_components, 2)
 
     def test__create(self):
@@ -492,8 +492,7 @@ class TestTimeSeries(TestCase):
         ts = ts.apply(lambda x: x * 2)
         # Test
         for i in ts:
-            print(i)
-            self.assertEqual(i, val * 2)
+            self.assertEqual(i[0], val * 2)
 
     def test__apply__on_other_time_series(self):
         # Prepare test
@@ -505,7 +504,7 @@ class TestTimeSeries(TestCase):
         ts = ts_1.apply(lambda x, y: x * y, ts_2)
         # Test
         for i in ts:
-            self.assertEqual(i, val_1 * val_2)
+            self.assertEqual(i[0], val_1 * val_2)
 
     def test__apply__on_other_time_series_with_different_length(self):
         # Prepare test
