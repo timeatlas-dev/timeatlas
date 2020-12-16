@@ -102,8 +102,7 @@ class AnomalyABC():
 
         return np.array(values), coordinates
 
-    def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1,
-            change_point_factor: float = 3.0, minimum: int = 1, maximum: int or None = None):
+    def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1, minimum: int = 1, maximum: int or None = None):
         '''
 
         # TODO: Make it possible so the noise can be decreased. (can we extract noise levels from input data)?
@@ -129,8 +128,7 @@ class AnomalyABC():
 
         for e in event_starts:
             offset = 1 if data[e] > 0 else -1
-            start_value = data[e] + np.random.normal(data[e], change_point_factor * sigma,
-                                                     1) * offset
+            start_value = data[e] + np.random.normal(data[e], sigma, 1) * offset
             e_length = np.random.randint(minimum, maximum)
             e_max_length = data[e:e + e_length].shape[0]
             e_end = e + e_max_length
@@ -282,7 +280,7 @@ class AnomalyABC():
 
     def hard_knee(self, data: pd.Series, threshold: float, factor: float = 0.5, n: int = 1):
 
-        #TODO: This might not even be a thing...it is basically a ratio_compression
+        # TODO: This might not even be a thing...it is basically a ratio_compression
         '''
 
         Values above a threshold are squeezed by a factor (0 < factor <= 1)
@@ -374,4 +372,3 @@ class AnomalyABC():
                         coordinates.append([i, i])
 
         return np.array(values), coordinates
-
