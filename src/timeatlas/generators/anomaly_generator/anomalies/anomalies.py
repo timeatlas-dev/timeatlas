@@ -78,7 +78,7 @@ class AnomalyABC():
 
         return np.array(values), coordinates
 
-    def outlier(self, data: pd.Series, n: int = 1, sigma: float = 0.1):
+    def outlier(self, data: pd.Series, n: int = 1, sigma: float = 0.1, mu: float = 1):
         '''
 
         Sudden 1 time index long spike in the time series
@@ -97,12 +97,13 @@ class AnomalyABC():
         values = []
         for e in event_starts:
             offset = 1 if data[e] > 0 else -1
-            values.append(data[e] + (np.random.normal(data[e], sigma, 1) * offset))
+            values.append(data[e] + (np.random.normal(mu, sigma, 1) * offset))
             coordinates.append([e, e])
 
         return np.array(values), coordinates
 
-    def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1, minimum: int = 1, maximum: int or None = None):
+    def increase_noise(self, data: pd.Series, n: int = 1, sigma: float = 0.1, minimum: int = 1,
+            maximum: int or None = None):
         '''
 
         # TODO: Make it possible so the noise can be decreased. (can we extract noise levels from input data)?
