@@ -40,6 +40,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
         # Here: AGM -> Anomaly Generator Manual
         super().__init__()
         self.label_suffix = "AGM"
+
+        assert save_as == 'text' or save_as == 'pickle' or save_as == 'tsd'
         self.save_as = save_as
 
         # assertions
@@ -172,6 +174,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
             self.data.to_text(path=f'./{self.outfile}_data')
         elif self.save_as == 'pickle':
             self.data.to_pickle(path=f'./{self.outfile}_data.pkl')
+        elif self.save_as == 'tsd':
+            return self.data
 
         # This function is no longer needed, since we save the labels now in the TimeSeries
         # self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
@@ -314,4 +318,4 @@ class AnomalyGenerator(AbstractBaseGenerator):
                             function_name=function.__name__)
 
         if self.GLOBAL['save']:
-            self.save()
+            return self.save()
