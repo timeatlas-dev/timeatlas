@@ -40,6 +40,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
         # Here: AGM -> Anomaly Generator Manual
         super().__init__()
         self.label_suffix = "AGM"
+
+        assert save_as == 'text' or save_as == 'pickle' or save_as == 'tsd'
         self.save_as = save_as
 
         # assertions
@@ -50,7 +52,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
             conf_file), f"No config file found under given path '{conf_file}'"
 
         # set data
-        self.data = data
+        self.data = data.copy(deep=True)
 
         # read the config file
         self.config = AnomalyConfigParser(config_file=conf_file)
@@ -172,6 +174,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
             self.data.to_text(path=f'./{self.outfile}_data')
         elif self.save_as == 'pickle':
             self.data.to_pickle(path=f'./{self.outfile}_data.pkl')
+        elif self.save_as == 'tsd':
+            return self.data
 
         # This function is no longer needed, since we save the labels now in the TimeSeries
         # self.labels.annotation.to_csv(f'./{self.outfile}_data/{self.outfile}_labels.csv', index=False)
@@ -203,7 +207,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         """
 
-        ind, data = self.data.random(n=self.amount, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_randomly(n=self.amount, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def chose_selection(self) -> List:
@@ -216,8 +220,8 @@ class AnomalyGenerator(AbstractBaseGenerator):
         Returns: List of pair of indices and data
 
         """
-        ind, data = self.data.select(selection=self.selection, indices=True)
-        return list(zip(ind, data))
+        data = self.data[self.selection]
+        return list(zip(self.selection, data))
 
     def chose_percentage(self) -> List:
         """
@@ -229,7 +233,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
         Returns: List of pair of indices and data
 
         """
-        ind, data = self.data.percent(percent=self.percent, seed=self.seed, indices=True)
+        ind, data = self.data.select_components_by_percentage(percent=self.percent, seed=self.seed, indices=True)
         return list(zip(ind, data))
 
     def add_data(self, new_data: TimeSeries, index: int) -> NoReturn:
@@ -314,4 +318,4 @@ class AnomalyGenerator(AbstractBaseGenerator):
                             function_name=function.__name__)
 
         if self.GLOBAL['save']:
-            self.save()
+            return self.save()
