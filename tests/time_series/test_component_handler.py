@@ -92,7 +92,7 @@ class TestComponentHandler(TestCase):
         self.assertIsInstance(ch[0], ComponentHandler)
         # test content
         wanted_cols = [f"0_{args1[0]}",
-                       f"1_{args2[0]}",]
+                       f"1_{args2[0]}", ]
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
@@ -110,7 +110,7 @@ class TestComponentHandler(TestCase):
         self.assertIsInstance(ch[0], ComponentHandler)
         # test content
         wanted_cols = [f"0_{args1[0]}",
-                       f"1_{args2[0]}",]
+                       f"1_{args2[0]}", ]
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
@@ -155,7 +155,7 @@ class TestComponentHandler(TestCase):
         # test
         my_str = ch.__str__()
         wanted_str = str([f"0_{args1[0]}",
-                          f"1_{args2[0]}",])
+                          f"1_{args2[0]}", ])
         self.assertEqual(wanted_str, my_str)
 
     def test__append__contains_component(self):
@@ -195,6 +195,20 @@ class TestComponentHandler(TestCase):
         # test second component
         wanted_cols_1 = [f"1_{args2[0]}"]
         cols_1 = ch.get_column_by_id(1).to_list()
+        self.assertEqual(wanted_cols_1, cols_1)
+
+    def test__get_columns__without_meta(self):
+        # object
+        args1 = ["temperature"]
+        args2 = ["pressure"]
+        c1 = Component(args1[0])
+        c2 = Component(args2[0])
+        component_list = [c1, c2]
+        ch = ComponentHandler(component_list)
+        # test 1 - cols are not equal
+        wanted_cols_1 = [f"0_{args1[0]}",
+                         f"1_{args2[0]}",]
+        cols_1 = ch.get_columns().to_list()
         self.assertEqual(wanted_cols_1, cols_1)
 
     def test__get_column_by_id__without_meta(self):
@@ -283,4 +297,3 @@ class TestComponentHandler(TestCase):
         # test
         copy = ch.copy(deep=False)
         self.assertEqual(id(ch.components), id(copy.components))
-
