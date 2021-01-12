@@ -46,13 +46,10 @@ class TestComponentHandler(TestCase):
 
     def test__getitem__with_int(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -60,19 +57,16 @@ class TestComponentHandler(TestCase):
         # test return type
         self.assertIsInstance(ch, ComponentHandler)
         # test content
-        wanted_cols_0 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}"]
+        wanted_cols_0 = [f"0_{args1[0]}"]
         cols_0 = ch.get_columns().to_list()
         self.assertEqual(wanted_cols_0, cols_0)
 
     def test__getitem__with_str(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -80,19 +74,16 @@ class TestComponentHandler(TestCase):
         # test return type
         self.assertIsInstance(ch[0], ComponentHandler)
         # test content
-        wanted_cols_0 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}"]
+        wanted_cols_0 = [f"0_{args1[0]}"]
         cols_0 = ch.get_columns().to_list()
         self.assertEqual(wanted_cols_0, cols_0)
 
     def test__getitem__with_list_of_int(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -100,20 +91,17 @@ class TestComponentHandler(TestCase):
         # test return type
         self.assertIsInstance(ch[0], ComponentHandler)
         # test content
-        wanted_cols = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
-                       f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        wanted_cols = [f"0_{args1[0]}",
+                       f"1_{args2[0]}",]
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
     def test__getitem__with_list_of_str(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -121,20 +109,17 @@ class TestComponentHandler(TestCase):
         # test return type
         self.assertIsInstance(ch[0], ComponentHandler)
         # test content
-        wanted_cols = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
-                       f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        wanted_cols = [f"0_{args1[0]}",
+                       f"1_{args2[0]}",]
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
     def test__delitem__with_int(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -146,13 +131,10 @@ class TestComponentHandler(TestCase):
 
     def test__delitem__with_str(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # execute function
@@ -164,19 +146,16 @@ class TestComponentHandler(TestCase):
 
     def test__str(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
         my_str = ch.__str__()
-        wanted_str = str([f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
-                          f"1_{args2[0]}", f"1-0_{args2[1]}"])
+        wanted_str = str([f"0_{args1[0]}",
+                          f"1_{args2[0]}",])
         self.assertEqual(wanted_str, my_str)
 
     def test__append__contains_component(self):
@@ -192,13 +171,10 @@ class TestComponentHandler(TestCase):
 
     def test__get_component_by_name(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
@@ -206,53 +182,44 @@ class TestComponentHandler(TestCase):
 
     def test__get_column_by_id__gives_right_column_names(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test first component
-        wanted_cols_0 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}"]
+        wanted_cols_0 = [f"0_{args1[0]}"]
         cols_0 = ch.get_column_by_id(0).to_list()
         self.assertEqual(wanted_cols_0, cols_0)
         # test second component
-        wanted_cols_1 = [f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        wanted_cols_1 = [f"1_{args2[0]}"]
         cols_1 = ch.get_column_by_id(1).to_list()
         self.assertEqual(wanted_cols_1, cols_1)
 
     def test__get_column_by_id__without_meta(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test 1 - cols are not equal
-        wanted_cols_0 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}"]
-        cols_0 = ch.get_column_by_id(0, with_meta=False).to_list()
+        wanted_cols_0 = [f"0_{args2[0]}"]
+        cols_0 = ch.get_column_by_id(0).to_list()
         self.assertNotEqual(wanted_cols_0, cols_0)
         # test 2 - cols are equal
         wanted_cols_1 = [f"1_{args2[0]}"]
-        cols_1 = ch.get_column_by_id(1, with_meta=False).to_list()
+        cols_1 = ch.get_column_by_id(1).to_list()
         self.assertEqual(wanted_cols_1, cols_1)
 
     def test__get_column_by_id__return_pandas_index(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
@@ -261,71 +228,41 @@ class TestComponentHandler(TestCase):
 
     def test__get_column_by_name__gives_right_columms_names(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test 1
-        wanted_cols_0 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}"]
+        wanted_cols_0 = [f"0_{args1[0]}"]
         cols_0 = ch.get_column_by_name(f"0_{args1[0]}").to_list()
         self.assertEqual(wanted_cols_0, cols_0)
         # test 2
-        wanted_cols_1 = [f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        wanted_cols_1 = [f"1_{args2[0]}"]
         cols_1 = ch.get_column_by_name(f"1_{args2[0]}").to_list()
         self.assertEqual(wanted_cols_1, cols_1)
 
     def test__get_columns__gives_right_column_names(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
-        wanted_cols = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
-                       f"1_{args2[0]}", f"1-0_{args2[1]}"]
+        wanted_cols = [f"0_{args1[0]}",
+                       f"1_{args2[0]}"]
         cols = ch.get_columns().to_list()
         self.assertEqual(wanted_cols, cols)
 
-    def test__get_columns__without_meta(self):
-        # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
-        c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
-        c2 = Component(args2[0])
-        c2.add_meta(args2[1])
-        component_list = [c1, c2]
-        ch = ComponentHandler(component_list)
-        # test 1 - cols are not equal
-        wanted_cols_1 = [f"0_{args1[0]}", f"0-0_{args1[1]}", f"0-1_{args1[2]}",
-                         f"1_{args2[0]}", f"1-0_{args2[1]}"]
-        cols_1 = ch.get_columns(with_meta=False).to_list()
-        self.assertNotEqual(wanted_cols_1, cols_1)
-        # test 2 - cols are equal
-        wanted_cols_2 = [f"0_{args1[0]}", f"1_{args2[0]}"]
-        cols_2 = ch.get_columns(with_meta=False).to_list()
-        self.assertEqual(wanted_cols_2, cols_2)
-
     def test__get_columns__returns_pandas_index(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
@@ -334,13 +271,10 @@ class TestComponentHandler(TestCase):
 
     def test__copy__returns_different_id(self):
         # object
-        args1 = ["temperature", "ci-lower", "ci-upper"]
-        args2 = ["pressure", "label"]
+        args1 = ["temperature"]
+        args2 = ["pressure"]
         c1 = Component(args1[0])
-        c1.add_meta(args1[1])
-        c1.add_meta(args1[2])
         c2 = Component(args2[0])
-        c2.add_meta(args2[1])
         component_list = [c1, c2]
         ch = ComponentHandler(component_list)
         # test
