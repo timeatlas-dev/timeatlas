@@ -120,7 +120,7 @@ class ComponentHandler:
                 return c
         raise KeyError(f"Component with name '{name}' does not exist.")
 
-    def get_column_by_id(self, index: int, with_meta: bool = True) -> Index:
+    def get_column_by_id(self, index: int) -> Index:
         """ Get a the name of a column by its Component ID
 
         Get Pandas Index of a Component from the ComponentHandler by its
@@ -135,29 +135,25 @@ class ComponentHandler:
         """
         c = self.components[index]
         cols = [self.__format_main_series(index, c.get_main())]
-        if with_meta:
-            meta = self.__format_meta_series(index, c.get_meta())
-            cols += meta
         return Index(cols)
 
-    def get_column_by_name(self, name: str, with_meta: bool = True) -> Index:
+    def get_column_by_name(self, name: str) -> Index:
         """ Get the name of a column by its Component name
 
         Args:
             name: str if the name of the component in the ComponentHandler
                   e.g: "0_temperature"
-            with_meta: bool to include or not meta series in the return value
 
         Returns:
             Pandas Index of the names of the component
         """
-        for i, c in enumerate(self.get_columns(with_meta=False).to_list()):
+        for i, c in enumerate(self.get_columns().to_list()):
             if name == c:
-                return self.get_column_by_id(i, with_meta=with_meta)
+                return self.get_column_by_id(i)
         # if no component are found throughout the for loop
         raise KeyError(f"Component with name '{name}' does not exist.")
 
-    def get_columns(self, with_meta=True) -> Index:
+    def get_columns(self) -> Index:
         """ Get names of all the Components columns
 
         Get Pandas Index of a Component from the ComponentHandler by its
@@ -165,14 +161,13 @@ class ComponentHandler:
 
         Args:
             index: int of the index of the component in the ComponentHandler
-            with_meta: bool to include or not meta series in the return value
 
         Returns:
             Pandas Index of the names of the component
         """
         cols = []
         for i, c in enumerate(self.components):
-            cols.extend(self.get_column_by_id(i, with_meta).to_list())
+            cols.extend(self.get_column_by_id(i).to_list())
         return Index(cols)
 
     def copy(self, deep=True) -> 'ComponentHandler':
@@ -201,23 +196,5 @@ class ComponentHandler:
             return f"{index}_{value}"
         elif isinstance(value, list):
             return [f"{index}_{v}" for v in value]
-        else:
-            TypeError(f"Type {value} isn't accepted")
-
-    @staticmethod
-    def __format_meta_series(index, value):
-        """ Format a meta series name(s)
-
-        Args:
-            index: int of the position of the meta series
-            value: list with the meta series names
-
-        Returns:
-            list with the formatted str of the series
-        """
-        if isinstance(value, str):
-            return f"{index}-{value}"
-        elif isinstance(value, list):
-            return [f"{index}-{v}" for v in value]
         else:
             TypeError(f"Type {value} isn't accepted")

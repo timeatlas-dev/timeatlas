@@ -93,7 +93,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             # Create instance variables
             self.index = self._data.index  # index accessor
             self.values = self._data[
-                self._handler.get_columns(with_meta=False).to_list()
+                self._handler.get_columns().to_list()
             ]
 
         else:

@@ -23,23 +23,11 @@ class Component:
         self.series[COMPONENT_VALUES] = name
         self.name = self.series[COMPONENT_VALUES]
 
-        self.n_meta = 0  # Initialize the meta series counter
-
         # Add metadata if present
         if metadata is not None:
             self.metadata = metadata
         else:
             self.metadata = None
-
-    def add_meta(self, name: str) -> NoReturn:
-        """ Add a meta series to the Component
-
-        Args:
-            name: str giving the name to the meta series
-        """
-        self.series[f"{COMPONENT_META_PREFIX}{self.n_meta}"] = \
-            f"{self.n_meta}_{name}"
-        self.n_meta = self.n_meta + 1
 
     def get_main(self) -> str:
         """ Get the name of the main series in the component
@@ -49,15 +37,6 @@ class Component:
         """
         return self.series[COMPONENT_VALUES]
 
-    def get_meta(self) -> list:
-        """ Get the names of all meta series in this component
-
-        Returns:
-            list with all the names of the meta series
-        """
-        blacklist = [COMPONENT_VALUES]
-        return [v for k, v in self.series.items() if k not in blacklist]
-
     def get_all(self) -> list:
         """ Get the names of all series in this component
 
@@ -65,5 +44,3 @@ class Component:
             list with all the series names
         """
         return list(self.series.values())
-
-
