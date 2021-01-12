@@ -98,7 +98,7 @@ class ComponentHandler:
         Returns:
             int
         """
-        for i, c in enumerate(self.get_columns(with_meta=False).to_list()):
+        for i, c in enumerate(self.get_columns().to_list()):
             if name == c:
                 return i
         # if no component are found throughout the for loop
