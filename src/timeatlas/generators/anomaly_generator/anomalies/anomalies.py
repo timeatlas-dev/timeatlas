@@ -129,13 +129,12 @@ class AnomalyABC():
 
         for e in event_starts:
             offset = 1 if data[e] > 0 else -1
-            start_value = data[e] + np.random.normal(data[e], sigma, 1) * offset
             e_length = np.random.randint(minimum, maximum)
             e_max_length = data[e:e + e_length].shape[0]
             e_end = e + e_max_length
-
+            anomaly_values = [np.random.normal(data[i], sigma, 1)[0] * offset for i in range(e, e_end)]
             coordinates.append([e, e_end])
-            values.append(np.full((e_length), np.random.normal(start_value, sigma, e_length))[:e_max_length])
+            values.append(np.array(anomaly_values)[:e_max_length])
 
         return np.array(values), coordinates
 
@@ -148,7 +147,7 @@ class AnomalyABC():
         Args:
             data: pandas time series
             n: number of events
-            ending: if True the changepoint is reverted at a random time, else it goes until the end
+            ending: if True the change_point is reverted at a random time, else it goes until the end
             change_point_factor: sigma of the normal distributed change point
 
         Returns: events with coordinates where to integrate them
