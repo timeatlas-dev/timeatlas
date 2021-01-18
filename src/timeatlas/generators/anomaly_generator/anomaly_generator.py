@@ -249,7 +249,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
 
         """
 
-        self.data[index]._data[COMPONENT_VALUES].replace(to_replace=pd.Series(new_data))
+        self.data[index]._data[f'0_{COMPONENT_VALUES}'].replace(to_replace=pd.Series(new_data))
 
     def add_labels(self, index, coordinates, function_name):
         """
@@ -265,12 +265,12 @@ class AnomalyGenerator(AbstractBaseGenerator):
         Returns:
 
         """
-        labels = [None] * len(self.data[index].series)
+        labels = [None] * len(self.data[index]._data)
         for coords in coordinates:
-            start = coords[0]
+            start = coords[0] - 1
             end = coords[1] + 1
             labels[start:end] = [function_name] * len(labels[start:end])
-            self.data[index].series[f'label_{self.label_suffix}'] = labels
+            self.data[index]._data[f'label_{self.label_suffix}'] = labels
             self.data[index].label = function_name
 
     def generate(self) -> NoReturn:
@@ -300,7 +300,7 @@ class AnomalyGenerator(AbstractBaseGenerator):
             function_params = copy(params)
             function_params.pop('operation')
             # TODO: Here we make DataFrame -> Series. A more elegant solution is to be found
-            anomaly, coordinates = function(data[COMPONENT_VALUES], **function_params)
+            anomaly, coordinates = function(data[f'0_{COMPONENT_VALUES}'], **function_params)
             # creating the new data to add
             operator = get_operator(mode=operation_param)
             new_data = operator(data, start=coordinates, values=anomaly)

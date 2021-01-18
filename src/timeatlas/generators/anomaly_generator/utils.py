@@ -1,4 +1,5 @@
 import pandas as pd
+from timeatlas.config.constants import COMPONENT_VALUES
 
 
 def get_operator(mode):
@@ -31,7 +32,7 @@ def add(data, start, values):
 
     """
 
-    data = data['values'].values
+    data = data[f'0_{COMPONENT_VALUES}'].values
 
     for e, v in zip(start, values):
         data[e[0]:e[0] + len(v)] = data[e[0]:e[0] + len(v)] + v
@@ -54,7 +55,7 @@ def replace(data, start, values):
 
     '''
 
-    data = data['values'].values
+    data = data[f'0_{COMPONENT_VALUES}'].values
 
     for e, v in zip(start, values):
         data[e[0]:e[0] + len(v)] = v
@@ -77,7 +78,7 @@ def insert(data, start, values):
 
     '''
 
-    data = data['values'].values
+    data = data[f'0_{COMPONENT_VALUES}'].values
 
     tmp = list(data)
 
