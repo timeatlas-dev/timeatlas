@@ -97,7 +97,7 @@ class AnomalyABC():
         values = []
         for e in event_starts:
             offset = 1 if data[e] > 0 else -1
-            values.append(data[e] + (np.random.normal(mu, sigma, 1) * offset))
+            values.append(np.random.normal(mu, sigma, 1) * offset)
             coordinates.append([e, e])
 
         return np.array(values), coordinates
