@@ -1,5 +1,6 @@
 from typing import NoReturn, Tuple, Any, Union, Optional, List
 from copy import deepcopy, copy
+from warnings import warn
 
 from darts import TimeSeries as DartsTimeSeries
 import numpy as np
@@ -307,7 +308,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         """
 
         Creates windows of the TimeSeries. If size > step the windows will be overlapping.
-        If size == step the behaviour is like ts.split_in_chunks()
 
         Args:
             size: size of the window
@@ -317,7 +317,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
         """
 
-        assert size >= step, 'Size has to be bigger or equal to step.'
+        if size < step:
+            warn(f"Windows size ({size}) is bigger than step size ({step}). The resulting data will jump over some values.")
 
         _rolling_data = [TimeSeries(v, handler=self._handler) for v in self._data.rolling(size) if len(v) == size]
 
