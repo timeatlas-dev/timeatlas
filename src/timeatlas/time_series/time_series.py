@@ -303,6 +303,32 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                      self._data.groupby(np.arange(len(self._data)) // n)]
         return ts_chunks
 
+    def sliding(self, size: int, step: int = 1) -> List['TimeSeries']:
+        """
+
+        Creates windows of the TimeSeries. If size > step the windows will be overlapping.
+        If size == step the behaviour is like ts.split_in_chunks()
+
+
+        Args:
+            size: size of the window
+            step: step size between windows
+
+        Returns: List of TimeSeries
+
+        """
+
+        _rolling_data = self._data.rolling(size)
+
+        for v in _rolling_data:
+            test = TimeSeries(v, handler=self._handler)
+
+        if step == 1:
+            return [TimeSeries(v, handler=self._handler) for v in _rolling_data]
+
+
+        #windows = [TimeSeries(v, handler=self._handler) for n, v in ]
+
     def fill(self, value: Any) -> 'TimeSeries':
         """Fill a TimeSeries with values
 
