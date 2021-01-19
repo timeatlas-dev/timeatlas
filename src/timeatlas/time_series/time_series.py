@@ -41,8 +41,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     """
 
     def __init__(self,
-                 data: DataFrame = None,
-                 handler: ComponentHandler = None):
+            data: DataFrame = None,
+            handler: ComponentHandler = None):
         """Defines a time series
 
         A TimeSeries object is a series of time indexed values.
@@ -173,7 +173,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
     @staticmethod
     def create(start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeries':
         """Creates an empty TimeSeries object with the period as index
 
@@ -309,7 +309,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Creates windows of the TimeSeries. If size > step the windows will be overlapping.
         If size == step the behaviour is like ts.split_in_chunks()
 
-
         Args:
             size: size of the window
             step: step size between windows
@@ -318,16 +317,11 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
         """
 
-        _rolling_data = self._data.rolling(size)
+        assert size >= step, 'Size has to be bigger or equal to step.'
 
-        for v in _rolling_data:
-            test = TimeSeries(v, handler=self._handler)
+        _rolling_data = [TimeSeries(v, handler=self._handler) for v in self._data.rolling(size) if len(v) == size]
 
-        if step == 1:
-            return [TimeSeries(v, handler=self._handler) for v in _rolling_data]
-
-
-        #windows = [TimeSeries(v, handler=self._handler) for n, v in ]
+        return _rolling_data[::step]
 
     def fill(self, value: Any) -> 'TimeSeries':
         """Fill a TimeSeries with values
@@ -507,7 +501,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             assert self._data.shape == ts._data.shape, \
                 "The shape of the TimeSeries given as argument must be " \
                 "equal to self."
-
 
             df_1 = self._data[self._handler.get_columns()]
             df_2 = ts._data[self._handler.get_columns()]
