@@ -37,7 +37,7 @@ class TestTimeSeries(TestCase):
         }
         self.my_metadata = Metadata(my_dict)
 
-        #self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
+        # self.my_time_series = TimeSeries(self.my_series, self.my_metadata)
 
         self.my_time_series = TimeSeries(self.my_data)
 
@@ -121,15 +121,15 @@ class TestTimeSeries(TestCase):
 
     def test__iter__with_one_component(self):
         # object
-        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
         # test
         for i in ts:
             self.assertEqual(i[0], 0)
 
     def test__iter__with_many_component(self):
         # object
-        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
-        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
         ts = ts1.stack(ts2)
         # test
         for i in ts:
@@ -149,8 +149,8 @@ class TestTimeSeries(TestCase):
 
     def test__getitem__with_str__select_the_right_data(self):
         # object
-        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
-        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
         ts = ts1.stack(ts2)
         # test data
         expected = ts._data.loc[:, ["0_values"]]
@@ -159,8 +159,8 @@ class TestTimeSeries(TestCase):
 
     def test__getitem__with_str__select_the_right_component_in_handler(self):
         # object
-        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
-        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(1)
+        ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(1)
         ts = ts1.stack(ts2)
         # test presence of two components in handler
         self.assertEqual(ts._handler.get_columns().to_list(),
@@ -293,7 +293,7 @@ class TestTimeSeries(TestCase):
     def test__stack(self):
         # object
         ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H")
-        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
         # test
         ts3 = ts1.stack(ts2)
         s1 = ts1._data["0_values"]
@@ -306,7 +306,7 @@ class TestTimeSeries(TestCase):
     def test__drop(self):
         # object
         ts1 = TimeSeries.create("01-01-2020", "01-03-2020", "H")
-        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H") .fill(0)
+        ts2 = TimeSeries.create("01-01-2020", "01-03-2020", "H").fill(0)
         ts3 = ts1.stack(ts2)
         # test
         ts4 = ts3.drop(0)
@@ -363,6 +363,42 @@ class TestTimeSeries(TestCase):
             self.assertEqual(len(ts_chunk), chunk_len)
         # test last element
         self.assertLessEqual(len(chunks[-1]), chunk_len)
+
+    def test__sliding_equal_size_and_step(self):
+        ts = TimeSeries.create("01-01-2020", "01-04-2020", "d")
+        vals = np.array([1, 2, 3, 4]).reshape(-1, 1)
+        ts._data['0_values'] = vals
+
+        windows = ts.sliding(size=2, step=2)
+
+        ts_goal_1, ts_goal_2 = TimeSeries.create("01-01-2020", "01-02-2020", "d"), TimeSeries.create("01-03-2020",
+                                                                                                     "01-04-2020", "d")
+        ts_goal_1, ts_goal_2 = ts_goal_1.fill(np.array([1, 2]).reshape(-1, 1)), ts_goal_2.fill(
+            np.array([3, 4]).reshape(-1, 1))
+        goal = [ts_goal_1, ts_goal_2]
+
+        for i, ts in enumerate(windows):
+            self.assertTrue((ts._data.values == goal[i]._data.values).all())
+
+    def test__sliding_step_is_one(self):
+        ts = TimeSeries.create("01-01-2020", "01-04-2020", "d")
+        vals = np.array([1, 2, 3, 4]).reshape(-1, 1)
+        ts._data['0_values'] = vals
+
+        windows = ts.sliding(size=2, step=1)
+
+        ts_goal_1, ts_goal_2, ts_goal_3 = TimeSeries.create("01-01-2020", "01-02-2020", "d"), \
+                                          TimeSeries.create("01-02-2020", "01-03-2020", "d"), \
+                                          TimeSeries.create("01-03-2020", "01-04-2020", "d")
+
+        ts_goal_1, ts_goal_2, ts_goal_3 = ts_goal_1.fill(np.array([1, 2]).reshape(-1, 1)), \
+                                          ts_goal_2.fill(np.array([2, 3]).reshape(-1, 1)), \
+                                          ts_goal_2.fill(np.array([3, 4]).reshape(-1, 1))
+
+        goal = [ts_goal_1, ts_goal_2, ts_goal_3]
+
+        for i, ts in enumerate(windows):
+            self.assertTrue((ts._data.values == goal[i]._data.values).all())
 
     def test__fill(self):
         ts = TimeSeries.create("01-01-2020", "03-01-2020", "H")
