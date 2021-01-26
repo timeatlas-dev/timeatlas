@@ -267,8 +267,7 @@ class TestTimeSeries(TestCase):
 
     def test__create__is_regular(self):
         ts = TimeSeries.create("01-01-2020", "02-01-2020")
-        no_duration_diff = ts.index.to_series().__list_diff().__list_diff()[2:] == \
-                           Timedelta(0)
+        no_duration_diff = ts.index.to_series().diff().diff()[2:] == Timedelta(0)
         is_regular = no_duration_diff.eq(True).all()
         self.assertTrue(is_regular)
 
