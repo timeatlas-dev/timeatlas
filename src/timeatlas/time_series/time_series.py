@@ -318,7 +318,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         """
 
         if size < step:
-            warn(f"Windows size ({size}) is bigger than step size ({step}). The resulting data will jump over some values.")
+            warn(
+                f"Windows size ({size}) is bigger than step size ({step}). The resulting data will jump over some values.")
 
         _rolling_data = [TimeSeries(v, handler=self._handler) for v in self._data.rolling(size) if len(v) == size]
 
@@ -337,9 +338,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             TimeSeries
         """
-        new_data = self._data.copy()
-        new_data[:] = value
-        return TimeSeries(new_data, self._handler)
+        new_data = self.copy(deep=True)
+        new_data._data[:] = value
+        return new_data
 
     def empty(self) -> 'TimeSeries':
         """Empty the TimeSeries (fill all values with NaNs)
