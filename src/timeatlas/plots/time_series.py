@@ -56,15 +56,17 @@ def line_plot(ts: 'TimeSeries', context: str = "paper", *args, **kwargs) -> Any:
         ax.grid(True, c=colors.grey, ls='-', lw=1, alpha=0.2)
 
         # Add legend from metadata if existing
-        if ts.metadata is not None:
-            if "unit" in ts.metadata:
-                unit = ts.metadata["unit"]
-                ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
-            if "sensor" in ts.metadata:
-                sensor = ts.metadata["sensor"]
-                ax.set_title("{}—{}".format(sensor.id, sensor.name))
+        # TODO: This code can be uncommented as soon as we added metadata
+        #if ts.metadata is not None:
+        #    if "unit" in ts.metadata:
+        #        unit = ts.metadata["unit"]
+        #        ax.set_ylabel("{} $[{}]$".format(unit.name, unit.symbol))
+        #    if "sensor" in ts.metadata:
+        #        sensor = ts.metadata["sensor"]
+        #        ax.set_title("{}—{}".format(sensor.id, sensor.name))
 
         return ax
+
     elif context == "notebook":
         fig = go.Figure()
         fig.add_trace(go.Scatter(
