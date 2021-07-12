@@ -1,5 +1,6 @@
 from typing import NoReturn, Tuple, Any, Union, Optional, List
 from copy import deepcopy, copy
+from warnings import warn
 
 from darts import TimeSeries as DartsTimeSeries
 import numpy as np
@@ -41,8 +42,8 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
     """
 
     def __init__(self,
-                 data: DataFrame = None,
-                 handler: ComponentHandler = None):
+            data: DataFrame = None,
+            handler: ComponentHandler = None):
         """Defines a time series
 
         A TimeSeries object is a series of time indexed values.
@@ -173,7 +174,7 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
 
     @staticmethod
     def create(start: str, end: str,
-               freq: Union[str, 'TimeSeries'] = None) \
+            freq: Union[str, 'TimeSeries'] = None) \
             -> 'TimeSeries':
         """Creates an empty TimeSeries object with the period as index
 
@@ -303,6 +304,27 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
                      self._data.groupby(np.arange(len(self._data)) // n)]
         return ts_chunks
 
+    def sliding(self, size: int, step: int = 1) -> List['TimeSeries']:
+        """
+
+        Creates windows of the TimeSeries. If size > step the windows will be overlapping.
+
+        Args:
+            size: size of the window
+            step: step size between windows
+
+        Returns: List of TimeSeries
+
+        """
+
+        if size < step:
+            warn(
+                f"Windows size ({size}) is bigger than step size ({step}). The resulting data will jump over some values.")
+
+        _rolling_data = [TimeSeries(v, handler=self._handler) for v in self._data.rolling(size) if len(v) == size]
+
+        return _rolling_data[::step]
+
     def fill(self, value: Any) -> 'TimeSeries':
         """Fill a TimeSeries with values
 
@@ -316,9 +338,9 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
         Returns:
             TimeSeries
         """
-        new_data = self._data.copy()
-        new_data[:] = value
-        return TimeSeries(new_data, self._handler)
+        new_data = self.copy(deep=True)
+        new_data._data[:] = value
+        return new_data
 
     def empty(self) -> 'TimeSeries':
         """Empty the TimeSeries (fill all values with NaNs)
@@ -481,7 +503,6 @@ class TimeSeries(AbstractBaseTimeSeries, AbstractOutputText, AbstractOutputPickl
             assert self._data.shape == ts._data.shape, \
                 "The shape of the TimeSeries given as argument must be " \
                 "equal to self."
-
 
             df_1 = self._data[self._handler.get_columns()]
             df_2 = ts._data[self._handler.get_columns()]
