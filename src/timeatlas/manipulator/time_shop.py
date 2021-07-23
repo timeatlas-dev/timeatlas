@@ -10,6 +10,8 @@ import pandas as pd
 from timeatlas.abstract import AbstractBaseManipulator
 
 
+# importing static function
+
 class TimeShop(AbstractBaseManipulator):
     """
 
@@ -23,6 +25,7 @@ class TimeShop(AbstractBaseManipulator):
 
         # temporal saving of needed information
         self.generator_output = None
+        # TODO: Should I replace this by having the timestamps in the generated TimeSeries
         self.timestamp = None
 
     # ==========================================================================
@@ -39,6 +42,7 @@ class TimeShop(AbstractBaseManipulator):
         """
 
         def wrapper(self, *arg, **kwargs) -> TimeShop:
+
             if self.generator_output is None:
                 raise ValueError(f"There is no generated value.")
             else:
@@ -60,11 +64,20 @@ class TimeShop(AbstractBaseManipulator):
         """
 
         def wrapper(self, *arg, **kwargs) -> TimeShop:
-            if self.generator_output is None:
+
+            force = kwargs.get('force')
+            print(force)
+            if force:
                 func(self, *arg, **kwargs)
                 return self
             else:
-                raise ValueError(f"There is a generated value waiting.")
+                if self.generator_output is None:
+                    func(self, *arg, **kwargs)
+                    return self
+                else:
+                    raise ValueError(f"There is a generated value waiting."
+                                     f"\nCan be overwritten by setting TimeShop.generator_out = None"
+                                     f"\n or by setting force=True")
 
         return wrapper
 
@@ -93,9 +106,12 @@ class TimeShop(AbstractBaseManipulator):
         Returns: TimeShop
 
         """
-        tmp = self.time_series.slice_n_points_after(start_ts=pd.Timestamp(self.timestamp), n=len(self.generator_output))
-        self.generator_output.index = tmp.time_index()
-        self.time_series = self.time_series.update(index=tmp.time_index(), values=self.generator_output)
+        timestamp_before = self.generator_output.start_time()
+        timestamp_after = self.generator_output.end_time()
+
+        tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
+        _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
+        self.time_series = tmp_before.append(self.generator_output).append(tmp_after)
 
     @_check_operator
     def insert(self) -> Any:
@@ -106,11 +122,12 @@ class TimeShop(AbstractBaseManipulator):
         Returns: TimeShop
 
         """
-        tmp = self.time_series.slice_n_points_after(start_ts=pd.Timestamp(self.timestamp), n=len(self.generator_output))
-        self.generator_output.index = tmp.time_index()
-        tmp_before, tmp_after = self.time_series.split_before(ts=pd.Timestamp(self.timestamp))
-        tmp_after = tmp_after.shift(len(tmp))
-        self.time_series = tmp_before.append_values(self.generator_output).append(tmp_after)
+        timestamp_before = self.generator_output.start_time()
+
+        tmp_before, tmp_after = self.time_series.split_after(split_point=timestamp_before)
+        tmp_before, _ = tmp_before.split_before(split_point=timestamp_before)
+        self.time_series = tmp_before.append(self.generator_output).append(
+            tmp_after.shift(len(self.generator_output) - 1))
 
     def crop(self, timestamp: str, n: int) -> TimeShop:
         """
@@ -126,8 +143,8 @@ class TimeShop(AbstractBaseManipulator):
         """
         timestamp_before = pd.Timestamp(timestamp)
         timestamp_after = self.time_series.slice_n_points_after(start_ts=pd.Timestamp(timestamp_before), n=n).end_time()
-        tmp_before, tmp_after = self.time_series.split_before(ts=timestamp_before)
-        tmp_gap, tmp_after = tmp_after.split_after(ts=timestamp_after)
+        tmp_before, tmp_after = self.time_series.split_before(split_point=timestamp_before)
+        tmp_gap, tmp_after = tmp_after.split_after(split_point=timestamp_after)
         self.time_series = tmp_before.append(tmp_after.shift(-len(tmp_gap)))
         return self
 
@@ -136,7 +153,7 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
 
     @_check_generator
-    def flat(self, n_values: int, timestamp: str, value: float = None) -> Any:
+    def flat(self, n_values: int, timestamp: str, value: float = None, *args, **kwargs) -> Any:
         """
 
         Creating DataFrame of lengths n_values with either the values at timestamp or given by value.
@@ -150,19 +167,26 @@ class TimeShop(AbstractBaseManipulator):
         Returns: TimeShop
 
         """
-        self.timestamp = pd.Timestamp(timestamp)
+        timestamp = pd.Timestamp(timestamp)
+
         if value is None:
-            value = float(self.time_series[self.timestamp].values)
-            self.generator_output = pd.DataFrame([value] * n_values)
+            value = float(self.time_series[timestamp].values())
+            index = pd.date_range(start=timestamp, periods=n_values, freq=self.time_series.freq)
+            df = pd.DataFrame([value] * n_values, index=index)
+            self.generator_output = self.time_series.from_dataframe(df=df,
+                                                                    freq=self.time_series.freq)
         else:
-            self.generator_output = pd.DataFrame([value] * n_values)
+            index = pd.date_range(start=timestamp, periods=len(self.generator_output), freq=self.time_series.freq)
+            df = pd.DataFrame([value] * n_values, index=index)
+            self.generator_output = self.time_series.from_dataframe(df=df,
+                                                                    freq=self.time_series.freq)
 
     @_check_generator
-    def noise(self):
+    def noise(self, *args, **kwargs):
         pass
 
     @_check_generator
-    def trend(self):
+    def trend(self, *args, **kwargs):
         pass
 
     # ==========================================================================
@@ -170,7 +194,7 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
 
     def plot(self):
-        self.time_series.plot()
+        self.time_series.plot(new_plot=True)
 
     def extract(self) -> 'TimeSeriesDarts':
         """
