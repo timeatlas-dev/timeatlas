@@ -7,12 +7,11 @@ from typing import Any, NoReturn
 
 import pandas as pd
 from numpy.random import normal
-from numpy import arange
+from numpy import arange, linspace, logspace, power, append, flip
+from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
 
-
-# importing static function
 
 class TimeShop(AbstractBaseManipulator):
     """
@@ -332,7 +331,7 @@ class TimeShop(AbstractBaseManipulator):
                                                                 freq=self.time_series.freq)
 
     @_check_generator
-    def spike(self):
+    def spike(self, spike_time: str, spike_value: float, length: int, mode: str = 'lin', p: int = None):
         """
 
         Spike with a progressing slope
@@ -340,7 +339,34 @@ class TimeShop(AbstractBaseManipulator):
         Returns:
 
         """
-        pass
+        assert (length % 2) != 0, f"spread has to be an odd number; got {length}"
+
+        # making sure that length = 1 or 3 is not the same
+        # additionally this solves the issue with TimeSeries not allowing to be length 1
+        length += 2
+        assert length < len(self.time_series), f"created spike is longer that the original TimeSeries()"
+        middle = ceil(length / 2)
+
+        if mode == 'lin':
+            first_part = linspace(0, spike_value, middle)
+        elif mode == 'log':
+            first_part = logspace(0, spike_value, middle)
+        elif mode == 'exp':
+            assert pow is not None, f"if mode='exp' the argument for the power p has to be set"
+            start = power(0, 1 / float(p))
+            stop = power(spike_value, 1 / float(p))
+            first_part = power(linspace(start, stop, num=middle), p)
+        else:
+            raise ValueError("Unknown 'mode' given.")
+
+        second_part = flip(first_part[:-1])
+
+        values = append(first_part, second_part)
+        index = self._set_index(start_time=spike_time, n_values=len(values)).shift(-len(second_part))
+        df = pd.DataFrame(values, index=index)
+
+        self.generator_output = self.time_series.from_dataframe(df=df,
+                                                                freq=self.time_series.freq)
 
     # ==========================================================================
     # Utils
