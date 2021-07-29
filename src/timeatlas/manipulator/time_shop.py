@@ -112,30 +112,12 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_after = self.generator_output.end_time()
 
         if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
-            raise ValueError(
-                "Generated and original timeseries start end end at the same time. Better to create a new TimeSeries()")
-        tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+            self.generator_output = self.time_series + self.generator_output
+        else:
+            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
 
-        # add what is in the generated and the original at the timestamps
-        self.generator_output = tmp + self.generator_output
-
-        # replace it in time series
-        self.replace()
-
-    def subtract(self):
-        """
-
-        Subtracting given values on top of the existing values.
-
-        Returns: TimeShop
-
-        """
-        timestamp_before = self.generator_output.start_time()
-        timestamp_after = self.generator_output.end_time()
-        tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
-
-        # add what is in the generated and the original at the timestamps
-        self.generator_output = tmp - self.generator_output
+            # add what is in the generated and the original at the timestamps
+            self.generator_output = tmp + self.generator_output
 
         # replace it in time series
         self.replace()
@@ -151,28 +133,13 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_before = self.generator_output.start_time()
         timestamp_after = self.generator_output.end_time()
 
-        tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+        if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
+            self.generator_output = self.time_series + self.generator_output
+        else:
+            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
 
-        # add what is in the generated and the original at the timestamps
-        self.generator_output = tmp * self.generator_output
-
-        # replace it in time series
-        self.replace()
-
-    def divide(self):
-        """
-
-        Divide given values on top of the existing values.
-
-        Returns: TimeShop
-
-        """
-        timestamp_before = self.generator_output.start_time()
-        timestamp_after = self.generator_output.end_time()
-        tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
-
-        # add what is in the generated and the original at the timestamps
-        self.generator_output = tmp / self.generator_output
+            # multiply what is in the generated and the original at the timestamps
+            self.generator_output = tmp * self.generator_output
 
         # replace it in time series
         self.replace()
@@ -191,8 +158,12 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_after = self.generator_output.end_time()
 
         if timestamp_before == self.time_series.start_time():
-            _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
-            self.time_series = self.generator_output.append(tmp_after)
+            # check if the complete series is to be replaced
+            if timestamp_after == self.time_series.end_time():
+                self.time_series = self.generator_output
+            else:
+                _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
+                self.time_series = self.generator_output.append(tmp_after)
         elif timestamp_after == self.time_series.end_time():
             tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
             self.time_series = tmp_before.append(self.generator_output)
@@ -297,6 +268,23 @@ class TimeShop(AbstractBaseManipulator):
 
     @_check_generator
     def trend(self, start_time: str, slope: float, end_time: str = None, n_values: int = None, *args, **kwargs):
+        """
+
+        Creating a trend TimeSeries()
+
+        y = m*x + b
+
+        Args:
+            start_time: Timestamp at which the trend starts
+            slope: steepness of the trend
+            end_time: Timestamp at which the trend ends (mandatory if n_values not set)
+            n_values: number of values (mandatory if end_time not set)
+            *args:
+            **kwargs:
+
+        Returns:
+
+        """
 
         index = self._set_index(start_time=start_time, end_time=end_time, n_values=n_values)
 
@@ -334,7 +322,14 @@ class TimeShop(AbstractBaseManipulator):
     def spike(self, spike_time: str, spike_value: float, length: int, mode: str = 'lin', p: int = None):
         """
 
-        Spike with a progressing slope
+        Adding a spike with a given length
+
+        Args:
+            spike_time: time, where the spike is highest = spike_value
+            spike_value: max value of the spike
+            length: length of the spike
+            mode: linear, logarithmic or exponential approach to the spike_value
+            p: power if mode = exp
 
         Returns:
 
@@ -367,6 +362,21 @@ class TimeShop(AbstractBaseManipulator):
 
         self.generator_output = self.time_series.from_dataframe(df=df,
                                                                 freq=self.time_series.freq)
+
+    # ==========================================================================
+    # Search
+    # ==========================================================================
+
+    def threshold_search(self, threshold, operator, function):
+        """
+
+        TODO: Find all values below or above a threshold (even both) and apply one of the top function to them
+        TODO: the problem is that it is not made to apply to multiply atm.
+
+        Returns:
+
+        """
+        assert hasattr(self.__class__, function), "chosen function does not exists"
 
     # ==========================================================================
     # Utils
