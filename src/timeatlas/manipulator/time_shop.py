@@ -134,7 +134,7 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_after = self.generator_output.end_time()
 
         if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
-            self.generator_output = self.time_series + self.generator_output
+            self.generator_output = self.time_series * self.generator_output
         else:
             tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
 
@@ -195,13 +195,14 @@ class TimeShop(AbstractBaseManipulator):
     def crop(self, start_time: str, end_time: str = None, n_values: int = None) -> TimeShop:
         """
 
-        Remove n entries in the TimeSeries starting at timestamp (including).
+            Remove n entries in the TimeSeries starting at timestamp (including).
 
         Args:
-            timestamp: timestamp of first element to remove
-            n: number of elements removed
+            start_time: start of the part to crop
+            end_time: end of the part to crop (optional)
+            n_values: number of values to crop after start (optional)
 
-        Returns: TimeShop
+        Returns:
 
         """
 
@@ -367,7 +368,7 @@ class TimeShop(AbstractBaseManipulator):
     # Search
     # ==========================================================================
 
-    def threshold_search(self, threshold, operator, function):
+    def threshold_search(self, threshold, operator):
         """
 
         TODO: Find all values below or above a threshold (even both) and apply one of the top function to them
@@ -376,7 +377,6 @@ class TimeShop(AbstractBaseManipulator):
         Returns:
 
         """
-        assert hasattr(self.__class__, function), "chosen function does not exists"
 
     # ==========================================================================
     # Utils

@@ -22,16 +22,5 @@ class TimeSeriesDarts(TimeSeries):
         ts = super(TimeSeriesDarts, TimeSeriesDarts).from_dataframe(df=df)
         return TimeSeriesDarts(xa=ts._xa)
 
-
-    def plot(self,
-             new_plot: bool = False,
-             central_quantile: Union[float, str] = 0.5,
-             low_quantile: Optional[float] = 0.05,
-             high_quantile: Optional[float] = 0.95,
-             *args,
-             **kwargs):
-        super(TimeSeriesDarts, self).plot()
-        plt.show()
-
     def edit(self):
         return TimeShop(self)
