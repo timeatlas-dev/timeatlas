@@ -190,7 +190,6 @@ class TestTimeShop(TestCase):
         tss = self.ts.edit()
         # search for the values above
         tss.threshold_search(threshold=1, operator=">")
-        tss.extract().values()
 
         self.assertTrue(len(tss.clipboard) == len(target))
 
@@ -219,9 +218,22 @@ class TestTimeShop(TestCase):
         tss = self.ts.edit()
         # search for the values above
         tss.threshold_search(threshold=2, operator="<")
-        tss.extract().values()
 
         self.assertTrue(len(tss.clipboard) == len(target))
 
         for i, v in enumerate(tss.clipboard):
             self.assertTrue((v.values() == target[i].values()).all())
+
+    def test__TimeShop_shift(self):
+        df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
+        inds = [f'2021-01-{day}' for day in range(11, 21)]
+        df.index = pd.to_datetime(inds)
+        target = TimeSeriesDarts.from_dataframe(df)
+
+        tss = self.ts.edit()
+        # copy into the clipboard
+        tss.copy(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        # shifting the timestamps
+        tss.shift(new_start='2021-01-11')
+
+        self.assertTrue((tss.clipboard.values() == target.values()).all())
