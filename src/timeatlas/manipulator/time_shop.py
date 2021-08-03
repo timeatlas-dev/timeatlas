@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from timeatlas.time_series import TimeSeriesDarts
-from typing import Any, NoReturn
+from typing import Any
 
 import pandas as pd
 from numpy.random import normal
-from numpy import arange, linspace, logspace, power, append, flip, array
+from numpy import arange, linspace, logspace, power, append, flip
 from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
@@ -46,6 +46,7 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
     # Decorators
     # ==========================================================================
+
     def _check_selector(func):
         """
 
@@ -55,15 +56,15 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
-        def wrapper(self, *arg, **kwargs) -> TimeShop:
+        def wrapper(self, *args, **kwargs) -> TimeShop:
 
             force = kwargs.get('force')
             if force:
-                func(self, *arg, **kwargs)
+                func(self, *args, **kwargs)
                 return self
             else:
                 if self.clipboard is None:
-                    func(self, *arg, **kwargs)
+                    func(self, *args, **kwargs)
                     return self
                 else:
                     raise ValueError(f"There is a generated value waiting."
@@ -81,8 +82,20 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
-        def wrapper(self, *arg, **kwargs) -> TimeShop:
-            pass
+        def wrapper(self, *args, **kwargs) -> TimeShop:
+
+            force = kwargs.get('force')
+            if force:
+                func(self, *args, **kwargs)
+                return self
+            else:
+                if self.clipboard is not None:
+                    func(self, *args, **kwargs)
+                    return self
+                else:
+                    raise ValueError(f"There is a generated value waiting."
+                                     f"\nCan be overwritten by setting TimeShop.generator_out = None"
+                                     f"\n or by setting force=True")
 
         return wrapper
 
@@ -95,12 +108,12 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
-        def wrapper(self, *arg, **kwargs) -> TimeShop:
+        def wrapper(self, *args, **kwargs) -> TimeShop:
 
             if self.clipboard is None:
                 raise ValueError(f"There is no generated value.")
             else:
-                func(self, *arg, **kwargs)
+                func(self, *args, **kwargs)
                 # removing the input
                 self.clipboard = None
                 return self
@@ -141,7 +154,7 @@ class TimeShop(AbstractBaseManipulator):
         return self
 
     @_check_selector
-    def copy(self, other: TimeSeriesDarts, start_time: str, end_time: str = None) -> NoReturn:
+    def copy(self, other: TimeSeriesDarts, start_time: str, end_time: str) -> Any:
         """
 
         Selecting a part of the original time series for further use (saved in self.clipboard)
@@ -180,28 +193,38 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
 
     @_check_manipulator
-    def flat(self, value: float = None, *args, **kwargs) -> Any:
+    def flat(self, value: float = None) -> Any:
         """
 
         Args:
             value:
-            *args:
-            **kwargs:
 
         Returns:
 
         """
 
         index = self.clipboard.time_index
-
+        # if value is not set the value used is the first value in the clipboard TimeSeries
         if value is None:
             value = float(self.clipboard.values()[0])
-            self.clipboard.update(index=index, values=array([value] * len(index)))
-        else:
-            self.clipboard.update(index=index, values=array([value] * len(index)))
+
+        df = pd.DataFrame(data=[value] * len(index), index=index)
+        self.clipboard = self.clipboard.from_dataframe(df=df,
+                                                       freq=self.time_series.freq)
 
     @_check_manipulator
-    def white_noise(self, sigma: float, mu: float = None, *args, **kwargs):
+    def white_noise(self, sigma: float, mu: float = None):
+        """
+
+
+
+        Args:
+            sigma:
+            mu:
+
+        Returns:
+
+        """
 
         index = self.clipboard.time_index
 
@@ -212,50 +235,43 @@ class TimeShop(AbstractBaseManipulator):
             for value in self.clipboard.values():
                 values.append(float(normal(loc=value, scale=sigma, size=1)))
 
-        self.clipboard.update(index=index, values=values)
+        df = pd.DataFrame(data=values, index=index)
+        self.clipboard = self.clipboard.from_dataframe(df=df,
+                                                       freq=self.time_series.freq)
 
     @_check_manipulator
-    def trend(self, start_time: str, slope: float, end_time: str = None, n_values: int = None, *args, **kwargs):
+    def trend(self, slope: float):
         """
 
-
-
         Args:
-            start_time:
             slope:
-            end_time:
-            n_values:
-            *args:
-            **kwargs:
 
         Returns:
 
         """
 
-        index = self._set_index(start_time=start_time, end_time=end_time, n_values=n_values)
-
+        index = self.clipboard.time_index
         values = slope * arange(0, len(index), 1)
-        df = pd.DataFrame(values, index=index)
 
-        self.clipboard = self.time_series.from_dataframe(df=df,
-                                                         freq=self.time_series.freq)
+        df = pd.DataFrame(data=values, index=index)
+        self.clipboard = self.clipboard.from_dataframe(df=df,
+                                                       freq=self.time_series.freq)
 
     @_check_manipulator
-    def spike(self, spike_time: str, spike_value: float, length: int, mode: str = 'lin', p: int = None):
+    def spike(self, spike_value: float, mode: str = 'lin', p: int = None):
         """
 
-        Adding a spike with a given length
-
         Args:
-            spike_time: time, where the spike is highest = spike_value
-            spike_value: max value of the spike
-            length: length of the spike
-            mode: linear, logarithmic or exponential approach to the spike_value
-            p: power if mode = exp
+            spike_value:
+            mode:
+            p:
 
         Returns:
 
         """
+
+        length = len(self.clipboard)
+
         assert (length % 2) != 0, f"spread has to be an odd number; got {length}"
 
         # making sure that length = 1 or 3 is not the same
@@ -278,12 +294,32 @@ class TimeShop(AbstractBaseManipulator):
 
         second_part = flip(first_part[:-1])
 
-        values = append(first_part, second_part)
-        index = self._set_index(start_time=spike_time, n_values=len(values)).shift(-len(second_part))
-        df = pd.DataFrame(values, index=index)
+        values = append(first_part, second_part)[1:-1]
+        index = self.clipboard.time_index
+        df = pd.DataFrame(data=values, index=index)
 
-        self.clipboard = self.time_series.from_dataframe(df=df,
-                                                         freq=self.time_series.freq)
+        self.clipboard = self.clipboard.from_dataframe(df=df,
+                                                       freq=self.time_series.freq)
+
+    @_check_manipulator
+    def shift(self, new_start: str):
+        """
+
+        shift clipboard timestamps
+
+        Args:
+            new_start:
+
+        Returns:
+
+        """
+
+        values = self.clipboard.values()
+        index = self._set_index(start_time=new_start, end_time=None, n_values=len(values))
+        df = pd.DataFrame(data=values, index=index)
+
+        self.clipboard = self.clipboard.from_dataframe(df=df,
+                                                       freq=self.time_series.freq)
 
     # ==========================================================================
     # Operators
@@ -390,7 +426,7 @@ class TimeShop(AbstractBaseManipulator):
     def plot(self):
         self.time_series.plot(new_plot=True)
 
-    def clean_up(self):
+    def clean_clipboard(self):
         self.clipboard = None
 
     def extract(self) -> 'TimeSeriesDarts':
