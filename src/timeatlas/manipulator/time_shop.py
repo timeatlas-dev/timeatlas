@@ -7,7 +7,7 @@ from typing import Any, NoReturn
 
 import pandas as pd
 from numpy.random import normal
-from numpy import arange, linspace, logspace, power, append, flip
+from numpy import arange, linspace, logspace, power, append, flip, array
 from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
@@ -25,7 +25,7 @@ class TimeShop(AbstractBaseManipulator):
         self.time_series = ts
 
         # temporal saving of needed information
-        self.generator_output = None
+        self.clipboard = None
 
     # ==========================================================================
     # Private Functions
@@ -46,29 +46,7 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
     # Decorators
     # ==========================================================================
-
-    def _check_operator(func):
-        """
-
-        Checking before inserting values that they have been created.
-
-        Returns: TimeShop
-
-        """
-
-        def wrapper(self, *arg, **kwargs) -> TimeShop:
-
-            if self.generator_output is None:
-                raise ValueError(f"There is no generated value.")
-            else:
-                func(self, *arg, **kwargs)
-                # removing the input
-                self.generator_output = None
-                return self
-
-        return wrapper
-
-    def _check_generator(func):
+    def _check_selector(func):
         """
 
         Checking before generating values that there are not already some saved.
@@ -84,7 +62,7 @@ class TimeShop(AbstractBaseManipulator):
                 func(self, *arg, **kwargs)
                 return self
             else:
-                if self.generator_output is None:
+                if self.clipboard is None:
                     func(self, *arg, **kwargs)
                     return self
                 else:
@@ -94,108 +72,46 @@ class TimeShop(AbstractBaseManipulator):
 
         return wrapper
 
-    # ==========================================================================
-    # Operators
-    # ==========================================================================
-
-    @_check_operator
-    def add(self) -> Any:
+    def _check_manipulator(func):
         """
 
-        Adding given values on top of the existing values.
+        Checking before generating values that there are not already some saved.
 
         Returns: TimeShop
 
         """
-        # get the information
-        timestamp_before = self.generator_output.start_time()
-        timestamp_after = self.generator_output.end_time()
 
-        if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
-            self.generator_output = self.time_series + self.generator_output
-        else:
-            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+        def wrapper(self, *arg, **kwargs) -> TimeShop:
+            pass
 
-            # add what is in the generated and the original at the timestamps
-            self.generator_output = tmp + self.generator_output
+        return wrapper
 
-        # replace it in time series
-        self.replace()
-
-    def multiply(self):
+    def _check_operator(func):
         """
 
-        Multiplying given values on top of the existing values.
+        Checking before inserting values that they have been created.
 
         Returns: TimeShop
 
         """
-        timestamp_before = self.generator_output.start_time()
-        timestamp_after = self.generator_output.end_time()
 
-        if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
-            self.generator_output = self.time_series * self.generator_output
-        else:
-            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+        def wrapper(self, *arg, **kwargs) -> TimeShop:
 
-            # multiply what is in the generated and the original at the timestamps
-            self.generator_output = tmp * self.generator_output
-
-        # replace it in time series
-        self.replace()
-
-    @_check_operator
-    def replace(self) -> Any:
-        """
-
-        Replaces a part of the TimeSeries with the values stored in self.generator_out at the timestamp in self.timestamp.
-        The replacement is including the given timestamp.
-
-        Returns: TimeShop
-
-        """
-        timestamp_before = self.generator_output.start_time()
-        timestamp_after = self.generator_output.end_time()
-
-        if timestamp_before == self.time_series.start_time():
-            # check if the complete series is to be replaced
-            if timestamp_after == self.time_series.end_time():
-                self.time_series = self.generator_output
+            if self.clipboard is None:
+                raise ValueError(f"There is no generated value.")
             else:
-                _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
-                self.time_series = self.generator_output.append(tmp_after)
-        elif timestamp_after == self.time_series.end_time():
-            tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
-            self.time_series = tmp_before.append(self.generator_output)
-        else:
-            tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
-            _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
-            self.time_series = tmp_before.append(self.generator_output).append(tmp_after)
+                func(self, *arg, **kwargs)
+                # removing the input
+                self.clipboard = None
+                return self
 
-    @_check_operator
-    def insert(self) -> Any:
-        """
-
-        Inserts values stored in self.generator_out between the given timestamps t (self.timestamp) and t-1
-
-        Returns: TimeShop
-
-        """
-        timestamp_before = self.generator_output.start_time()
-
-        if timestamp_before == self.time_series.start_time():
-            self.time_series = self.generator_output.append(self.time_series.shift(len(self.generator_output)))
-        elif timestamp_before == self.time_series.end_time():
-            self.time_series = self.time_series.append(self.generator_output)
-        else:
-            tmp_before, tmp_after = self.time_series.split_after(split_point=timestamp_before)
-            self.time_series = tmp_before.append(self.generator_output).append(
-                tmp_after.shift(len(self.generator_output)))
+        return wrapper
 
     # ==========================================================================
     # Selectors
     # ==========================================================================
 
+    @_check_selector
     def crop(self, start_time: str, end_time: str = None, n_values: int = None) -> TimeShop:
         """
 
@@ -224,10 +140,11 @@ class TimeShop(AbstractBaseManipulator):
             self.time_series = tmp_before.append(tmp_after.shift(-len(tmp_gap)))
         return self
 
-    def select(self, start_time: str, end_time: str = None) -> NoReturn:
+    @_check_selector
+    def copy(self, other: TimeSeriesDarts, start_time: str, end_time: str = None) -> NoReturn:
         """
 
-        Selecting a part of the original time series for further use (saved in self.generator_output)
+        Selecting a part of the original time series for further use (saved in self.clipboard)
 
         Args:
             start_time: start of the slice
@@ -240,13 +157,14 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_before = pd.Timestamp(start_time)
         timestamp_after = pd.Timestamp(end_time)
 
-        if timestamp_before == self.time_series.start_time():
-            _, self.generator_output = self.time_series.split_after(split_point=timestamp_after)
-        elif timestamp_after == self.time_series.end_time():
-            self.generator_output, _ = self.time_series.split_before(split_point=timestamp_before)
+        if timestamp_before == other.start_time():
+            _, self.clipboard = other.split_after(split_point=timestamp_after)
+        elif timestamp_after == other.end_time():
+            self.clipboard, _ = other.split_before(split_point=timestamp_before)
         else:
-            self.generator_output = self.time_series.slice(start_ts=timestamp_before, end_ts=timestamp_after)
+            self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
 
+    @_check_selector
     def threshold_search(self, threshold, operator):
         """
 
@@ -261,62 +179,52 @@ class TimeShop(AbstractBaseManipulator):
     # Generators
     # ==========================================================================
 
-    @_check_generator
-    def flat(self, start_time: str, end_time: str = None, n_values: int = None, value: float = None, *args,
-            **kwargs) -> Any:
+    @_check_manipulator
+    def flat(self, value: float = None, *args, **kwargs) -> Any:
         """
-
-        Creating DataFrame of lengths n_values with either the values at timestamp or given by value.
-        A given value will supersede the timestamp.
 
         Args:
-            n_values: length of resulting array
-            timestamp: timestamp of value to be taken and later usage
-            value: value in the array
+            value:
+            *args:
+            **kwargs:
 
-        Returns: TimeShop
+        Returns:
 
         """
-        timestamp = pd.Timestamp(start_time)
 
-        # setting the index for the time series
-        index = self._set_index(start_time=start_time, end_time=end_time, n_values=n_values)
+        index = self.clipboard.time_index
 
         if value is None:
-            value = float(self.time_series[timestamp].values())
-            df = pd.DataFrame([value] * len(index), index=index)
-            self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                    freq=self.time_series.freq)
+            value = float(self.clipboard.values()[0])
+            self.clipboard.update(index=index, values=array([value] * len(index)))
         else:
-            df = pd.DataFrame([value] * len(index), index=index)
-            self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                    freq=self.time_series.freq)
+            self.clipboard.update(index=index, values=array([value] * len(index)))
 
-    @_check_generator
-    def white_noise(self, start_time: str, mu: float, sigma: float, end_time: str = None, n_values: int = None, *args,
-            **kwargs):
+    @_check_manipulator
+    def white_noise(self, sigma: float, mu: float = None, *args, **kwargs):
 
-        index = self._set_index(start_time=start_time, end_time=end_time, n_values=n_values)
+        index = self.clipboard.time_index
 
-        values = normal(loc=mu, scale=sigma, size=len(index))
-        df = pd.DataFrame(values, index=index)
+        if mu:
+            values = normal(loc=mu, scale=sigma, size=len(index))
+        else:
+            values = []
+            for value in self.clipboard.values():
+                values.append(float(normal(loc=value, scale=sigma, size=1)))
 
-        self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                freq=self.time_series.freq)
+        self.clipboard.update(index=index, values=values)
 
-    @_check_generator
+    @_check_manipulator
     def trend(self, start_time: str, slope: float, end_time: str = None, n_values: int = None, *args, **kwargs):
         """
 
-        Creating a trend TimeSeries()
 
-        y = m*x + b
 
         Args:
-            start_time: Timestamp at which the trend starts
-            slope: steepness of the trend
-            end_time: Timestamp at which the trend ends (mandatory if n_values not set)
-            n_values: number of values (mandatory if end_time not set)
+            start_time:
+            slope:
+            end_time:
+            n_values:
             *args:
             **kwargs:
 
@@ -329,34 +237,10 @@ class TimeShop(AbstractBaseManipulator):
         values = slope * arange(0, len(index), 1)
         df = pd.DataFrame(values, index=index)
 
-        self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                freq=self.time_series.freq)
+        self.clipboard = self.time_series.from_dataframe(df=df,
+                                                         freq=self.time_series.freq)
 
-    @_check_generator
-    def copy(self, other: TimeSeriesDarts, start_copy: str, end_copy: str, insert_start: str):
-        """
-
-        Copy or a part of a TimeSeries and paste it into another TimeSeries()
-
-        Args:
-            other:
-            start_time:
-            end_time:
-
-        Returns:
-
-        """
-        start_time = pd.Timestamp(start_copy)
-        end_time = pd.Timestamp(end_copy)
-
-        values = other.slice(start_ts=start_time, end_ts=end_time).values()
-        index = self._set_index(start_time=insert_start, end_time=None, n_values=len(values))
-        df = pd.DataFrame(values, index=index)
-
-        self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                freq=self.time_series.freq)
-
-    @_check_generator
+    @_check_manipulator
     def spike(self, spike_time: str, spike_value: float, length: int, mode: str = 'lin', p: int = None):
         """
 
@@ -398,8 +282,106 @@ class TimeShop(AbstractBaseManipulator):
         index = self._set_index(start_time=spike_time, n_values=len(values)).shift(-len(second_part))
         df = pd.DataFrame(values, index=index)
 
-        self.generator_output = self.time_series.from_dataframe(df=df,
-                                                                freq=self.time_series.freq)
+        self.clipboard = self.time_series.from_dataframe(df=df,
+                                                         freq=self.time_series.freq)
+
+    # ==========================================================================
+    # Operators
+    # ==========================================================================
+
+    @_check_operator
+    def add(self) -> Any:
+        """
+
+        Adding given values on top of the existing values.
+
+        Returns: TimeShop
+
+        """
+        # get the information
+        timestamp_before = self.clipboard.start_time()
+        timestamp_after = self.clipboard.end_time()
+
+        if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
+            self.clipboard = self.time_series + self.clipboard
+        else:
+            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+
+            # add what is in the generated and the original at the timestamps
+            self.clipboard = tmp + self.clipboard
+
+        # replace it in time series
+        self.replace()
+
+    def multiply(self):
+        """
+
+        Multiplying given values on top of the existing values.
+
+        Returns: TimeShop
+
+        """
+        timestamp_before = self.clipboard.start_time()
+        timestamp_after = self.clipboard.end_time()
+
+        if timestamp_before == self.time_series.start_time() and timestamp_after == self.time_series.end_time():
+            self.clipboard = self.time_series * self.clipboard
+        else:
+            tmp = self.time_series.slice(start_ts=pd.Timestamp(timestamp_before), end_ts=timestamp_after)
+
+            # multiply what is in the generated and the original at the timestamps
+            self.clipboard = tmp * self.clipboard
+
+        # replace it in time series
+        self.replace()
+
+    @_check_operator
+    def replace(self) -> Any:
+        """
+
+        Replaces a part of the TimeSeries with the values stored in self.generator_out at the timestamp in self.timestamp.
+        The replacement is including the given timestamp.
+
+        Returns: TimeShop
+
+        """
+        timestamp_before = self.clipboard.start_time()
+        timestamp_after = self.clipboard.end_time()
+
+        if timestamp_before == self.time_series.start_time():
+            # check if the complete series is to be replaced
+            if timestamp_after == self.time_series.end_time():
+                self.time_series = self.clipboard
+            else:
+                _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
+                self.time_series = self.clipboard.append(tmp_after)
+        elif timestamp_after == self.time_series.end_time():
+            tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
+            self.time_series = tmp_before.append(self.clipboard)
+        else:
+            tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
+            _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
+            self.time_series = tmp_before.append(self.clipboard).append(tmp_after)
+
+    @_check_operator
+    def insert(self) -> Any:
+        """
+
+        Inserts values stored in self.generator_out between the given timestamps t (self.timestamp) and t-1
+
+        Returns: TimeShop
+
+        """
+        timestamp_before = self.clipboard.start_time()
+
+        if timestamp_before == self.time_series.start_time():
+            self.time_series = self.clipboard.append(self.time_series.shift(len(self.clipboard)))
+        elif timestamp_before == self.time_series.end_time():
+            self.time_series = self.time_series.append(self.clipboard)
+        else:
+            tmp_before, tmp_after = self.time_series.split_after(split_point=timestamp_before)
+            self.time_series = tmp_before.append(self.clipboard).append(
+                tmp_after.shift(len(self.clipboard)))
 
     # ==========================================================================
     # Utils
@@ -409,7 +391,7 @@ class TimeShop(AbstractBaseManipulator):
         self.time_series.plot(new_plot=True)
 
     def clean_up(self):
-        self.generator_output = None
+        self.clipboard = None
 
     def extract(self) -> 'TimeSeriesDarts':
         """
