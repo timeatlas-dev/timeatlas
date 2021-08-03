@@ -170,7 +170,9 @@ class TimeShop(AbstractBaseManipulator):
         timestamp_before = pd.Timestamp(start_time)
         timestamp_after = pd.Timestamp(end_time)
 
-        if timestamp_before == other.start_time():
+        if timestamp_before == other.start_time() and timestamp_after == other.end_time():
+            self.clipboard = other
+        elif timestamp_before == other.start_time():
             _, self.clipboard = other.split_after(split_point=timestamp_after)
         elif timestamp_after == other.end_time():
             self.clipboard, _ = other.split_before(split_point=timestamp_before)
