@@ -192,11 +192,15 @@ class TimeShop(AbstractBaseManipulator):
             self.time_series = tmp_before.append(self.generator_output).append(
                 tmp_after.shift(len(self.generator_output)))
 
+    # ==========================================================================
+    # Selectors
+    # ==========================================================================
+
     def crop(self, start_time: str, end_time: str = None, n_values: int = None) -> TimeShop:
         """
 
             Remove n entries in the TimeSeries starting at timestamp (including).
-
+            !WARNING!: Will immediately remove that part
         Args:
             start_time: start of the part to crop
             end_time: end of the part to crop (optional)
@@ -219,6 +223,39 @@ class TimeShop(AbstractBaseManipulator):
             tmp_gap, tmp_after = tmp_after.split_after(split_point=timestamp_after)
             self.time_series = tmp_before.append(tmp_after.shift(-len(tmp_gap)))
         return self
+
+    def select(self, start_time: str, end_time: str = None) -> NoReturn:
+        """
+
+        Selecting a part of the original time series for further use (saved in self.generator_output)
+
+        Args:
+            start_time: start of the slice
+            end_time: end of the slice
+
+        Returns: NoReturn
+
+        """
+
+        timestamp_before = pd.Timestamp(start_time)
+        timestamp_after = pd.Timestamp(end_time)
+
+        if timestamp_before == self.time_series.start_time():
+            _, self.generator_output = self.time_series.split_after(split_point=timestamp_after)
+        elif timestamp_after == self.time_series.end_time():
+            self.generator_output, _ = self.time_series.split_before(split_point=timestamp_before)
+        else:
+            self.generator_output = self.time_series.slice(start_ts=timestamp_before, end_ts=timestamp_after)
+
+    def threshold_search(self, threshold, operator):
+        """
+
+        TODO: Find all values below or above a threshold (even both) and apply one of the top function to them
+        TODO: the problem is that it is not made to apply to multiply atm.
+
+        Returns:
+
+        """
 
     # ==========================================================================
     # Generators
@@ -363,20 +400,6 @@ class TimeShop(AbstractBaseManipulator):
 
         self.generator_output = self.time_series.from_dataframe(df=df,
                                                                 freq=self.time_series.freq)
-
-    # ==========================================================================
-    # Search
-    # ==========================================================================
-
-    def threshold_search(self, threshold, operator):
-        """
-
-        TODO: Find all values below or above a threshold (even both) and apply one of the top function to them
-        TODO: the problem is that it is not made to apply to multiply atm.
-
-        Returns:
-
-        """
 
     # ==========================================================================
     # Utils
