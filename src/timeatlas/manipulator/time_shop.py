@@ -6,11 +6,11 @@ if TYPE_CHECKING:
 from typing import Any
 
 import pandas as pd
-from numpy.random import normal
-from numpy import arange, linspace, logspace, power, append, flip
+import numpy as np
 from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
+from .utils import operators
 
 
 class TimeShop(AbstractBaseManipulator):
@@ -190,7 +190,13 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
-        pass
+        tmp = self.time_series.pd_dataframe()
+        tmp = tmp[operators[operator](tmp, threshold)]
+        tmp = np.split(tmp, np.where(np.isnan(tmp.values))[0])
+        tmp = [ev[~np.isnan(ev.values)] for ev in tmp if not isinstance(ev, np.ndarray)]
+        tmp = [ev for ev in tmp if not ev.empty]
+
+        self.clipboard = [self.time_series.from_dataframe(df) for df in tmp]
 
     # ==========================================================================
     # Generators
@@ -233,11 +239,11 @@ class TimeShop(AbstractBaseManipulator):
         index = self.clipboard.time_index
 
         if mu:
-            values = normal(loc=mu, scale=sigma, size=len(index))
+            values = np.normal(loc=mu, scale=sigma, size=len(index))
         else:
             values = []
             for value in self.clipboard.values():
-                values.append(float(normal(loc=value, scale=sigma, size=1)))
+                values.append(float(np.normal(loc=value, scale=sigma, size=1)))
 
         df = pd.DataFrame(data=values, index=index)
         self.clipboard = self.clipboard.from_dataframe(df=df,
@@ -255,7 +261,7 @@ class TimeShop(AbstractBaseManipulator):
         """
 
         index = self.clipboard.time_index
-        values = slope * arange(0, len(index), 1)
+        values = slope * np.arange(0, len(index), 1)
 
         df = pd.DataFrame(data=values, index=index)
         self.clipboard = self.clipboard.from_dataframe(df=df,
@@ -285,20 +291,20 @@ class TimeShop(AbstractBaseManipulator):
         middle = ceil(length / 2)
 
         if mode == 'lin':
-            first_part = linspace(0, spike_value, middle)
+            first_part = np.linspace(0, spike_value, middle)
         elif mode == 'log':
-            first_part = logspace(0, spike_value, middle)
+            first_part = np.logspace(0, spike_value, middle)
         elif mode == 'exp':
             assert pow is not None, f"if mode='exp' the argument for the power p has to be set"
-            start = power(0, 1 / float(p))
-            stop = power(spike_value, 1 / float(p))
-            first_part = power(linspace(start, stop, num=middle), p)
+            start = np.power(0, 1 / float(p))
+            stop = np.power(spike_value, 1 / float(p))
+            first_part = np.power(np.linspace(start, stop, num=middle), p)
         else:
             raise ValueError("Unknown 'mode' given.")
 
-        second_part = flip(first_part[:-1])
+        second_part = np.flip(first_part[:-1])
 
-        values = append(first_part, second_part)[1:-1]
+        values = np.append(first_part, second_part)[1:-1]
         index = self.clipboard.time_index
         df = pd.DataFrame(data=values, index=index)
 
