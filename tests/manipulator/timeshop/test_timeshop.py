@@ -79,7 +79,7 @@ class TestTimeShop(TestCase):
         ts = TimeSeriesDarts.from_dataframe(df)
         # create target values
         df = pd.DataFrame(data={'First': [2, 2, 2, 2, 2, 2]})
-        inds = [f'2021-01-{day}' for day in range(1, 6)]
+        inds = [f'2021-01-{day}' for day in range(1, 7)]
         df.index = pd.to_datetime(inds)
         target = TimeSeriesDarts.from_dataframe(df)
 
@@ -91,7 +91,7 @@ class TestTimeShop(TestCase):
         # replace the target to the object to be tested
         tss.insert()
         # test that all values are the same
-        self.assertTrue(tss.extract().values() == target.values())
+        self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__crop_with_n_values(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1]})
@@ -119,7 +119,8 @@ class TestTimeShop(TestCase):
         tss.flat(value=1)
 
         # test that all values are the same
-        self.assertTrue((tss.clipboard.values() == target.values()).all())
+        for clip in tss.clipboard:
+            self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__white_noise(self):
         pass
@@ -137,7 +138,8 @@ class TestTimeShop(TestCase):
         tss.trend(slope=1)
 
         # test that all values are the same
-        self.assertTrue((tss.clipboard.values() == target.values()).all())
+        for clip in tss.clipboard:
+            self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__copy(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
@@ -150,7 +152,8 @@ class TestTimeShop(TestCase):
         tss.copy(other=self.ts, start_time=self.ts.start_time(), end_time=self.ts.end_time())
 
         # test that all values are the same
-        self.assertTrue((tss.clipboard.values() == target.values()).all())
+        for clip in tss.clipboard:
+            self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__spike_single_value(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 11, 1, 1, 1, 1, 1]})
@@ -187,7 +190,7 @@ class TestTimeShop(TestCase):
         target = [t1, t2]
 
         # create the editor
-        tss = self.ts.edit()
+        tss = ts.edit()
         # search for the values above
         tss.threshold_search(threshold=1, operator=">")
 
@@ -200,7 +203,7 @@ class TestTimeShop(TestCase):
         df = pd.DataFrame(data={'First': [2, 2, 1, 1, 1, 2, 1, 1, 1, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
-        target = TimeSeriesDarts.from_dataframe(df)
+        ts = TimeSeriesDarts.from_dataframe(df)
 
         # create target
         df = pd.DataFrame(data={'First': [1, 1, 1]})
@@ -215,7 +218,7 @@ class TestTimeShop(TestCase):
         target = [t1, t2]
 
         # create the editor
-        tss = self.ts.edit()
+        tss = ts.edit()
         # search for the values above
         tss.threshold_search(threshold=2, operator="<")
 
@@ -236,4 +239,18 @@ class TestTimeShop(TestCase):
         # shifting the timestamps
         tss.shift(new_start='2021-01-11')
 
-        self.assertTrue((tss.clipboard.values() == target.values()).all())
+        for clip in tss.clipboard:
+            self.assertTrue((clip.values() == target.values()).all())
+
+    def test__TimeShop_select_random(self):
+        df = pd.DataFrame(data={'First': [1, 1, 1]})
+        inds = [f'2021-01-{day}' for day in range(1, 4)]
+        df.index = pd.to_datetime(inds)
+        target = TimeSeriesDarts.from_dataframe(df)
+
+        tss = self.ts.edit()
+
+        tss.random(lenght=3)
+
+        for clip in tss.clipboard:
+            self.assertTrue(len(clip) == len(target))
