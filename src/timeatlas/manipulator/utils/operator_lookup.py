@@ -5,5 +5,5 @@ operators = {"<": operator.lt,
              "==": operator.eq,
              "!=": operator.ne,
              ">=": operator.ge,
-             ">": operator.gt
+             ">": operator.gt,
              }

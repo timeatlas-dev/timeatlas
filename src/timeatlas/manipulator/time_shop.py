@@ -32,6 +32,19 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
 
     def _set_index(self, start_time, end_time=None, n_values=None):
+        """
+
+        Creating a range of timestamps between two times.
+        Either end_time or n_values has to be set. The frequency is given by self.time_series
+
+        Args:
+            start_time: start of timestamp range
+            end_time: end of timestamp range
+            n_values: number of values
+
+        Returns: DateTimeRange
+
+        """
 
         timestamp = pd.Timestamp(start_time)
         if end_time:
@@ -148,11 +161,11 @@ class TimeShop(AbstractBaseManipulator):
     def random(self, length: int, seed: int = None) -> Any:
         """
 
-
+        Selecting a part of self.time_series with a random start and a given length
 
         Args:
-            length:
-            seed:
+            length: length of the selected part (int)
+            seed: setting the seed for the random number generator (int)
 
         Returns:
 
@@ -172,13 +185,24 @@ class TimeShop(AbstractBaseManipulator):
     def threshold_search(self, threshold, operator) -> Any:
         """
 
+        Finding parts of self.time_series that are fulfilling the constraints given by threshold and operator.
 
+        Operators possible are:
+
+            "<": operator.lt,
+             "<=": operator.le,
+             "==": operator.eq,
+             "!=": operator.ne,
+             ">=": operator.ge,
+             ">": operator.gt,
+
+        given by the string representation
 
         Args:
-            threshold:
-            operator:
+            threshold: value overstepped for the search
+            operator: type of overstepping
 
-        Returns:
+        Returns: No Return
 
         """
 
@@ -206,10 +230,12 @@ class TimeShop(AbstractBaseManipulator):
     def flat(self, value: float = None) -> Any:
         """
 
-        Args:
-            value:
+        Modifying self.clipboard into a flat time series
 
-        Returns:
+        Args:
+            value: Value of the flat line. If not given the first value of the element in self.clipboard is taken.
+
+        Returns: NoReturn
 
         """
 
@@ -232,13 +258,13 @@ class TimeShop(AbstractBaseManipulator):
     def white_noise(self, sigma: float, mu: float = None):
         """
 
-
+        Creating normal distributed values
 
         Args:
-            sigma:
-            mu:
+            sigma: Standard Deviation of the normal distribution
+            mu: Mean of the normal distribution. If it is not given the mean is the value at the individual timestamp
 
-        Returns:
+        Returns: NoReturn
 
         """
 
@@ -262,13 +288,16 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def trend(self, slope: float):
+    def trend(self, slope: float, offset: float = 0) -> Any:
         """
 
-        Args:
-            slope:
+        Creating a linear trend ( y = m*x + b)
 
-        Returns:
+        Args:
+            slope: slope of the trend
+            b: offset at x=0, default b=0
+
+        Returns: NoReturn
 
         """
 
@@ -289,12 +318,20 @@ class TimeShop(AbstractBaseManipulator):
     def spike(self, spike_value: float, mode: str = 'lin', p: int = None):
         """
 
-        Args:
-            spike_value:
-            mode:
-            p:
+        Creating a spike. WWith the possibility of a different approach to the maximum.
 
-        Returns:
+        Possible modes:
+
+        'lin': linear in- and decrease
+        'exp': exponential in- and decrease (requires a set power p)
+        'log': logarithmic in- and decrease
+
+        Args:
+            spike_value: Maximum value of the spike
+            mode: how the approach to the maximum is done
+            p: if mode is 'exp' the power of the increase
+
+        Returns: NoReturn
 
         """
 
@@ -338,12 +375,12 @@ class TimeShop(AbstractBaseManipulator):
     def shift(self, new_start: str):
         """
 
-        shift clipboard timestamps
+        Shifting the timestamps with the frequency given by self.time_series
 
         Args:
-            new_start:
+            new_start: Start point of the TimeSeries
 
-        Returns:
+        Returns: NoReturn
 
         """
 
@@ -509,6 +546,13 @@ class TimeShop(AbstractBaseManipulator):
         return self
 
     def plot(self):
+        """
+
+        Plotting self.time_series
+
+        Returns:
+
+        """
         self.time_series.plot(new_plot=True)
 
     def clean_clipboard(self):
