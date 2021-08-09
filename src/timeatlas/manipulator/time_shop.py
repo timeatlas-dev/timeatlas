@@ -145,8 +145,28 @@ class TimeShop(AbstractBaseManipulator):
             self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
 
     @_check_selector
-    def random(self, start_time: str, length: int) -> Any:
-        pass
+    def random(self, length: int, seed: int = None) -> Any:
+        """
+
+
+
+        Args:
+            length:
+            seed:
+
+        Returns:
+
+        """
+
+        if seed:
+            rng = np.random.default_rng(seed)
+        else:
+            rng = np.random.default_rng()
+
+        timestamp = pd.Timestamp(
+            rng.choice(a=self.time_series.time_index[:len(self.time_series - (length - 1))], size=1)[0])
+
+        self.clipboard = self.time_series.slice_n_points_after(start_ts=timestamp, n=length)
 
     @_check_selector
     def threshold_search(self, threshold, operator) -> Any:
@@ -162,6 +182,9 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
+        if operator not in operators:
+            raise ValueError(f"Unknown operator. Given, {operator}")
+
         # turning TimeSeries into DataFrame
         tmp = self.time_series.pd_dataframe()
         # selecting the values with the threshold
@@ -172,7 +195,6 @@ class TimeShop(AbstractBaseManipulator):
         tmp = [ev[~np.isnan(ev.values)] for ev in tmp if not isinstance(ev, np.ndarray)]
         # remove empty DataFrames
         tmp = [ev for ev in tmp if not ev.empty]
-
         # turn back into TimeSeries
         self.clipboard = [self.time_series.from_dataframe(df) for df in tmp]
 
@@ -227,11 +249,11 @@ class TimeShop(AbstractBaseManipulator):
             index = clip.time_index
 
             if mu:
-                values = np.normal(loc=mu, scale=sigma, size=len(index))
+                values = np.random.normal(loc=mu, scale=sigma, size=len(index))
             else:
                 values = []
                 for value in clip.values():
-                    values.append(float(np.normal(loc=value, scale=sigma, size=1)))
+                    values.append(float(np.random.normal(loc=value, scale=sigma, size=1)))
 
             df = pd.DataFrame(data=values, index=index)
             clipboard.append(clip.from_dataframe(df=df,

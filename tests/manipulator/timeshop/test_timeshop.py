@@ -249,8 +249,7 @@ class TestTimeShop(TestCase):
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
-
-        tss.random(lenght=3)
+        tss.random(length=len(target))
 
         for clip in tss.clipboard:
             self.assertTrue(len(clip) == len(target))
