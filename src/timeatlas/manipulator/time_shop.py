@@ -7,6 +7,7 @@ from typing import Any
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
@@ -58,6 +59,9 @@ class TimeShop(AbstractBaseManipulator):
         else:
             raise ValueError("Either 'end_time' or 'n_values' has to be set")
         return index
+
+    def _clipboard_gen(self):
+        pass
 
     # ==========================================================================
     # Decorators
@@ -317,7 +321,7 @@ class TimeShop(AbstractBaseManipulator):
         clipboard = []
         for clip in self.clipboard:
             index = clip.time_index
-            values = slope * np.arange(0, len(index), 1)
+            values = slope * np.arange(0, len(index), 1) + offset
 
             df = pd.DataFrame(data=values, index=index)
             clipboard.append(clip.from_dataframe(df=df,
@@ -573,9 +577,10 @@ class TimeShop(AbstractBaseManipulator):
         Returns:
 
         """
-
-        for clip in self.clipboard:
-            clip.plot(new_plot=True)
+        if len(self.clipboard) == 1:
+            self.clipboard[0].plot()
+        else:
+            NotImplemented("Plotting of more than one intermediate TimeSeries in self.clipboard is not supported, yet.")
 
     def plot(self):
         """
@@ -586,6 +591,10 @@ class TimeShop(AbstractBaseManipulator):
 
         """
         self.time_series.plot(new_plot=True)
+        for key, value in self._anomalies.items():
+            s = value['start_time']
+            e = value['end_time']
+            plt.axvspan(s, e, facecolor='r', alpha=0.5)
 
     def clean_clipboard(self):
         self.clipboard = None
