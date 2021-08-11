@@ -27,6 +27,9 @@ class TimeShop(AbstractBaseManipulator):
         # temporal saving of needed information
         self.clipboard = None
 
+        # anomalies added to the time_series
+        self._anomalies = {}
+
     # ==========================================================================
     # Private Functions
     # ==========================================================================
@@ -120,6 +123,9 @@ class TimeShop(AbstractBaseManipulator):
             if self.clipboard is None:
                 raise ValueError(f"There is no generated value.")
             else:
+                for clip in self.clipboard:
+                    self._anomalies[len(self._anomalies) + 1] = {'start_time': clip.start_time(),
+                                                                 'end_time': clip.end_time()}
                 func(self, *args, **kwargs)
                 # removing the input
                 self.clipboard = None
@@ -129,10 +135,12 @@ class TimeShop(AbstractBaseManipulator):
 
     # ==========================================================================
     # Selectors
+    # These functions select a part of self.time_series or a different TimeSeries()
+    # that a user would like to work on and modify.
     # ==========================================================================
 
     @_check_selector
-    def copy(self, other: TimeSeriesDarts, start_time: str, end_time: str) -> Any:
+    def select(self, other: TimeSeriesDarts, start_time: str, end_time: str) -> Any:
         """
 
         Selecting a part of the original time series for further use (saved in self.clipboard)
@@ -158,7 +166,7 @@ class TimeShop(AbstractBaseManipulator):
             self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
 
     @_check_selector
-    def random(self, length: int, seed: int = None) -> Any:
+    def select_random(self, length: int, seed: int = None) -> Any:
         """
 
         Selecting a part of self.time_series with a random start and a given length
@@ -224,10 +232,13 @@ class TimeShop(AbstractBaseManipulator):
 
     # ==========================================================================
     # Generators
+    # These functions generate new values within the selected part of a TimeSeries()
+    # They usually replace the values that are within the selected part so some
+    # precaution by the user is needed.
     # ==========================================================================
 
     @_check_manipulator
-    def flat(self, value: float = None) -> Any:
+    def flatten(self, value: float = None) -> Any:
         """
 
         Modifying self.clipboard into a flat time series
@@ -255,7 +266,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def white_noise(self, sigma: float, mu: float = None):
+    def create_white_noise(self, sigma: float, mu: float = None):
         """
 
         Creating normal distributed values
@@ -288,7 +299,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def trend(self, slope: float, offset: float = 0) -> Any:
+    def create_trend(self, slope: float, offset: float = 0) -> Any:
         """
 
         Creating a linear trend ( y = m*x + b)
@@ -315,7 +326,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def spike(self, spike_value: float, mode: str = 'lin', p: int = None):
+    def spiking(self, spike_value: float, mode: str = 'lin', p: int = None):
         """
 
         Creating a spike. WWith the possibility of a different approach to the maximum.
@@ -372,7 +383,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def shift(self, new_start: str):
+    def time_shifting(self, new_start: str):
         """
 
         Shifting the timestamps with the frequency given by self.time_series
@@ -397,6 +408,8 @@ class TimeShop(AbstractBaseManipulator):
 
     # ==========================================================================
     # Operators
+    # These functions offer different possibilities to put the selected and modified
+    # part back into the original TimeSeries()
     # ==========================================================================
 
     @_check_operator
@@ -488,9 +501,16 @@ class TimeShop(AbstractBaseManipulator):
                 _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
                 self.time_series = tmp_before.append(clip).append(tmp_after)
 
+    def replace_with_full(self):
+        # TODO: Implement the replace function but instead of cutting and appending replacing with update
+        # TODO: Check the old darts.update()
+        pass
+
     @_check_operator
     def insert(self) -> Any:
         """
+
+        TODO: Bug -> with the shifting of the timeseries
 
         Inserts values stored in self.generator_out between the given timestamps t (self.timestamp) and t-1
 
@@ -509,12 +529,12 @@ class TimeShop(AbstractBaseManipulator):
             elif timestamp_before == self.time_series.end_time():
                 self.time_series = self.time_series.append(clip)
             else:
-                tmp_before, tmp_after = self.time_series.split_after(split_point=timestamp_before)
-                self.time_series = tmp_before.append(clip).append(
-                    tmp_after.shift(len(clip)))
+                tmp_before, tmp_after = self.time_series.split_before(split_point=timestamp_before)
+                self.time_series = tmp_before.append(clip).append(tmp_after.shift(len(clip)))
 
     # ==========================================================================
     # Utils
+    # Some utilities that might be useful
     # ==========================================================================
 
     def crop(self, start_time: str, end_time: str = None, n_values: int = None) -> TimeShop:
@@ -545,10 +565,22 @@ class TimeShop(AbstractBaseManipulator):
             self.time_series = tmp_before.append(tmp_after.shift(-len(tmp_gap)))
         return self
 
+    def clipboard_plot(self):
+        """
+
+        Plotting self.clipboard -> with red background
+
+        Returns:
+
+        """
+
+        for clip in self.clipboard:
+            clip.plot(new_plot=True)
+
     def plot(self):
         """
 
-        Plotting self.time_series
+        Plotting self.time_series -> with red background
 
         Returns:
 

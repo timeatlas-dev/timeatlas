@@ -24,9 +24,9 @@ class TestTimeShop(TestCase):
         # create TimeShop object
         tss = self.ts.edit()
         # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
+        tss.select(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
         # create values to add (this assumes that TimeShop.flat() works)
-        tss.flat(value=1)
+        tss.flatten(value=1)
         # add the target to the object to be tested
         tss.add()
 
@@ -42,10 +42,10 @@ class TestTimeShop(TestCase):
 
         # create TimeShop object
         tss = self.ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
-        # create values to add (this assumes that TimeShop.flat() works)
-        tss.flat(value=2)
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
+        # create values to add (this assumes that TimeShop.flatten() works)
+        tss.flatten(value=2)
         # multiply the target to the object to be tested
         tss.multiply()
 
@@ -61,10 +61,10 @@ class TestTimeShop(TestCase):
 
         # create TimeShop object
         tss = self.ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
-        # create values to add (this assumes that TimeShop.flat() works)
-        tss.flat(value=2)
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
+        # create values to add (this assumes that TimeShop.flatten() works)
+        tss.flatten(value=2)
         # replace the target to the object to be tested
         tss.replace()
 
@@ -84,10 +84,10 @@ class TestTimeShop(TestCase):
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
-        # create values to add (this assumes that TimeShop.flat() works)
-        tss.flat(value=2)
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        # create values to add (this assumes that TimeShop.flatten() works)
+        tss.flatten(value=2)
         # replace the target to the object to be tested
         tss.insert()
         # test that all values are the same
@@ -106,42 +106,42 @@ class TestTimeShop(TestCase):
         # test that all values are the same
         self.assertTrue((tss.extract().values() == target.values()).all())
 
-    def test__TimeShop__flat_with_n_values(self):
+    def test__TimeShop__flatten_with_n_values(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
         # replace the target to the object to be tested
-        tss.flat(value=1)
+        tss.flatten(value=1)
 
         # test that all values are the same
         for clip in tss.clipboard:
             self.assertTrue((clip.values() == target.values()).all())
 
-    def test__TimeShop__white_noise(self):
+    def test__TimeShop__create_white_noise(self):
         pass
 
-    def test__TimeShop__trend_with_n_values(self):
+    def test__TimeShop__create_trend_with_n_values(self):
         df = pd.DataFrame(data={'First': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
         # replace the target to the object to be tested
-        tss.trend(slope=1)
+        tss.create_trend(slope=1)
 
         # test that all values are the same
         for clip in tss.clipboard:
             self.assertTrue((clip.values() == target.values()).all())
 
-    def test__TimeShop__copy(self):
+    def test__TimeShop__select(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -149,13 +149,13 @@ class TestTimeShop(TestCase):
 
         tss = self.ts.edit()
         # replace the target to the object to be tested
-        tss.copy(other=self.ts, start_time=self.ts.start_time(), end_time=self.ts.end_time())
+        tss.select(other=self.ts, start_time=self.ts.start_time(), end_time=self.ts.end_time())
 
         # test that all values are the same
         for clip in tss.clipboard:
             self.assertTrue((clip.values() == target.values()).all())
 
-    def test__TimeShop__spike_single_value(self):
+    def test__TimeShop__spiking_single_value(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 11, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -163,9 +163,9 @@ class TestTimeShop(TestCase):
 
         tss = self.ts.edit()
         # replace the target to the object to be tested
-        tss.copy(other=self.ts, start_time='2021-01-05', end_time='2021-01-05')
+        tss.select(other=self.ts, start_time='2021-01-05', end_time='2021-01-05')
         # create spike
-        tss.spike(spike_value=10, mode='lin')
+        tss.spiking(spike_value=10, mode='lin')
         tss.add()
 
         self.assertTrue((tss.extract().values() == target.values()).all())
@@ -227,17 +227,17 @@ class TestTimeShop(TestCase):
         for i, v in enumerate(tss.clipboard):
             self.assertTrue((v.values() == target[i].values()).all())
 
-    def test__TimeShop_shift(self):
+    def test__TimeShop_time_shift(self):
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(11, 21)]
         df.index = pd.to_datetime(inds)
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
-        # copy into the clipboard
-        tss.copy(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        # select into the clipboard
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
         # shifting the timestamps
-        tss.shift(new_start='2021-01-11')
+        tss.time_shifting(new_start='2021-01-11')
 
         for clip in tss.clipboard:
             self.assertTrue((clip.values() == target.values()).all())
@@ -249,7 +249,7 @@ class TestTimeShop(TestCase):
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
-        tss.random(length=len(target))
+        tss.select_random(length=len(target))
 
         for clip in tss.clipboard:
             self.assertTrue(len(clip) == len(target))
