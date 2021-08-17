@@ -31,6 +31,9 @@ class TimeShop(AbstractBaseManipulator):
         # anomalies added to the time_series
         self._anomalies = {}
 
+    def __len__(self):
+        return len(self.time_series)
+
     # ==========================================================================
     # Private Functions
     # ==========================================================================
@@ -263,7 +266,7 @@ class TimeShop(AbstractBaseManipulator):
             if value is None:
                 value = float(clip.values()[0])
 
-            df = pd.DataFrame(data=[value] * len(index), index=index)
+            df = pd.DataFrame(data=[value] * len(index), index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
                                                  freq=self.time_series.freq))
 
@@ -298,7 +301,8 @@ class TimeShop(AbstractBaseManipulator):
 
             df = pd.DataFrame(data=values, index=index)
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq))
+                                                 freq=self.time_series.freq,
+                                                 columns=self.time_series.components))
 
         self.clipboard = clipboard
 
@@ -325,13 +329,15 @@ class TimeShop(AbstractBaseManipulator):
 
             df = pd.DataFrame(data=values, index=index)
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq))
+                                                 freq=self.time_series.freq,
+                                                 columns=self.time_series.components))
 
         self.clipboard = clipboard
 
     @_check_manipulator
     def spiking(self, spike_value: float, mode: str = 'lin', p: int = None):
         """
+
 
         Creating a spike. WWith the possibility of a different approach to the maximum.
 
@@ -382,7 +388,8 @@ class TimeShop(AbstractBaseManipulator):
             df = pd.DataFrame(data=values, index=index)
 
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq))
+                                                 freq=self.time_series.freq,
+                                                 columns=self.time_series.components))
 
         self.clipboard = clipboard
 
@@ -408,7 +415,8 @@ class TimeShop(AbstractBaseManipulator):
             df = pd.DataFrame(data=values, index=index)
 
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq))
+                                                 freq=self.time_series.freq,
+                                                 columns=self.time_series.components))
 
     # ==========================================================================
     # Operators
@@ -485,56 +493,64 @@ class TimeShop(AbstractBaseManipulator):
 
         assert isinstance(self.clipboard, list)
 
+        time_series = self.time_series.pd_dataframe()
+
         for clip in self.clipboard:
 
-            timestamp_before = clip.start_time()
-            timestamp_after = clip.end_time()
+            time_series.update(clip.pd_dataframe(), overwrite=True)
 
-            if timestamp_before == self.time_series.start_time():
-                # check if the complete series is to be replaced
-                if timestamp_after == self.time_series.end_time():
-                    self.time_series = clip
-                else:
-                    _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
-                    self.time_series = clip.append(tmp_after)
-            elif timestamp_after == self.time_series.end_time():
-                tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
-                self.time_series = tmp_before.append(clip)
-            else:
-                tmp_before, _ = self.time_series.split_before(split_point=timestamp_before)
-                _, tmp_after = self.time_series.split_after(split_point=timestamp_after)
-                self.time_series = tmp_before.append(clip).append(tmp_after)
-
-    def replace_with_full(self):
-        # TODO: Implement the replace function but instead of cutting and appending replacing with update
-        # TODO: Check the old darts.update()
-        pass
+        self.time_series = self.time_series.from_dataframe(time_series)
 
     @_check_operator
     def insert(self) -> Any:
-        """
-
-        TODO: Bug -> with the shifting of the timeseries
-
-        Inserts values stored in self.generator_out between the given timestamps t (self.timestamp) and t-1
-
-        Returns: TimeShop
-
-        """
-
         assert isinstance(self.clipboard, list)
 
-        for clip in self.clipboard:
+        # Creating a DataFrame with the correct length.
+        tmp_len = len(self.time_series) + sum([len(clip) for clip in self.clipboard])
+        tmp_ind = pd.to_datetime(
+            pd.date_range(start=self.time_series.start_time(), periods=tmp_len, freq=self.time_series.freq))
+        # the dataframe contains an absurd high number so that it is obvious when something goes wrong
+        time_series = pd.DataFrame([1000000000] * len(tmp_ind), index=tmp_ind, columns=self.time_series.components)
 
-            timestamp_before = clip.start_time()
-
-            if timestamp_before == self.time_series.start_time():
-                self.time_series = clip.append(self.time_series.shift(len(clip)))
-            elif timestamp_before == self.time_series.end_time():
-                self.time_series = self.time_series.append(clip)
+        # the timeseries is split into its parts with the insertions added between
+        parts = []
+        # keep track of the old time, where the last clip ended  so that we are not overlapping insertions and original time_series
+        old_time = None
+        # how much the preceding insertions have to be shifted in the time axis
+        shift_int = 0
+        for i, clip in enumerate(self.clipboard):
+            # this is a special case so that it does not throw an error when insertion and original start at the same time
+            if clip.start_time() == self.time_series.start_time():
+                parts.append(clip)
+                old_time = clip.end_time()
+                shift_int += len(clip)
             else:
-                tmp_before, tmp_after = self.time_series.split_before(split_point=timestamp_before)
-                self.time_series = tmp_before.append(clip).append(tmp_after.shift(len(clip)))
+                # cutting the timeseries before the new insertion
+                before, _ = self.time_series.split_before(clip.start_time())
+                if old_time is not None:
+                    # removing the part of the original before the preceding insertion
+                    if old_time != self.time_series.start_time():
+                        _, before = before.split_before(old_time)
+                # adding and shifting the insertions to the correct timestamp
+                parts.append(before.shift(shift_int))
+                parts.append(clip.shift(shift_int))
+                shift_int += len(clip)
+                old_time = clip.end_time()
+
+        # adding the part of the original time_series that comes after the last insertion
+        try:
+            _, after = self.time_series.split_before(old_time)
+            parts.append(after.shift(shift_int))
+        except ValueError:
+            pass
+
+        # updating the dataframe with the new values
+        self.parts = parts
+        for part in parts:
+            time_series.update(part.pd_dataframe(), overwrite=True)
+
+        # creating the new and overwriting the old time_series
+        self.time_series = self.time_series.from_dataframe(time_series)
 
     # ==========================================================================
     # Utils
