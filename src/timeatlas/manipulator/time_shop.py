@@ -299,10 +299,9 @@ class TimeShop(AbstractBaseManipulator):
                 for value in clip.values():
                     values.append(float(np.random.normal(loc=value, scale=sigma, size=1)))
 
-            df = pd.DataFrame(data=values, index=index)
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq,
-                                                 columns=self.time_series.components))
+                                                 freq=self.time_series.freq))
 
         self.clipboard = clipboard
 
@@ -327,10 +326,9 @@ class TimeShop(AbstractBaseManipulator):
             index = clip.time_index
             values = slope * np.arange(0, len(index), 1) + offset
 
-            df = pd.DataFrame(data=values, index=index)
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq,
-                                                 columns=self.time_series.components))
+                                                 freq=self.time_series.freq))
 
         self.clipboard = clipboard
 
@@ -385,11 +383,10 @@ class TimeShop(AbstractBaseManipulator):
 
             values = np.append(first_part, second_part)[1:-1]
             index = clip.time_index
-            df = pd.DataFrame(data=values, index=index)
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
 
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq,
-                                                 columns=self.time_series.components))
+                                                 freq=self.time_series.freq))
 
         self.clipboard = clipboard
 
@@ -412,11 +409,10 @@ class TimeShop(AbstractBaseManipulator):
 
             values = clip.values()
             index = self._set_index(start_time=new_start, end_time=None, n_values=len(values))
-            df = pd.DataFrame(data=values, index=index)
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
 
             clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq,
-                                                 columns=self.time_series.components))
+                                                 freq=self.time_series.freq))
 
     # ==========================================================================
     # Operators
@@ -503,6 +499,13 @@ class TimeShop(AbstractBaseManipulator):
 
     @_check_operator
     def insert(self) -> Any:
+        """
+
+        Inserts the clips in self.clipboard to the original time series and shifts the timestamps accordingly
+
+        Returns: TimeShop
+
+        """
         assert isinstance(self.clipboard, list)
 
         # Creating a DataFrame with the correct length.
