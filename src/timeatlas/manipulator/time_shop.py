@@ -13,6 +13,10 @@ from math import ceil
 from timeatlas.abstract import AbstractBaseManipulator
 from .utils import operators
 
+OPERATOR_STRING = 'operator'
+START_TIME_STRING = 'start_time'
+END_TIME_STRING = 'end_time'
+
 
 class TimeShop(AbstractBaseManipulator):
     """
@@ -24,12 +28,14 @@ class TimeShop(AbstractBaseManipulator):
     def __init__(self, ts: 'TimeSeriesDarts'):
         ts._assert_univariate()
         self.time_series = ts
+        self.label_ts = None
 
         # temporal saving of needed information
         self.clipboard = None
 
         # anomalies added to the time_series
         self._anomalies = {}
+        self.inserted_anomalies = None
 
     def __len__(self):
         return len(self.time_series)
@@ -108,6 +114,10 @@ class TimeShop(AbstractBaseManipulator):
             force = kwargs.get('force')
             if force or self.clipboard is not None:
                 func(self, *args, **kwargs)
+                for clip in self.clipboard:
+                    self._anomalies[len(self._anomalies) + 1] = {OPERATOR_STRING: func.__name__,
+                                                                 START_TIME_STRING: clip.start_time(),
+                                                                 END_TIME_STRING: clip.end_time()}
                 return self
             else:
                 raise ValueError(f"There is a generated value waiting."
@@ -130,11 +140,27 @@ class TimeShop(AbstractBaseManipulator):
             if self.clipboard is None:
                 raise ValueError(f"There is no generated value.")
             else:
-                for clip in self.clipboard:
-                    self._anomalies[len(self._anomalies) + 1] = {'start_time': clip.start_time(),
-                                                                 'end_time': clip.end_time()}
                 func(self, *args, **kwargs)
+                # anoamly components are named the following was:
+                # <type of anomaly>_<#of anomalies in total>
+                num_anomalies = len(
+                    self.inserted_anomalies.components) + 1 if self.inserted_anomalies is not None else 1
+                for key, values in self._anomalies.items():
+                    component_name = [f"{values[f'{OPERATOR_STRING}']}_{num_anomalies}"]
+                    print(component_name)
+                    anomaly_df = pd.DataFrame(data=[0] * len(self.time_series),
+                                              index=self.time_series.time_index,
+                                              columns=component_name)
+                    index = self._set_index(start_time=values[START_TIME_STRING], end_time=values[END_TIME_STRING])
+                    df = pd.DataFrame(data=[1] * len(index), index=index,
+                                      columns=component_name)
+                    anomaly_df.update(other=df, overwrite=True)
+                    if self.inserted_anomalies is None:
+                        self.inserted_anomalies = self.time_series.from_dataframe(anomaly_df)
+                    else:
+                        self.inserted_anomalies = self.inserted_anomalies.stack(self.time_series.from_dataframe(anomaly_df))
                 # removing the input
+                self._anomalies = {}
                 self.clipboard = None
                 return self
 
@@ -166,9 +192,9 @@ class TimeShop(AbstractBaseManipulator):
         if timestamp_before == other.start_time() and timestamp_after == other.end_time():
             self.clipboard = other
         elif timestamp_before == other.start_time():
-            _, self.clipboard = other.split_after(split_point=timestamp_after)
+            self.clipboard, _ = other.split_after(split_point=timestamp_after)
         elif timestamp_after == other.end_time():
-            self.clipboard, _ = other.split_before(split_point=timestamp_before)
+            _, self.clipboard = other.split_before(split_point=timestamp_before)
         else:
             self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
 
@@ -606,13 +632,14 @@ class TimeShop(AbstractBaseManipulator):
 
         Plotting self.time_series -> with red background
 
+        TODO: This nolonger works
         Returns:
 
         """
         self.time_series.plot(new_plot=True)
         for key, value in self._anomalies.items():
-            s = value['start_time']
-            e = value['end_time']
+            s = value[START_TIME_STRING]
+            e = value[END_TIME_STRING]
             plt.axvspan(s, e, facecolor='r', alpha=0.5)
 
     def clean_clipboard(self):
