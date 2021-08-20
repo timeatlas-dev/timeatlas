@@ -5,8 +5,6 @@ import pandas as pd
 
 from timeatlas.manipulator import TimeShop
 
-import matplotlib.pyplot as plt
-
 
 class TimeSeriesDarts(TimeSeries):
 

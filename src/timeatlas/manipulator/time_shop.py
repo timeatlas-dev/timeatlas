@@ -8,6 +8,7 @@ from typing import Any
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
 from math import ceil
 
 from timeatlas.abstract import AbstractBaseManipulator
@@ -35,7 +36,7 @@ class TimeShop(AbstractBaseManipulator):
 
         # anomalies added to the time_series
         self._anomalies = {}
-        self.inserted_anomalies = None
+        self._inserted_anomalies = None
 
     def __len__(self):
         return len(self.time_series)
@@ -145,7 +146,7 @@ class TimeShop(AbstractBaseManipulator):
                 # <type of anomaly>_<#of anomalies in total>
                 # number of anomalies
                 num_anomalies = len(
-                    self.inserted_anomalies.components) + 1 if self.inserted_anomalies is not None else 1
+                    self._inserted_anomalies.components) + 1 if self._inserted_anomalies is not None else 1
                 # looping over the possible anomalies
                 for key, values in self._anomalies.items():
                     # setting component name
@@ -161,10 +162,10 @@ class TimeShop(AbstractBaseManipulator):
                     # updating the anomaly DataFrame
                     anomaly_df.update(other=df, overwrite=True)
                     # setting self.insert_anomalies
-                    if self.inserted_anomalies is None:
-                        self.inserted_anomalies = self.time_series.from_dataframe(anomaly_df)
+                    if self._inserted_anomalies is None:
+                        self._inserted_anomalies = self.time_series.from_dataframe(anomaly_df)
                     else:
-                        self.inserted_anomalies = self.inserted_anomalies.stack(
+                        self._inserted_anomalies = self._inserted_anomalies.stack(
                             self.time_series.from_dataframe(anomaly_df))
                 # removing the input
                 self._anomalies = {}
@@ -644,10 +645,14 @@ class TimeShop(AbstractBaseManipulator):
 
         """
         self.time_series.plot(new_plot=True)
-        for key, value in self._anomalies.items():
-            s = value[START_TIME_STRING]
-            e = value[END_TIME_STRING]
-            plt.axvspan(s, e, facecolor='r', alpha=0.5)
+        if self._inserted_anomalies is not None:
+            color = iter(cm.rainbow(np.linspace(0, 1, len(self._inserted_anomalies.components))))
+            for n, column in self._inserted_anomalies.pd_dataframe().iteritems():
+                tmp = self.time_series.from_series(column[column == 1])
+                c = next(color)
+                s = tmp.start_time()
+                e = tmp.end_time()
+                plt.axvspan(s, e, facecolor=c, alpha=0.5)
 
     def clean_clipboard(self):
         self.clipboard = None
