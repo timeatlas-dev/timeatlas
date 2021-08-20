@@ -143,22 +143,29 @@ class TimeShop(AbstractBaseManipulator):
                 func(self, *args, **kwargs)
                 # anoamly components are named the following was:
                 # <type of anomaly>_<#of anomalies in total>
+                # number of anomalies
                 num_anomalies = len(
                     self.inserted_anomalies.components) + 1 if self.inserted_anomalies is not None else 1
+                # looping over the possible anomalies
                 for key, values in self._anomalies.items():
+                    # setting component name
                     component_name = [f"{values[f'{OPERATOR_STRING}']}_{num_anomalies}"]
-                    print(component_name)
+                    # creating the DataFrame without labels -> 0 = No anomaly
                     anomaly_df = pd.DataFrame(data=[0] * len(self.time_series),
                                               index=self.time_series.time_index,
                                               columns=component_name)
+                    # creating the dataframe with 1 = anomaly
                     index = self._set_index(start_time=values[START_TIME_STRING], end_time=values[END_TIME_STRING])
                     df = pd.DataFrame(data=[1] * len(index), index=index,
                                       columns=component_name)
+                    # updating the anomaly DataFrame
                     anomaly_df.update(other=df, overwrite=True)
+                    # setting self.insert_anomalies
                     if self.inserted_anomalies is None:
                         self.inserted_anomalies = self.time_series.from_dataframe(anomaly_df)
                     else:
-                        self.inserted_anomalies = self.inserted_anomalies.stack(self.time_series.from_dataframe(anomaly_df))
+                        self.inserted_anomalies = self.inserted_anomalies.stack(
+                            self.time_series.from_dataframe(anomaly_df))
                 # removing the input
                 self._anomalies = {}
                 self.clipboard = None
