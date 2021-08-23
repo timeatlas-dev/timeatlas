@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -181,30 +183,41 @@ class TimeShop(AbstractBaseManipulator):
     # ==========================================================================
 
     @_check_selector
-    def select(self, other: TimeSeriesDarts, start_time: str, end_time: str) -> Any:
+    def select(self, other: TimeSeriesDarts, start_time: str, end_time: str = None, n_values: int = None) -> Any:
         """
 
         Selecting a part of the original time series for further use (saved in self.clipboard)
+        Either end_time or n_values has to be set.
 
         Args:
             start_time: start of the slice
             end_time: end of the slice
+            n_values: number of instances after the start_time
 
         Returns: NoReturn
 
         """
 
+        assert end_time is not None or n_values is not None, ("Either 'end_time' or 'n_values' has to be set.")
+
         timestamp_before = pd.Timestamp(start_time)
         timestamp_after = pd.Timestamp(end_time)
 
-        if timestamp_before == other.start_time() and timestamp_after == other.end_time():
-            self.clipboard = other
-        elif timestamp_before == other.start_time():
-            self.clipboard, _ = other.split_after(split_point=timestamp_after)
-        elif timestamp_after == other.end_time():
-            _, self.clipboard = other.split_before(split_point=timestamp_before)
+        if end_time:
+            if timestamp_before == other.start_time() and timestamp_after == other.end_time():
+                self.clipboard = other
+            elif timestamp_before == other.start_time():
+                self.clipboard, _ = other.split_after(split_point=timestamp_after)
+            elif timestamp_after == other.end_time():
+                _, self.clipboard = other.split_before(split_point=timestamp_before)
+            else:
+                self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
         else:
-            self.clipboard = other.slice(start_ts=timestamp_before, end_ts=timestamp_after)
+            clip = other.slice_n_points_after(start_ts=timestamp_before, n=n_values)
+            if len(clip) < n_values:
+                warnings.warn(
+                    f"TimeSeries does not contain enough values: given n_values ({n_values}) > remaining length ({len(clip)})")
+            self.clipboard = clip
 
     @_check_selector
     def select_random(self, length: int, seed: int = None) -> Any:
