@@ -638,9 +638,8 @@ class TimeShop(AbstractBaseManipulator):
     def plot(self):
         """
 
-        Plotting self.time_series -> with red background
+        Plotting self.time_series -> with different color background
 
-        TODO: This nolonger works
         Returns:
 
         """

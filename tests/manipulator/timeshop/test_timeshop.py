@@ -15,6 +15,11 @@ class TestTimeShop(TestCase):
         self.ts = TimeSeriesDarts.from_dataframe(df)
 
     def test__TimeShop__add_with_end_time(self):
+        """
+
+        Integration test for workflow select -> flatten -> add
+
+        """
         # create target values
         df = pd.DataFrame(data={'First': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
@@ -25,7 +30,7 @@ class TestTimeShop(TestCase):
         tss = self.ts.edit()
         # copy into the clipboard
         tss.select(other=tss.time_series, start_time=self.ts.start_time(), end_time=self.ts.end_time())
-        # create values to add (this assumes that TimeShop.flat() works)
+        # create values to add (this assumes that TimeShop.flatten() works)
         tss.flatten(value=1)
         # add the target to the object to be tested
         tss.add()
@@ -34,6 +39,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__multiply_with_end_time(self):
+        """
+
+        Integration test for workflow select -> flatten -> multiply
+
+        """
         # create target values
         df = pd.DataFrame(data={'First': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
@@ -53,6 +63,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__replace_with_end_time(self):
+        """
+
+        Integration test for workflow select -> flatten -> replace
+
+        """
         # create target values
         df = pd.DataFrame(data={'First': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
@@ -72,6 +87,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__insert_with_end_time(self):
+        """
+
+        Integration test for workflow select -> flatten -> insert
+
+        """
         # create initial values
         df = pd.DataFrame(data={'First': [2, 2, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 4)]
@@ -94,6 +114,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__crop_with_n_values(self):
+        """
+
+        Unittest test for the crop function
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 8)]
         df.index = pd.to_datetime(inds)
@@ -107,6 +132,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__flatten_with_n_values(self):
+        """
+
+        Integration test for workflow select -> flatten
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -126,6 +156,11 @@ class TestTimeShop(TestCase):
         pass
 
     def test__TimeShop__create_trend_with_n_values(self):
+        """
+
+        Integration test for workflow select -> create_trend
+
+        """
         df = pd.DataFrame(data={'First': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -142,6 +177,11 @@ class TestTimeShop(TestCase):
             self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__select(self):
+        """
+
+        Unit-test test for workflow select
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -156,6 +196,11 @@ class TestTimeShop(TestCase):
             self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__spiking_single_value(self):
+        """
+
+        Integration test for workflow select -> spiking -> add
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 11, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -171,6 +216,11 @@ class TestTimeShop(TestCase):
         self.assertTrue((tss.extract().values() == target.values()).all())
 
     def test__TimeShop__threshold_search_above_value(self):
+        """
+
+        Unit-test test for select with threshold above
+
+        """
         # create initial values
         df = pd.DataFrame(data={'First': [1, 1, 2, 2, 2, 1, 2, 2, 2, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
@@ -200,6 +250,11 @@ class TestTimeShop(TestCase):
             self.assertTrue((v.values() == target[i].values()).all())
 
     def test__TimeShop__threshold_search_below_value(self):
+        """
+
+        Unit-test test for select with threshold below
+
+        """
         df = pd.DataFrame(data={'First': [2, 2, 1, 1, 1, 2, 1, 1, 1, 2]})
         inds = [f'2021-01-{day}' for day in range(1, 11)]
         df.index = pd.to_datetime(inds)
@@ -215,6 +270,7 @@ class TestTimeShop(TestCase):
         inds = [f'2021-01-{day}' for day in range(7, 10)]
         df.index = pd.to_datetime(inds)
         t2 = TimeSeriesDarts.from_dataframe(df)
+        # final target
         target = [t1, t2]
 
         # create the editor
@@ -228,6 +284,11 @@ class TestTimeShop(TestCase):
             self.assertTrue((v.values() == target[i].values()).all())
 
     def test__TimeShop_time_shift(self):
+        """
+
+        Unit-test test for shift function
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(11, 21)]
         df.index = pd.to_datetime(inds)
@@ -243,6 +304,11 @@ class TestTimeShop(TestCase):
             self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop_select_random(self):
+        """
+
+        Unit-test test for select_random function
+
+        """
         df = pd.DataFrame(data={'First': [1, 1, 1]})
         inds = [f'2021-01-{day}' for day in range(1, 4)]
         df.index = pd.to_datetime(inds)
