@@ -152,8 +152,21 @@ class TestTimeShop(TestCase):
         for clip in tss.clipboard:
             self.assertTrue((clip.values() == target.values()).all())
 
-    def test__TimeShop__create_white_noise(self):
-        pass
+    def test__TimeShop__create_white_noise_randomness(self):
+        tss = self.ts.edit()
+
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        tss.create_white_noise(mu=0, sigma=1)
+        try1 = tss.clipboard
+
+        tss.clean_clipboard()
+
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        tss.create_white_noise(mu=0, sigma=1)
+        try2 = tss.clipboard
+
+        for ind, clip in enumerate(try1):
+            self.assertTrue((clip.values() != try2[ind].values()).all())
 
     def test__TimeShop__create_trend_with_n_values(self):
         """

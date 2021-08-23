@@ -320,7 +320,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def create_white_noise(self, sigma: float, mu: float = None):
+    def create_white_noise(self, sigma: float, mu: float = None, seed: int = None):
         """
 
         Creating normal distributed values
@@ -335,16 +335,20 @@ class TimeShop(AbstractBaseManipulator):
 
         assert isinstance(self.clipboard, list)
 
+        if seed:
+            rng = np.random.default_rng(seed)
+        else:
+            rng = np.random.default_rng()
+
         clipboard = []
         for clip in self.clipboard:
             index = clip.time_index
-
-            if mu:
-                values = np.random.normal(loc=mu, scale=sigma, size=len(index))
+            if mu is not None:
+                values = rng.normal(loc=mu, scale=sigma, size=len(index))
             else:
                 values = []
                 for value in clip.values():
-                    values.append(float(np.random.normal(loc=value, scale=sigma, size=1)))
+                    values.append(float(rng.normal(loc=value, scale=sigma, size=1)))
 
             df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
@@ -406,7 +410,10 @@ class TimeShop(AbstractBaseManipulator):
         for clip in self.clipboard:
             length = len(clip)
 
-            assert (length % 2) != 0, f"spread has to be an odd number; got {length}"
+            if (length % 2) == 0:
+                clip = clip[:-1]
+                warnings.warn(
+                    "Given TimeSeries to work on was even in length. To create a spike in the middle the strech was shortend by 1.")
 
             # making sure that length = 1 or 3 is not the same
             # additionally this solves the issue with TimeSeries not allowing to be length 1
@@ -429,7 +436,7 @@ class TimeShop(AbstractBaseManipulator):
             second_part = np.flip(first_part[:-1])
 
             values = np.append(first_part, second_part)[1:-1]
-            index = clip.time_index
+            index = self._set_index(start_time=clip.start_time(), end_time=clip.end_time())
             df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
 
             clipboard.append(clip.from_dataframe(df=df,
