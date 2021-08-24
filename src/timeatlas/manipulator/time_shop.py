@@ -144,7 +144,7 @@ class TimeShop(AbstractBaseManipulator):
                 raise ValueError(f"There is no generated value.")
             else:
                 func(self, *args, **kwargs)
-                # anoamly components are named the following was:
+                # anomaly components are named the following was:
                 # <type of anomaly>_<#of anomalies in total>
                 # number of anomalies
                 num_anomalies = len(
@@ -320,7 +320,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = clipboard
 
     @_check_manipulator
-    def create_white_noise(self, sigma: float, mu: float = None, seed: int = None):
+    def create_white_noise(self, sigma: float, mu: float = 0, seed: int = None):
         """
 
         Creating normal distributed values
@@ -343,12 +343,7 @@ class TimeShop(AbstractBaseManipulator):
         clipboard = []
         for clip in self.clipboard:
             index = clip.time_index
-            if mu is not None:
-                values = rng.normal(loc=mu, scale=sigma, size=len(index))
-            else:
-                values = []
-                for value in clip.values():
-                    values.append(float(rng.normal(loc=value, scale=sigma, size=1)))
+            values = rng.normal(loc=mu, scale=sigma, size=len(index))
 
             df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
@@ -413,7 +408,7 @@ class TimeShop(AbstractBaseManipulator):
             if (length % 2) == 0:
                 clip = clip[:-1]
                 warnings.warn(
-                    "Given TimeSeries to work on was even in length. To create a spike in the middle the strech was shortend by 1.")
+                    "Given TimeSeries to work on was even in length. To create a spike in the middle the stretch was shortened by 1.")
 
             # making sure that length = 1 or 3 is not the same
             # additionally this solves the issue with TimeSeries not allowing to be length 1
@@ -467,6 +462,8 @@ class TimeShop(AbstractBaseManipulator):
 
             clipboard.append(clip.from_dataframe(df=df,
                                                  freq=self.time_series.freq))
+
+        self.clipboard = clipboard
 
     # ==========================================================================
     # Operators
@@ -564,39 +561,45 @@ class TimeShop(AbstractBaseManipulator):
 
         # Creating a DataFrame with the correct length.
         tmp_len = len(self.time_series) + sum([len(clip) for clip in self.clipboard])
+        tmp_start = min([self.time_series.start_time()] + [clip.start_time() for clip in self.clipboard])
         tmp_ind = pd.to_datetime(
-            pd.date_range(start=self.time_series.start_time(), periods=tmp_len, freq=self.time_series.freq))
+            pd.date_range(start=tmp_start, periods=tmp_len, freq=self.time_series.freq))
         # the dataframe contains an absurd high number so that it is obvious when something goes wrong
-        time_series = pd.DataFrame([1000000000] * len(tmp_ind), index=tmp_ind, columns=self.time_series.components)
+        time_series = pd.DataFrame([-100000000] * len(tmp_ind), index=tmp_ind, columns=self.time_series.components)
 
-        # the timeseries is split into its parts with the insertions added between
+        # the time series is split into its parts with the insertions added between
         parts = []
         # keep track of the old time, where the last clip ended  so that we are not overlapping insertions and original time_series
-        old_time = None
+        last_end = None
         # how much the preceding insertions have to be shifted in the time axis
         shift_int = 0
         for i, clip in enumerate(self.clipboard):
             # this is a special case so that it does not throw an error when insertion and original start at the same time
             if clip.start_time() == self.time_series.start_time():
                 parts.append(clip)
-                old_time = clip.end_time()
+                last_start = clip.start_time()
+                last_end = clip.end_time()
                 shift_int += len(clip)
+            elif clip.end_time() == self.time_series.end_time():
+                parts.append(clip.shift(shift_int))
+                last_start = clip.start_time()
+                last_end = clip.end_time()
             else:
-                # cutting the timeseries before the new insertion
+                # cutting the time series before the new insertion
                 before, _ = self.time_series.split_before(clip.start_time())
-                if old_time is not None:
+                if last_end is not None:
                     # removing the part of the original before the preceding insertion
-                    if old_time != self.time_series.start_time():
-                        _, before = before.split_before(old_time)
+                    if last_end != self.time_series.start_time():
+                        _, before = before.split_before(last_end)
                 # adding and shifting the insertions to the correct timestamp
                 parts.append(before.shift(shift_int))
                 parts.append(clip.shift(shift_int))
                 shift_int += len(clip)
-                old_time = clip.end_time()
-
+                last_start = clip.start_time()
+                last_end = clip.end_time()
         # adding the part of the original time_series that comes after the last insertion
         try:
-            _, after = self.time_series.split_before(old_time)
+            _, after = self.time_series.split_before(last_start)
             parts.append(after.shift(shift_int))
         except ValueError:
             pass
