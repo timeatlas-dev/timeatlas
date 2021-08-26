@@ -452,6 +452,12 @@ class TimeShop(AbstractBaseManipulator):
 
         """
 
+        new_start = pd.Timestamp(new_start)
+        if new_start < self.time_series.start_time() or new_start > self.time_series.end_time():
+            raise ValueError("The given timestamps are outside of the original time series. "
+                             "If the intention was to shift the timeindex of the original time series please use"
+                             "TimeSeries.shift(n) -> more info in the Documentation of darts")
+
         assert isinstance(self.clipboard, list)
         clipboard = []
         for clip in self.clipboard:
@@ -460,6 +466,42 @@ class TimeShop(AbstractBaseManipulator):
             index = self._set_index(start_time=new_start, end_time=None, n_values=len(values))
             df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
 
+            clipboard.append(clip.from_dataframe(df=df,
+                                                 freq=self.time_series.freq))
+
+        self.clipboard = clipboard
+
+    @_check_manipulator
+    def hard_knee(self, factor: float, threshold: float = None):
+
+        assert factor < 1, f"Parameter 'factor' has to be smaller than 1, given {factor}"
+        clipboard = []
+
+        t = threshold
+        for clip in self.clipboard:
+            if threshold is None:
+                t = min(clip.values())
+            values = clip.values() - ((clip.values() - t) * factor)
+            index = self._set_index(start_time=clip.start_time(), end_time=clip.end_time())
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
+            clipboard.append(clip.from_dataframe(df=df,
+                                                 freq=self.time_series.freq))
+
+        self.clipboard = clipboard
+
+    @_check_manipulator
+    def soft_knee(self, factor: float, threshold: float = None):
+
+        assert factor < 1, f"Parameter 'factor' has to be smaller than 1, given {factor}"
+        clipboard = []
+
+        t = threshold
+        for clip in self.clipboard:
+            if threshold is None:
+                t = min(clip.values())
+            values = clip.values() - ((clip.values() - t) * factor)
+            index = self._set_index(start_time=clip.start_time(), end_time=clip.end_time())
+            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
             clipboard.append(clip.from_dataframe(df=df,
                                                  freq=self.time_series.freq))
 
@@ -580,6 +622,7 @@ class TimeShop(AbstractBaseManipulator):
                 last_start = clip.start_time()
                 last_end = clip.end_time()
                 shift_int += len(clip)
+            # this is the special case that the clip is inserted with the end_time beeing the same as in self.time_series
             elif clip.end_time() == self.time_series.end_time():
                 parts.append(clip.shift(shift_int))
                 last_start = clip.start_time()
