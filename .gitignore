@@ -13,7 +13,13 @@ docs/api_reference/timeatlas.*
 
 # Jupyter Notebooks
 notebooks/scrapbook-*
-
+notebooks/TimeShop/laurel_clip.wav
+notebooks/TimeShop/laurel_compress.wav
+notebooks/TimeShop/laurel_copy.wav
+notebooks/TimeShop/laurel_crop.wav
+notebooks/TimeShop/laurel_spike_exp.wav
+notebooks/TimeShop/laurel_spike_point.wav
+notebooks/TimeShop/laurel_whitenoise.wav
 
 ### JetBrains IDEs ### ---------------------------------------------------------
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

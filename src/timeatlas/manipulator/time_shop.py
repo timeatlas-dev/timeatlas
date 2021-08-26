@@ -172,7 +172,7 @@ class TimeShop(AbstractBaseManipulator):
                 # removing the input
                 self._anomalies = {}
                 self.clipboard = None
-                return self
+            return self
 
         return wrapper
 
@@ -244,7 +244,7 @@ class TimeShop(AbstractBaseManipulator):
         self.clipboard = self.time_series.slice_n_points_after(start_ts=timestamp, n=length)
 
     @_check_selector
-    def threshold_search(self, threshold, operator) -> Any:
+    def threshold_search(self, threshold: float, operator: str) -> Any:
         """
 
         Finding parts of self.time_series that are fulfilling the constraints given by threshold and operator.
@@ -491,21 +491,7 @@ class TimeShop(AbstractBaseManipulator):
 
     @_check_manipulator
     def soft_knee(self, factor: float, threshold: float = None):
-
-        assert factor < 1, f"Parameter 'factor' has to be smaller than 1, given {factor}"
-        clipboard = []
-
-        t = threshold
-        for clip in self.clipboard:
-            if threshold is None:
-                t = min(clip.values())
-            values = clip.values() - ((clip.values() - t) * factor)
-            index = self._set_index(start_time=clip.start_time(), end_time=clip.end_time())
-            df = pd.DataFrame(data=values, index=index, columns=self.time_series.components)
-            clipboard.append(clip.from_dataframe(df=df,
-                                                 freq=self.time_series.freq))
-
-        self.clipboard = clipboard
+        raise NotImplemented
 
     # ==========================================================================
     # Operators
