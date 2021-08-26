@@ -455,8 +455,9 @@ class TimeShop(AbstractBaseManipulator):
         new_start = pd.Timestamp(new_start)
         if new_start < self.time_series.start_time() or new_start > self.time_series.end_time():
             raise ValueError("The given timestamps are outside of the original time series. "
-                             "If the intention was to shift the timeindex of the original time series please use"
-                             "TimeSeries.shift(n) -> more info in the Documentation of darts")
+                             "If the intention was to shift the timeindex of the original time series please use "
+                             "TimeSeries.shift(n) -> more info in the Documentation of darts"
+                             "https://unit8co.github.io/darts/generated_api/darts.html")
 
         assert isinstance(self.clipboard, list)
         clipboard = []
@@ -473,6 +474,19 @@ class TimeShop(AbstractBaseManipulator):
 
     @_check_manipulator
     def hard_knee(self, factor: float, threshold: float = None):
+        """
+
+        Creating a hard knee compression
+
+        https://en.wikipedia.org/wiki/Dynamic_range_compression#Soft_and_hard_knees
+
+        Args:
+            factor: factor of the compression
+            threshold: threshold of where to apply the compression
+
+        Returns:
+
+        """
 
         assert factor < 1, f"Parameter 'factor' has to be smaller than 1, given {factor}"
         clipboard = []
@@ -491,6 +505,19 @@ class TimeShop(AbstractBaseManipulator):
 
     @_check_manipulator
     def soft_knee(self, factor: float, threshold: float = None):
+        """
+
+        Creating a soft knee compression
+
+        https://en.wikipedia.org/wiki/Dynamic_range_compression#Soft_and_hard_knees
+
+        Args:
+            factor: factor of the compression
+            threshold: threshold of where to apply the compression
+
+        Returns:
+
+        """
         raise NotImplemented
 
     # ==========================================================================
