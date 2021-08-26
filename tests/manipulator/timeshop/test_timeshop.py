@@ -302,19 +302,19 @@ class TestTimeShop(TestCase):
         Unit-test test for shift function
 
         """
-        df = pd.DataFrame(data={'First': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]})
-        inds = [f'2021-01-{day}' for day in range(11, 21)]
+        df = pd.DataFrame(data={'First': [1, 1, 1]})
+        inds = [f'2021-01-{day}' for day in range(5, 8)]
         df.index = pd.to_datetime(inds)
         target = TimeSeriesDarts.from_dataframe(df)
 
         tss = self.ts.edit()
         # select into the clipboard
-        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        tss.select(other=tss.time_series, start_time="2021-01-01", end_time="2021-01-03")
         # shifting the timestamps
-        tss.time_shifting(new_start='2021-01-11')
+        tss.time_shifting(new_start='2021-01-05')
 
         for clip in tss.clipboard:
-            self.assertTrue((clip.values() == target.values()).all())
+            self.assertTrue((clip.time_index == target.time_index).all())
 
     def test__TimeShop_select_random(self):
         """
