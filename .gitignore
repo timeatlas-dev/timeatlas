@@ -13,6 +13,7 @@ docs/api_reference/timeatlas.*
 
 # Jupyter Notebooks
 notebooks/scrapbook-*
+notebooks/TimeShop/laurel_change_point.wav
 notebooks/TimeShop/laurel_clip.wav
 notebooks/TimeShop/laurel_compress.wav
 notebooks/TimeShop/laurel_copy.wav
