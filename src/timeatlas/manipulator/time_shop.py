@@ -608,11 +608,6 @@ class TimeShop(AbstractBaseManipulator):
                 last_start = clip.start_time()
                 last_end = clip.end_time()
                 shift_int += len(clip)
-            # this is the special case that the clip is inserted with the end_time beeing the same as in self.time_series
-            elif clip.end_time() == self.time_series.end_time():
-                parts.append(clip.shift(shift_int))
-                last_start = clip.start_time()
-                last_end = clip.end_time()
             else:
                 # cutting the time series before the new insertion
                 before, _ = self.time_series.split_before(clip.start_time())
@@ -628,13 +623,15 @@ class TimeShop(AbstractBaseManipulator):
                 last_end = clip.end_time()
         # adding the part of the original time_series that comes after the last insertion
         try:
-            _, after = self.time_series.split_before(last_start)
-            parts.append(after.shift(shift_int))
+            if last_start == self.time_series.start_time():
+                parts.append(self.time_series.shift(shift_int))
+            else:
+                _, after = self.time_series.split_before(last_start)
+                parts.append(after.shift(shift_int))
         except ValueError:
             pass
 
         # updating the dataframe with the new values
-        self.parts = parts
         for part in parts:
             time_series.update(part.pd_dataframe(), overwrite=True)
 
