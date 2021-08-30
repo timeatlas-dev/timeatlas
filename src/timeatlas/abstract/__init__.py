@@ -3,6 +3,7 @@ from .abstract_base_generator import AbstractBaseGenerator
 from .abstract_base_model import AbstractBaseModel
 from .abstract_base_time_series import AbstractBaseTimeSeries
 from .abstract_base_types import AbstractBaseMetadataType
+from .abstract_base_manipulator import AbstractBaseManipulator
 from .abstract_io import (
     AbstractInput,
     AbstractOutputJson,
@@ -16,6 +17,7 @@ __all__ = [
     "AbstractBaseModel",
     "AbstractBaseTimeSeries",
     "AbstractBaseMetadataType",
+    "AbstractBaseManipulator",
     # Abstract IO
     "AbstractInput",
     "AbstractOutputJson",
