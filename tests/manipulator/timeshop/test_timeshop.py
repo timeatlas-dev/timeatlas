@@ -175,7 +175,7 @@ class TestTimeShop(TestCase):
         for ind, clip in enumerate(try1):
             self.assertTrue((clip.values() != try2[ind].values()).all())
 
-    def test__TimeShop__create_white_noise_seed(self):
+    def test__TimeShop__create_white_noise_seeded(self):
         """
 
         Testing that the seed of create_white_noise is working
@@ -362,3 +362,16 @@ class TestTimeShop(TestCase):
 
         for clip in tss.clipboard:
             self.assertTrue(len(clip) == len(target))
+
+    def test__TimeShop_select_random_seeded(self):
+
+        tss = self.ts.edit()
+        tss.select_random(length=4, seed=1234)
+        try1 = tss.clipboard
+
+        tss = self.ts.edit()
+        tss.select_random(length=4, seed=1234)
+        try2 = tss.clipboard
+
+        for ind, clip in enumerate(try1):
+            self.assertTrue((clip.values() == try2[ind].values()).all())
