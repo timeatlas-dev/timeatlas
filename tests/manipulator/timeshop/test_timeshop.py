@@ -153,6 +153,13 @@ class TestTimeShop(TestCase):
             self.assertTrue((clip.values() == target.values()).all())
 
     def test__TimeShop__create_white_noise_randomness(self):
+        """
+
+        Testing that the results of create_white_noise is random
+
+        Returns:
+
+        """
         tss = self.ts.edit()
 
         tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
@@ -167,6 +174,29 @@ class TestTimeShop(TestCase):
 
         for ind, clip in enumerate(try1):
             self.assertTrue((clip.values() != try2[ind].values()).all())
+
+    def test__TimeShop__create_white_noise_seed(self):
+        """
+
+        Testing that the seed of create_white_noise is working
+
+        Returns:
+
+        """
+        tss = self.ts.edit()
+
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        tss.create_white_noise(mu=0, sigma=1, seed=1234)
+        try1 = tss.clipboard
+
+        tss = self.ts.edit()
+
+        tss.select(other=tss.time_series, start_time=tss.time_series.start_time(), end_time=tss.time_series.end_time())
+        tss.create_white_noise(mu=0, sigma=1, seed=1234)
+        try2 = tss.clipboard
+
+        for ind, clip in enumerate(try1):
+            self.assertTrue((clip.values() == try2[ind].values()).all())
 
     def test__TimeShop__create_trend_with_n_values(self):
         """
